@@ -63,7 +63,7 @@ namespace ChessGame
             pieceTexture = Piece.pieceTextureDic[piece];
 
             //check and store the next legal moves that the piece can make
-            //Issue is that if another piece is moved then more squares are available to the piece now.
+            //Issue is that if another piece is moved then more squares are available to the piece now. 
 
         }
     }
