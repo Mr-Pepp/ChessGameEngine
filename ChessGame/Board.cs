@@ -170,6 +170,11 @@ namespace ChessGame
                 //place piece at mouse point
                 mousePieceRect = new Rectangle(Game1.mousePoint.X - (_squareSize / 2), Game1.mousePoint.Y - (_squareSize / 2), _squareSize, _squareSize);
 
+                foreach(int e in Piece.checkLegalMoves(tempPiece, square, squares))
+                {
+                    //Put a temporary dot until placed
+                }
+                
                 //if right button is pressed when holding piece
                 if (Mouse.GetState().RightButton == ButtonState.Pressed)
                 {
@@ -196,6 +201,11 @@ namespace ChessGame
                 //set piece selected back to false
                 pieceSelected = false;
 
+                //temp square to place back the piece in case
+                int tempSquare = square;
+
+                
+
                 //place Piece at current square
                 for (int iy = 1; iy <= 8; iy++)
                 {
@@ -204,7 +214,7 @@ namespace ChessGame
                         square = SquareID(iy, ix);
                         //add rules to if
                         //square is at current mouse position
-                        if (squares[square].rect.Contains(Game1.mousePoint))
+                        if (squares[square].rect.Contains(Game1.mousePoint) && Piece.checkLegalMoves(tempPiece, tempSquare, squares).Contains(square))
                         {
                             squares[square].piece = tempPiece;
                             //assign texture and moves
@@ -215,6 +225,10 @@ namespace ChessGame
                         }
                     }
                 }
+
+                //If can't place, place back at normal position
+                squares[tempSquare].piece = tempPiece;
+                squares[tempSquare].AssignPiece();
 
             }
             loopEnd2:

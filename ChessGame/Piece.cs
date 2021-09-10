@@ -42,21 +42,30 @@ namespace ChessGame
         static public Dictionary<int, Texture2D> pieceTextureDic;
 
         //Piece info
-        public int[] diagonalOffsets = { -9, -7, 7, 9 }; //top left, top right, bottom left, bottom right
-        public int[] directOffsets = { -1, 1, -8, 8 }; //left, right, top, bottom
+        public static int[] diagonalOffsets = { -9, -7, 7, 9 }; //top left, top right, bottom left, bottom right
+        public static int[] directOffsets = { -1, 1, -8, 8 }; //left, right, top, bottom
         //public int[] maxPieceRange;
+
+        public static int[] knightMoves = new int[] //First variable is to declare whether the moves are continous
+        {
+            (diagonalOffsets[0] + directOffsets[0]), (diagonalOffsets[0] + directOffsets[2]), (diagonalOffsets[1] + directOffsets[2]), (diagonalOffsets[1] + directOffsets[1]),
+            (diagonalOffsets[3] + directOffsets[1]), (diagonalOffsets[3] + directOffsets[3]), (diagonalOffsets[2] + directOffsets[3]), (diagonalOffsets[2] + directOffsets[0])
+        };
 
         public Piece() { }
 
 
         //legal moves
-        public List<int> checkLegalMoves(int piece)
+        public static List<int> checkLegalMoves(int piece, int currentSquare, Square[] squares)
         {
-            List<int> legalMoves = new List<int>();
+            //Squares that are legal for the pieces to step on
+            List<int> legalSquares = new List<int>();
 
-            switch (piece)
+            int checkSquare = 0;
+
+            //Gets just the piece without colour
+            switch (piece & 0b00111)
             {
-
                 case King:
                     //check how many moves allowed 
                     break;
@@ -66,7 +75,40 @@ namespace ChessGame
                     break;
 
                 case Knight:
+                    //check squares that the piece can jump to
 
+                    foreach (int offset in knightMoves)
+                    {
+                        //Square index to be checked
+                        checkSquare = currentSquare + offset;
+
+                        //If checkSquare is within the board
+                        if (checkSquare > 0 && checkSquare < (squares.Length - 1))
+                        {
+                            //white piece
+                            if ((piece & 0b11000) == White)
+                            {
+                                //Make sure the target square is not a friendly piece
+                                if ((squares[checkSquare].piece & 0b11000) != White)
+                                {
+                                    //Append the square that is legal
+                                    legalSquares.Add(checkSquare);
+                                }
+                            }
+
+                            //black piece
+                            else
+                            {
+                                //See whether the target square is a friendly piece
+                                if ((squares[checkSquare].piece & 0b11000) != Black)
+                                {
+                                    //Append the square that is legal
+                                    legalSquares.Add(checkSquare);
+                                }
+                            }
+                        }
+                    
+                    }
                     break;
 
                 case Bishop:
@@ -83,7 +125,7 @@ namespace ChessGame
 
             }
 
-            return legalMoves;
+            return legalSquares;
         }
         
 
