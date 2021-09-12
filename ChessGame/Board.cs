@@ -167,12 +167,23 @@ namespace ChessGame
             //holding the piece
             if (pieceSelected && mousePressed)
             {
-                //place piece at mouse point
+                //place piece at mouse point ---- !! Future make this run only once !!
                 mousePieceRect = new Rectangle(Game1.mousePoint.X - (_squareSize / 2), Game1.mousePoint.Y - (_squareSize / 2), _squareSize, _squareSize);
 
                 foreach(int e in Piece.checkLegalMoves(tempPiece, square, squares))
                 {
-                    //Put a temporary dot until placed
+                    //Show available moves
+                    if (squares[e].piece == 0)
+                    {
+                        squares[e].dot = true;
+                    }
+
+                    else // there is a piece
+                    {
+                        //colour square to indicate the ability to take the piece
+
+                        squares[e].targetSquare = true;
+                    }
                 }
                 
                 //if right button is pressed when holding piece
@@ -185,6 +196,13 @@ namespace ChessGame
                     squares[square].piece = tempPiece;
                     //assign texture and moves
                     squares[square].AssignPiece();
+
+                    foreach (int e in Piece.checkLegalMoves(tempPiece, square, squares))
+                    {
+                        //Remove
+                        squares[e].dot = false;
+                        squares[e].targetSquare = false;
+                    }
 
                 }
             }
@@ -204,7 +222,12 @@ namespace ChessGame
                 //temp square to place back the piece in case
                 int tempSquare = square;
 
-                
+                foreach (int e in Piece.checkLegalMoves(tempPiece, square, squares))
+                {
+                    //Remove
+                    squares[e].dot = false;
+                    squares[e].targetSquare = false;
+                }
 
                 //place Piece at current square
                 for (int iy = 1; iy <= 8; iy++)

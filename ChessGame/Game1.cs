@@ -17,18 +17,22 @@ namespace ChessGame
 
         private Dictionary<string, Color> colorDic = new Dictionary<string, Color>()
         {
-            {"Light Square", new Color(239, 231, 232)},
-            {"Dark Square", new Color(87, 63, 63)},
-            {"Outside Board", new Color(99, 66, 53) },
-            {"Inner Outside Board", new Color(194, 141, 103) },
-            {"Background", new Color(74, 44, 42)}
+            { "Light Square", new Color(239, 231, 232) },
+            { "Dark Square", new Color(87, 63, 63) },
+            { "Outside Board", new Color(99, 66, 53) },
+            { "Inner Outside Board", new Color(194, 141, 103) },
+            { "Background", new Color(74, 44, 42) },
+            { "Target Colour", new Color(254, 172, 238) }, // currently not referenced. [new] in Square.cs
         };
 
         private int squareSize;
         private Vector2 initPos;
 
-        //texture location dir
+        //texture location dir || Change as more textures come 
         private string dir = "Set 1/";
+
+        //"Other" texture directory
+        private string otherDir = "Other/";
 
         //mouse point
         public static Point mousePoint;
@@ -71,6 +75,9 @@ namespace ChessGame
             Piece.blackBishop = Content.Load<Texture2D>(dir + "Black_Bishop");
             Piece.blackRook = Content.Load<Texture2D>(dir + "Black_Rook");
             Piece.blackQueen = Content.Load<Texture2D>(dir + "Black_Queen");
+
+            //Misc textures
+            Square.dotTexture = Content.Load<Texture2D>(otherDir + "Dot");
 
             //update Piece dictionary. No idea how to update with the whole dictionary in Piece
             Piece.pieceTextureDic =

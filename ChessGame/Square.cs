@@ -12,14 +12,21 @@ namespace ChessGame
         private Texture2D _texture;
         private Texture2D pieceTexture;
 
+        //miscs
+        public static Texture2D dotTexture;
+
         public Rectangle rect;
 
-
+        private Color dotColour = new Color(100, 100, 100, 150);
         private Color _colour;
         private int _pxSize;
         public Vector2 position;
 
         public int piece = Piece.None; // initial
+
+        // miscs
+        public bool dot = false;
+        public bool targetSquare = false;
 
         //list so i can append, but slower than an array.
         private List<int> legalMoves = new List<int>();
@@ -50,16 +57,28 @@ namespace ChessGame
             //Draw the square out
             s.Draw(_texture, rect, null, _colour);
 
+            if (targetSquare)
+            {
+                s.Draw(_texture, rect, null, new Color(15, 45, 15, 150));
+            }
+
             if (piece != 0b00000) //piece exists
             {
                 //Draw the piece out
                 s.Draw(pieceTexture, rect, null, Color.White);
             }
+
+            if (dot)
+            {
+                s.Draw(dotTexture, rect, null, new Color(15, 45, 15, 90));
+            }
+            
+
         }
 
         public void AssignPiece()
         {
-            //assign the correct texture
+            
             pieceTexture = Piece.pieceTextureDic[piece];
 
             //check and store the next legal moves that the piece can make

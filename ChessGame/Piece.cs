@@ -23,6 +23,8 @@ namespace ChessGame
         public const int White = 0b01000;  // 01000 b
         public const int Black = 0b10000;  // 10000 b
 
+        //Other... see what happens
+        public const int Dot = 0b100000; //base10 32 resembles a dot
 
         public static Texture2D whiteKing;
         public static Texture2D whitePawn;
@@ -37,6 +39,9 @@ namespace ChessGame
         public static Texture2D blackBishop;
         public static Texture2D blackRook;
         public static Texture2D blackQueen;
+
+        //Other 
+        public static Texture2D dot;
 
         //dictionary for reference 
         static public Dictionary<int, Texture2D> pieceTextureDic;
@@ -83,7 +88,7 @@ namespace ChessGame
                         checkSquare = currentSquare + offset;
 
                         //If checkSquare is within the board
-                        if (checkSquare > 0 && checkSquare < (squares.Length - 1))
+                        if (checkSquare >= 0 && checkSquare < (squares.Length - 1))
                         {
                             //white piece
                             if ((piece & 0b11000) == White)
@@ -129,7 +134,7 @@ namespace ChessGame
         }
         
 
-        private void directMoves(int maxMoveAmount, List<int> legalMoves)
+        private void DirectMoves(int maxMoveAmount, List<int> legalMoves)
         {
 
         }
