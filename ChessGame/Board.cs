@@ -267,6 +267,11 @@ namespace ChessGame
 
         private void LoadFEN(string FEN) //Makes FEN readable for computer
         {
+            //default all bitboards
+            wK = 0L; wQ = 0L; wR = 0L; wN = 0L; wB = 0L; wP = 0L; bK = 0L; bQ = 0L; bR = 0L; bN = 0L; bB = 0L; bP = 0L;
+
+
+
             // With bitboards, the FEN is first converted to a bitboard then the squares are assigned the pieces
 
             //example FEN 
@@ -302,6 +307,8 @@ namespace ChessGame
             //Checks how to deal with each symbol and does it
             foreach (string e in fenList)
             {
+                //default all bitboards
+
                 foreach (char c in e)
                 {
                     //if integer then add to index by integer
@@ -414,22 +421,23 @@ namespace ChessGame
         {
             //have a bunch of bitboards but convert it to a physical board
 
-
+            //read bitboards as index
             for (int i=0; i < 64; i++)
             {
                 
-                if (((wK>>i)&1)==1) { squares[i].piece = Piece.White | Piece.King; }
-                else if (((wQ >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Queen; }
-                else if (((wR >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Rook; }
-                else if (((wB >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Bishop; }
-                else if (((wN >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Knight; }
-                else if (((wP >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Pawn; }
-                else if (((bK >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.King; }
-                else if (((bQ >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Queen; }
-                else if (((bR >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Rook; }
-                else if (((bB >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Bishop; }
-                else if (((bN >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Knight; }
-                else if (((bP >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Pawn; }
+                if (((wK >> i)&1)==1) { squares[i].piece = Piece.White | Piece.King; }
+                else if (((wQ >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Queen; }
+                else if (((wR >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Rook; }
+                else if (((wB >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Bishop; }
+                else if (((wN >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Knight; }
+                else if (((wP >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Pawn; }
+
+                else if (((bK >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.King; }
+                else if (((bQ >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Queen; }
+                else if (((bR >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Rook; }
+                else if (((bB >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Bishop; }
+                else if (((bN >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Knight; }
+                else if (((bP >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Pawn; }
                 
                 else { squares[i].piece = Piece.None; }
 
