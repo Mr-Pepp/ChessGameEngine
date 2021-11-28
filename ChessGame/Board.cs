@@ -30,6 +30,12 @@ namespace ChessGame
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
 
+        //For bitboards IMPROVEMENT _________________________ *****
+
+        //bitboards --- w = White, b = Black
+        private ulong wK = 0L, wQ = 0L, wR = 0L, wN = 0L, wB = 0L, wP = 0L, bK = 0L, bQ = 0L, bR = 0L, bN = 0L, bB = 0L, bP = 0L;
+
+
         public Board(int squareSize, Vector2 initPos, Dictionary<string, Color> colorDic )
         {
             _initPos = initPos;
@@ -261,9 +267,12 @@ namespace ChessGame
 
         private void LoadFEN(string FEN) //Makes FEN readable for computer
         {
+            // With bitboards, the FEN is first converted to a bitboard then the squares are assigned the pieces
+
             //example FEN 
             //  4kr2/p2p1r1p/2b1q3/8/2P5/1P6/P7/2RQR1K1 w - - 0 1
 
+            /*
             Dictionary<char, int> pieceDic = new Dictionary<char, int>()
             {
                 //White pieces
@@ -282,11 +291,82 @@ namespace ChessGame
                 { 'r', Piece.Black | Piece.Rook },
                 { 'q', Piece.Black | Piece.Queen },
             };
+            */
 
             string[] fenList = FEN.Split("/");
 
             int i = 0;
 
+            
+
+            //Checks how to deal with each symbol and does it
+            foreach (string e in fenList)
+            {
+                foreach (char c in e)
+                {
+                    //if integer then add to index by integer
+                    if (int.TryParse(c.ToString().AsSpan(), out int n))
+                    {
+                        i += n;
+                    }
+
+                    //else if string
+                    else
+                    {
+                        //populate bitboard
+                        switch(c)
+                        {
+                            case 'K': //White King
+                                wK += BinaryStringToBitboard(i);
+                                break;
+                            case 'Q': //White Queen
+                                wQ += BinaryStringToBitboard(i);
+                                break;
+                            case 'R': //White Rook
+                                wR += BinaryStringToBitboard(i);
+                                break;
+                            case 'B': //White Bishop
+                                wB += BinaryStringToBitboard(i);
+                                break;
+                            case 'N': //White Knight
+                                wN += BinaryStringToBitboard(i);
+                                break;
+                            case 'P': //White Pawn
+                                wP += BinaryStringToBitboard(i);
+                                break;
+
+                            case 'k': //Black King
+                                bK += BinaryStringToBitboard(i);
+                                break;
+                            case 'q': //Black Queen
+                                bQ += BinaryStringToBitboard(i);
+                                break;
+                            case 'r': //Black Rook
+                                bR += BinaryStringToBitboard(i);
+                                break;
+                            case 'b': //Black Bishop
+                                bB += BinaryStringToBitboard(i);
+                                break;
+                            case 'n': //Black Knight
+                                bN += BinaryStringToBitboard(i);
+                                break;
+                            case 'p': //Black Pawn
+                                bP += BinaryStringToBitboard(i);
+                                break;
+                        }
+
+                        i++;
+                    }
+
+                    //if finished all squares then break... still need to assign remaining FEN values tho
+                    if (i >= 64)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            /*
             //Checks how to deal with each symbol and does it
             foreach (string e in fenList)
             {
@@ -317,14 +397,57 @@ namespace ChessGame
                         i++;
                     }
 
-                    //if finished then break to assing the remainding values
+                    //if finished then break to assign the remaining values
                     if (i >= 64)
                     {
                         break;
                     }
 
                 }
+            }*/
+
+            BitboardOutput();
+
+        }
+
+        void BitboardOutput()
+        {
+            //have a bunch of bitboards but convert it to a physical board
+
+
+            for (int i=0; i < 64; i++)
+            {
+                
+                if (((wK>>i)&1)==1) { squares[i].piece = Piece.White | Piece.King; }
+                else if (((wQ >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Queen; }
+                else if (((wR >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Rook; }
+                else if (((wB >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Bishop; }
+                else if (((wN >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Knight; }
+                else if (((wP >> i) & 1) == 1) { squares[i].piece = Piece.White | Piece.Pawn; }
+                else if (((bK >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.King; }
+                else if (((bQ >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Queen; }
+                else if (((bR >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Rook; }
+                else if (((bB >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Bishop; }
+                else if (((bN >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Knight; }
+                else if (((bP >> i) & 1) == 1) { squares[i].piece = Piece.Black | Piece.Pawn; }
+                
+                else { squares[i].piece = Piece.None; }
+
+
+                squares[i].AssignPiece();
+
             }
+        }
+
+        ulong BinaryStringToBitboard( int index )
+        {
+            string binary = "0000000000000000000000000000000000000000000000000000000000000000"; //64 bit
+
+            //insert 1 in index
+            binary = binary.Remove(index, 1).Insert(index, "1");
+
+            //return as type long
+            return Convert.ToUInt64(binary, 2);
         }
     }
 }
