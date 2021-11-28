@@ -413,36 +413,43 @@ namespace ChessGame
                 }
             }*/
 
-            BitboardOutput();
+            BitboardOutput(true);
 
         }
 
-        void BitboardOutput()
+        //Make bitboard into the game board
+        void BitboardOutput(bool asWhite)
         {
-            //have a bunch of bitboards but convert it to a physical board
+            int sideIndex = 64;
 
             //read bitboards as index
-            for (int i=0; i < 64; i++)
+            //the bitwise operations will reverse the board so initially the board will be on blacks side
+            for (int i = 0; i < 64; i++)
             {
+                //For switching the board side
+                if (asWhite)
+                {
+                    sideIndex -= 1;
+                }
+                else { sideIndex = i; }
+
+                if (((wK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.King; }
+                else if (((wQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Queen; }
+                else if (((wR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Rook; }
+                else if (((wB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Bishop; }
+                else if (((wN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Knight; }
+                else if (((wP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Pawn; }
+
+                else if (((bK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.King; }
+                else if (((bQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Queen; }
+                else if (((bR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Rook; }
+                else if (((bB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Bishop; }
+                else if (((bN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Knight; }
+                else if (((bP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Pawn; }
                 
-                if (((wK >> i)&1)==1) { squares[i].piece = Piece.White | Piece.King; }
-                else if (((wQ >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Queen; }
-                else if (((wR >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Rook; }
-                else if (((wB >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Bishop; }
-                else if (((wN >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Knight; }
-                else if (((wP >> i) & 1L) == 1L) { squares[i].piece = Piece.White | Piece.Pawn; }
+                else { squares[sideIndex].piece = Piece.None; }
 
-                else if (((bK >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.King; }
-                else if (((bQ >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Queen; }
-                else if (((bR >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Rook; }
-                else if (((bB >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Bishop; }
-                else if (((bN >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Knight; }
-                else if (((bP >> i) & 1L) == 1L) { squares[i].piece = Piece.Black | Piece.Pawn; }
-                
-                else { squares[i].piece = Piece.None; }
-
-
-                squares[i].AssignPiece();
+                squares[sideIndex].AssignPiece();
 
             }
         }
