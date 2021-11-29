@@ -28,12 +28,14 @@ namespace ChessGame
 
 
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
-        private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
+        //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
+        private string FEN = "1krq2nr/1ppp1p1p/Bn2b3/3b2p1/3P3P/p4N2/PPP3P1/RNBQK2R w KQ - 0 1";
+
 
         //For bitboards IMPROVEMENT _________________________ *****
 
         //bitboards --- w = White, b = Black
-        private ulong wK = 0L, wQ = 0L, wR = 0L, wN = 0L, wB = 0L, wP = 0L, bK = 0L, bQ = 0L, bR = 0L, bN = 0L, bB = 0L, bP = 0L;
+        public static ulong wK = 0L, wQ = 0L, wR = 0L, wN = 0L, wB = 0L, wP = 0L, bK = 0L, bQ = 0L, bR = 0L, bN = 0L, bB = 0L, bP = 0L;
 
 
         public Board(int squareSize, Vector2 initPos, Dictionary<string, Color> colorDic )
@@ -176,7 +178,8 @@ namespace ChessGame
                 //place piece at mouse point ---- !! Future make this run only once !!
                 mousePieceRect = new Rectangle(Game1.mousePoint.X - (_squareSize / 2), Game1.mousePoint.Y - (_squareSize / 2), _squareSize, _squareSize);
 
-                foreach(int e in Piece.checkLegalMoves(tempPiece, square, squares))
+                //Need to find a way to do this with bitboards
+                foreach(int e in Moves.CheckLegalMoves(tempPiece, square))
                 {
                     //Show available moves
                     if (squares[e].piece == 0)
@@ -203,7 +206,8 @@ namespace ChessGame
                     //assign texture and moves
                     squares[square].AssignPiece();
 
-                    foreach (int e in Piece.checkLegalMoves(tempPiece, square, squares))
+                    //Need to find a way for this with bitboards
+                    foreach (int e in Moves.CheckLegalMoves(tempPiece, square))
                     {
                         //Remove
                         squares[e].dot = false;
@@ -228,7 +232,7 @@ namespace ChessGame
                 //temp square to place back the piece in case
                 int tempSquare = square;
 
-                foreach (int e in Piece.checkLegalMoves(tempPiece, square, squares))
+                foreach (int e in Moves.CheckLegalMoves(tempPiece, tempSquare))
                 {
                     //Remove
                     squares[e].dot = false;
@@ -243,11 +247,20 @@ namespace ChessGame
                         square = SquareID(iy, ix);
                         //add rules to if
                         //square is at current mouse position
-                        if (squares[square].rect.Contains(Game1.mousePoint) && Piece.checkLegalMoves(tempPiece, tempSquare, squares).Contains(square))
+                        if (squares[square].rect.Contains(Game1.mousePoint) && Moves.CheckLegalMoves(tempPiece, tempSquare).Contains(square))
                         {
                             squares[square].piece = tempPiece;
                             //assign texture and moves
                             squares[square].AssignPiece();
+
+                            wP = wP & ~BinaryStringToBitboard(tempSquare);
+                            wP = wP | BinaryStringToBitboard(square);
+
+                            bB = bB & ~BinaryStringToBitboard(square);
+                            bP = bP & ~BinaryStringToBitboard(square);
+
+                            Moves.InitBitboards();
+
 
                             //end loop
                             goto loopEnd2;
@@ -413,6 +426,7 @@ namespace ChessGame
                 }
             }*/
 
+            //Leave at true for now...
             BitboardOutput(true);
 
         }
@@ -421,6 +435,12 @@ namespace ChessGame
         void BitboardOutput(bool asWhite)
         {
             int sideIndex = 64;
+
+            Moves.InitBitboards();
+
+
+            //wK = Moves.LegalMoves_WPawn(wP);
+
 
             //read bitboards as index
             //the bitwise operations will reverse the board so initially the board will be on blacks side
@@ -450,11 +470,12 @@ namespace ChessGame
                 else { squares[sideIndex].piece = Piece.None; }
 
                 squares[sideIndex].AssignPiece();
-
             }
+
+            
         }
 
-        ulong BinaryStringToBitboard( int index )
+        public static ulong BinaryStringToBitboard( int index )
         {
             string binary = "0000000000000000000000000000000000000000000000000000000000000000"; //64 bit
 
