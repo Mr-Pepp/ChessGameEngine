@@ -253,11 +253,20 @@ namespace ChessGame
                             //assign texture and moves
                             squares[square].AssignPiece();
 
+                            //remove piece from previous square (bitboard)
                             wP = wP & ~BinaryStringToBitboard(tempSquare);
+                            //update piece to new square (bitboard)
                             wP = wP | BinaryStringToBitboard(square);
 
+
+                            //Fix pieces not updating on bitboard
+                            bQ = bQ & ~BinaryStringToBitboard(square);
+                            bK = bK & ~BinaryStringToBitboard(square);
+                            bR = bR & ~BinaryStringToBitboard(square);
+                            bN = bN & ~BinaryStringToBitboard(square);
                             bB = bB & ~BinaryStringToBitboard(square);
                             bP = bP & ~BinaryStringToBitboard(square);
+
 
                             Moves.InitBitboards();
 
