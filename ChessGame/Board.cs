@@ -249,25 +249,137 @@ namespace ChessGame
                         //square is at current mouse position
                         if (squares[square].rect.Contains(Game1.mousePoint) && Moves.CheckLegalMoves(tempPiece, tempSquare).Contains(square))
                         {
+                            //Future add an if statement to determine white / black move and then do the checks.
+
+
+                            //Filter piece to update the correct bitboard
+
+                            //First update the targetted square piece (won't do anything if the piece is Piece.None)
+                            switch (squares[square].piece)
+                            {
+                                //White Pieces
+                                case Piece.White | Piece.King:
+                                    wK = wK & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case (Piece.White | Piece.Queen):
+                                    wQ = wQ & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case Piece.White | Piece.Rook:
+                                    wR = wR & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case (Piece.White | Piece.Bishop):
+                                    wB = wB & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case Piece.White | Piece.Knight:
+                                    wN = wN & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case (Piece.White | Piece.Pawn):
+                                    wP = wP & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                //Black Pieces
+                                case Piece.Black | Piece.King:
+                                    bK = bK & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case (Piece.Black | Piece.Queen):
+                                    bQ = bQ & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case Piece.Black | Piece.Rook:
+                                    bR = bR & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case (Piece.Black | Piece.Bishop):
+                                    bB = bB & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case Piece.Black | Piece.Knight:
+                                    bN = bN & ~BinaryStringToBitboard(square);
+                                    break;
+
+                                case (Piece.Black | Piece.Pawn):
+                                    bP = bP & ~BinaryStringToBitboard(square);
+                                    break;
+                            }
+
+                            //Update for the piece taking the square
+                            switch (tempPiece)
+                            {
+                                //White Pieces
+                                case Piece.White | Piece.King:
+                                    wK = wK | BinaryStringToBitboard(square);
+                                    wK = wK & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case (Piece.White | Piece.Queen):
+                                    wQ = wQ | BinaryStringToBitboard(square);
+                                    wQ = wQ & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case Piece.White | Piece.Rook:
+                                    wR = wR | BinaryStringToBitboard(square);
+                                    wR = wR & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case (Piece.White | Piece.Bishop):
+                                    wB = wB | BinaryStringToBitboard(square);
+                                    wB = wB & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case Piece.White | Piece.Knight:
+                                    wN = wN | BinaryStringToBitboard(square);
+                                    wN = wN & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case (Piece.White | Piece.Pawn):
+                                    wP = wP | BinaryStringToBitboard(square);
+                                    wP = wP & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                //Black Pieces
+                                case Piece.Black | Piece.King:
+                                    bK = bK | BinaryStringToBitboard(square);
+                                    bK = bK & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case (Piece.Black | Piece.Queen):
+                                    bQ = bQ | BinaryStringToBitboard(square);
+                                    bQ = bQ & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case Piece.Black | Piece.Rook:
+                                    bR = bR | BinaryStringToBitboard(square);
+                                    bR = bR & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case (Piece.Black | Piece.Bishop):
+                                    bB = bB | BinaryStringToBitboard(square);
+                                    bB = bB & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case Piece.Black | Piece.Knight:
+                                    bN = bN | BinaryStringToBitboard(square);
+                                    bN = bN & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+
+                                case (Piece.Black | Piece.Pawn):
+                                    bP = bP | BinaryStringToBitboard(square);
+                                    bP = bP & ~BinaryStringToBitboard(tempSquare);
+                                    break;
+                            }
+
+                            //Update the square
                             squares[square].piece = tempPiece;
                             //assign texture and moves
                             squares[square].AssignPiece();
 
-                            //remove piece from previous square (bitboard)
-                            wP = wP & ~BinaryStringToBitboard(tempSquare);
-                            //update piece to new square (bitboard)
-                            wP = wP | BinaryStringToBitboard(square);
-
-
-                            //Fix pieces not updating on bitboard
-                            bQ = bQ & ~BinaryStringToBitboard(square);
-                            bK = bK & ~BinaryStringToBitboard(square);
-                            bR = bR & ~BinaryStringToBitboard(square);
-                            bN = bN & ~BinaryStringToBitboard(square);
-                            bB = bB & ~BinaryStringToBitboard(square);
-                            bP = bP & ~BinaryStringToBitboard(square);
-
-
+                            //Initialise bitboards in the Moves class
                             Moves.InitBitboards();
 
 

@@ -50,33 +50,68 @@ namespace ChessGame
             List<int> legalSquares = new List<int>();
             ulong legalULong = 0L;
 
-            switch (piece & 0b00111)
+            //Check if piece is white
+            if ((piece & Piece.White) == Piece.White)
             {
-                case Piece.King:
-                    break;
+                switch (piece & 0b00111)
+                {
+                    case Piece.King:
+                        break;
 
-                case Piece.Pawn:
-                    //White pawn legal moves bitboard
-                    legalULong = LegalMoves_WPawn(pieceLocation & Board.wP);
-                    break;
+                    case Piece.Pawn:
+                        //White pawn legal moves bitboard
+                        legalULong = LegalMoves_WPawn(pieceLocation & Board.wP);
+                        break;
 
-                case Piece.Knight:
+                    case Piece.Knight:
 
-                    break;
+                        break;
 
-                case Piece.Bishop:
+                    case Piece.Bishop:
 
-                    break;
+                        break;
 
-                case Piece.Rook:
+                    case Piece.Rook:
 
-                    break;
+                        break;
 
-                case Piece.Queen:
+                    case Piece.Queen:
 
-                    break;
+                        break;
 
+                }
             }
+            else //Black piece
+            {
+                switch (piece & 0b00111)
+                {
+                    case Piece.King:
+                        break;
+
+                    case Piece.Pawn:
+                        //Black pawn legal moves
+                        legalULong = LegalMoves_BPawn(pieceLocation & Board.bP);
+                        break;
+
+                    case Piece.Knight:
+
+                        break;
+
+                    case Piece.Bishop:
+
+                        break;
+
+                    case Piece.Rook:
+
+                        break;
+
+                    case Piece.Queen:
+
+                        break;
+
+                }
+            }
+            
 
             //Append to list the legal squares
             for (int i = 0; i < 64; i++)
@@ -100,10 +135,29 @@ namespace ChessGame
             legalMoves = legalMoves | ((wP << 7) & blackPieces & ~file_A);
 
             //Pushing forward
-            legalMoves = legalMoves | ((wP << 8) & emptySquares & ~rank_8);
+            legalMoves = legalMoves | ((wP << 8) & emptySquares);
 
             //Opening two square push forward
             legalMoves = legalMoves | (wP << 16 & rank_4 & emptySquares & emptySquares << 8);
+
+            return legalMoves;
+        }
+
+        public static ulong LegalMoves_BPawn(ulong bP) //Black Pawns
+        {
+            ulong legalMoves = 0L;
+
+            //Captures bottom left
+            legalMoves = legalMoves | ((bP >> 7) & whitePieces & ~file_H);
+
+            //Captures bottom right
+            legalMoves = legalMoves | ((bP >> 9) & whitePieces & ~file_A);
+
+            //Pushing down
+            legalMoves = legalMoves | ((bP >> 8) & emptySquares);
+
+            //Opening two square push down
+            legalMoves = legalMoves | (bP >> 16 & rank_5 & emptySquares & emptySquares >> 8);
 
             return legalMoves;
         }
