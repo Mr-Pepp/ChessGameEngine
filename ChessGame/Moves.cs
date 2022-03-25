@@ -64,7 +64,8 @@ namespace ChessGame
                         break;
 
                     case Piece.Knight:
-
+                        //Knight legal moves bitboard
+                        legalULong = LegalMoves_Knight(pieceLocation & Board.wN, whitePieces);
                         break;
 
                     case Piece.Bishop:
@@ -94,7 +95,8 @@ namespace ChessGame
                         break;
 
                     case Piece.Knight:
-
+                        //Knight legal moves bitboard
+                        legalULong = LegalMoves_Knight(pieceLocation & Board.bN, blackPieces);
                         break;
 
                     case Piece.Bishop:
@@ -158,6 +160,37 @@ namespace ChessGame
 
             //Opening two square push down
             legalMoves = legalMoves | (bP >> 16 & rank_5 & emptySquares & emptySquares >> 8);
+
+            return legalMoves;
+        }
+
+        public static ulong LegalMoves_Knight(ulong N, ulong friendlyPieces) //Knights
+        {
+            ulong legalMoves = 0L;
+
+            //Up: 1, Left: 2
+            legalMoves = legalMoves | (N << 10 & ~file_GH & ~friendlyPieces);
+
+            //Up: 2, Left: 1
+            legalMoves = legalMoves | (N << 17 & ~file_H & ~friendlyPieces);
+
+            //Up: 2, Left: 1
+            legalMoves = legalMoves | (N << 15 & ~file_A & ~friendlyPieces);
+
+            //Up: 1, Right: 2
+            legalMoves = legalMoves | (N << 6 & ~file_AB & ~friendlyPieces);
+
+            //Down: 1, Right: 2
+            legalMoves = legalMoves | (N >> 10 & ~file_AB & ~friendlyPieces);
+
+            //Down: 2, Right: 1
+            legalMoves = legalMoves | (N >> 17 & ~file_A & ~friendlyPieces);
+
+            //Down: 2, Left: 1
+            legalMoves = legalMoves | (N >> 15 & ~file_H & ~friendlyPieces);
+
+            //Down: 1, Left: 2
+            legalMoves = legalMoves | (N >> 6 & ~file_GH & ~friendlyPieces);
 
             return legalMoves;
         }
