@@ -87,7 +87,6 @@ namespace ChessGame
             //run load FEN position
             LoadFEN(FEN);
 
-
         }
 
 
@@ -101,6 +100,7 @@ namespace ChessGame
                 LoadFEN(defaultFEN);
 
                 pieceSelected = false;
+                Moves.whiteTurn = true;
             }
 
             PieceSelection();
@@ -125,7 +125,6 @@ namespace ChessGame
             }
 
         }
-
 
 
         private int SquareID(int x, int y) //Get square number from top left considering column (x) and row (y)
@@ -373,6 +372,14 @@ namespace ChessGame
                                     bP = bP & ~BinaryStringToBitboard(tempSquare);
                                     break;
                             }
+
+                            // ADD MOVEHISTORY:  Piece, From, To, Captured
+                            Moves.moveHistory.Add(new int[] { tempPiece, tempSquare, square, squares[square].piece });
+
+                            //System.Diagnostics.Debug.WriteLine(Moves.moveHistory[0][0].ToString() + Moves.moveHistory[0][1].ToString() + Moves.moveHistory[0][2].ToString() + Moves.moveHistory[0][3].ToString());
+
+
+                            Moves.whiteTurn = !Moves.whiteTurn;
 
                             //Update the square
                             squares[square].piece = tempPiece;

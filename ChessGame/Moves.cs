@@ -7,6 +7,12 @@ namespace ChessGame
     class Moves
     {
 
+        public static bool whiteTurn = true;
+        public static bool enPassant = false;
+
+        public static List<int[]> moveHistory = new List<int[]>();
+
+
         static ulong file_A = 9259542123273814144L;
         static ulong file_B = 4629771061636907072L;
 
@@ -35,6 +41,8 @@ namespace ChessGame
 
         static ulong emptySquares;
 
+        
+
         public static void InitBitboards()
         {
             whitePieces = Board.wK | Board.wQ | Board.wR | Board.wB | Board.wN | Board.wP;
@@ -51,11 +59,12 @@ namespace ChessGame
             ulong legalULong = 0L;
 
             //Check if piece is white
-            if ((piece & Piece.White) == Piece.White)
+            if (((piece & Piece.White) == Piece.White) & whiteTurn)
             {
                 switch (piece & 0b00111)
                 {
                     case Piece.King:
+
                         break;
 
                     case Piece.Pawn:
@@ -73,7 +82,7 @@ namespace ChessGame
                         break;
 
                     case Piece.Rook:
-
+                        legalULong = LegalMoves_Rook(pieceLocation & Board.wR, whitePieces, blackPieces);
                         break;
 
                     case Piece.Queen:
@@ -82,11 +91,12 @@ namespace ChessGame
 
                 }
             }
-            else //Black piece
+            else if (!whiteTurn) //Black piece
             {
                 switch (piece & 0b00111)
                 {
                     case Piece.King:
+
                         break;
 
                     case Piece.Pawn:
@@ -104,16 +114,14 @@ namespace ChessGame
                         break;
 
                     case Piece.Rook:
-
+                        legalULong = LegalMoves_Rook(pieceLocation & Board.bR, blackPieces, whitePieces);
                         break;
 
                     case Piece.Queen:
 
                         break;
-
                 }
             }
-            
 
             //Append to list the legal squares
             for (int i = 0; i < 64; i++)
@@ -191,6 +199,98 @@ namespace ChessGame
 
             //Down: 1, Left: 2
             legalMoves = legalMoves | (N >> 6 & ~file_GH & ~friendlyPieces);
+
+            return legalMoves;
+        }
+
+        public static ulong LegalMoves_Rook(ulong R, ulong friendlyPieces, ulong enemyPieces) //Rooks
+        {
+            ulong legalMoves = 0L;
+
+            //Have to run loop until there is a piece to the right of the rook
+
+            //Until there is a white piece
+            //Condition that must be hit is that 5+5
+
+            //Moving Horizontally Right
+            for (int i = 1; i < 8; i++)
+            {
+                //If outside the board
+                if ((R >> i) == (R >> i & file_A))
+                {
+                    break;
+                }
+
+                else if(R >> i == (R >> i & friendlyPieces))
+                {
+                    break;
+                }
+
+                else if(R >> i == (R >> i & enemyPieces))
+                {
+                    legalMoves = legalMoves | R >> i;
+                    break;
+                }
+
+                legalMoves = legalMoves | (R >> i & ~friendlyPieces);
+            }
+
+            //Moving Horizontally Left
+            for (int i = 1; i < 8; i++)
+            {
+
+                //If outside the board
+                if ((R << i) == (R << i & file_H))
+                {
+                    break;
+                }
+
+                if (R << i == (R << i & friendlyPieces))
+                {
+                    break;
+                }
+                else if (R << i == (R << i & enemyPieces))
+                {
+                    legalMoves = legalMoves | R << i;
+                    break;
+                }
+                legalMoves = legalMoves | (R << i & ~friendlyPieces);
+            }
+
+            //Moving Vertically Down
+            for (int i = 1; i < 8; i++)
+            {
+                //Waste less time because it cant go further down
+                if (R >> (i * 8) == 0L)
+                {
+                    break;
+                }
+                else if (R >> (i * 8) == (R >> (i * 8) & friendlyPieces))
+                {
+                    break;
+                }
+                else if (R >> (i * 8) == (R >> (i * 8) & enemyPieces))
+                {
+                    legalMoves = legalMoves | R >> (i * 8);
+                    break;
+                }
+                legalMoves = legalMoves | (R >> (i * 8) & ~friendlyPieces);
+            }
+
+            
+            for (int i = 1; i < 8; i++)
+            {
+                if (R << (i * 8) == (R << (i * 8) & friendlyPieces))
+                {
+                    break;
+                }
+                else if (R << (i * 8) == (R << (i * 8) & enemyPieces))
+                {
+                    legalMoves = legalMoves | R << (i * 8);
+                    break;
+                }
+                legalMoves = legalMoves | (R << (i * 8) & ~friendlyPieces);
+            }
 
             return legalMoves;
         }
