@@ -387,7 +387,9 @@ namespace ChessGame
                 B = B << (i * 8);
                 B = B >> (i * 8);
                 //Outside the board (Right)
-                B = B & ~(file_A << i);
+                //Shifting to left makes the file_A bitboard go up a file which means that it can miss the piece
+                //So we have to shift the file_A bitboard down by 1 after the bitwise operation
+                B = B & ~((file_A << i) >> 8);
                 //Friendly piece in the way
                 B = B & ~(friendlyPieces >> (i * 7));
                 //No bits in bitboard
@@ -433,7 +435,9 @@ namespace ChessGame
                 B = B >> (i * 8);
                 B = B << (i * 8);
                 //Outside the board (Left)
-                B = B & ~(file_H >> i);
+                //Shifting to left makes the file_H bitboard go down a file which means that it can miss the piece
+                //So we have to shift the file_H bitboard up by 1 after the bitwise operation
+                B = B & ~((file_H >> i) << 8);
                 //Friendly piece in the way
                 B = B & ~(friendlyPieces << (i * 7));
                 //No bits in bitboard

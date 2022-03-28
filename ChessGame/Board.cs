@@ -29,7 +29,7 @@ namespace ChessGame
 
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
-        private string FEN = "2R5/1B1b1k2/8/3b4/3K1B2/8/3BB3/8 w - - 0 1";
+        private string FEN = "5k2/8/8/8/8/8/8/3BB3 w - - 0 1";
 
 
         //For bitboards IMPROVEMENT _________________________ *****
@@ -400,6 +400,11 @@ namespace ChessGame
 
 
                             Moves.whiteTurn = !Moves.whiteTurn;
+                            
+                            
+                            // REVERSE BOARD (In future... to develop)
+                            //BitboardOutput(Moves.whiteTurn);
+
 
                             //Update the square
                             squares[square].piece = tempPiece;
