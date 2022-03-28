@@ -63,7 +63,7 @@ namespace ChessGame
                 {
                     case Piece.King:
                         //King legal moves bitboard
-                        legalULong = LegalMoves_King(pieceLocation & Board.wK, whitePieces);
+                        legalULong = LegalMoves_King(pieceLocation & Board.wK, whitePieces, blackPieces, whiteTurn, true);
                         break;
 
                     case Piece.Pawn:
@@ -99,7 +99,7 @@ namespace ChessGame
                 {
                     case Piece.King:
                         //King legal moves bitboard
-                        legalULong = LegalMoves_King(pieceLocation & Board.bK, blackPieces);
+                        legalULong = LegalMoves_King(pieceLocation & Board.bK, blackPieces, whitePieces, whiteTurn, true);
                         break;
 
                     case Piece.Pawn:
@@ -331,13 +331,13 @@ namespace ChessGame
         public static ulong LegalMoves_Bishop(ulong B, ulong friendlyPieces, ulong enemyPieces) //Bishops
         {
             ulong legalMoves = 0L;
-
-            //Have to run loop until there is a piece to the right of the bishop
-
+            //Replace bitboard since it gets removed
+            ulong fixedB = B;
 
             //Moving Diagonally Top-Left
             for (int i = 1; i < 8; i++)
             {
+                /*
                 //If out side the board top
                 if (B << (i * 8) == 0L)
                 {
@@ -359,96 +359,92 @@ namespace ChessGame
                 {
                     legalMoves = legalMoves | B << (i * 9);
                     break;
-                }
+                }*/
 
+                //Outside the board (Top)
+                B = B << (i * 8);
+                B = B >> (i * 8);
+                //Outside the board (Left)
+                B = B & ~(file_H >> i);
+                //Friendly piece in the way
+                B = B & ~(friendlyPieces >> (i * 9));
+                //No bits in bitboard
+                if (B == 0L)
+                {
+                    break;
+                }
                 legalMoves = legalMoves | (B << (i * 9) & ~friendlyPieces);
+                //Enemy piece in the way
+                B = B & ~(enemyPieces >> (i * 9));
             }
 
+            //Restore bitboard
+            B = fixedB;
             //Moving Diagonally Top-Right
             for (int i = 1; i < 8; i++)
             {
-                //If out side the board top
-                if (B << (i * 8) == 0L)
+                //Outside the board (Top)
+                B = B << (i * 8);
+                B = B >> (i * 8);
+                //Outside the board (Right)
+                B = B & ~(file_A << i);
+                //Friendly piece in the way
+                B = B & ~(friendlyPieces >> (i * 7));
+                //No bits in bitboard
+                if (B == 0L)
                 {
                     break;
                 }
-
-                //If outside the board, right
-                else if ((B >> i & file_A) != 0L)
-                {
-                    break;
-                }
-
-                else if ((B << (i * 7) & friendlyPieces) != 0L)
-                {
-                    break;
-                }
-
-                else if ((B << (i * 7) & enemyPieces) != 0L)
-                {
-                    legalMoves = legalMoves | B << (i * 7);
-                    break;
-                }
-
+                //Append legal moves
                 legalMoves = legalMoves | (B << (i * 7) & ~friendlyPieces);
+                //Enemy piece in the way
+                B = B & ~(enemyPieces >> (i * 7));
             }
 
+            //Restore bitboard
+            B = fixedB;
             //Moving Diagonally Bottom-Right
             for (int i = 1; i < 8; i++)
             {
-                //If out side the board down
-                if (B >> (i * 8) == 0L)
+                //Outside the board (Bottom)
+                B = B >> (i * 8);
+                B = B << (i * 8);
+                //Outside the board (Right)
+                B = B & ~(file_A << i);
+                //Friendly piece in the way
+                B = B & ~(friendlyPieces << (i * 9));
+                //No bits in bitboard
+                if (B == 0L)
                 {
                     break;
                 }
-
-                //If outside the board, right
-                else if ((B >> i & file_A) != 0L)
-                {
-                    break;
-                }
-
-                else if ((B >> (i * 9) & friendlyPieces) != 0L)
-                {
-                    break;
-                }
-
-                else if ((B >> (i * 9) & enemyPieces) != 0L)
-                {
-                    legalMoves = legalMoves | B >> (i * 9);
-                    break;
-                }
-
+                //Append legal moves
                 legalMoves = legalMoves | (B >> (i * 9) & ~friendlyPieces);
+                //Enemy piece in the way
+                B = B & ~(enemyPieces << (i * 9));
             }
 
+            //Restore bitboard
+            B = fixedB;
             //Moving Diagonally Bottom-Left
             for (int i = 1; i < 8; i++)
             {
-                //If out side the board down
-                if (B >> (i * 8) == 0L)
+                //Outside the board (Bottom)
+                B = B >> (i * 8);
+                B = B << (i * 8);
+                //Outside the board (Left)
+                B = B & ~(file_H >> i);
+                //Friendly piece in the way
+                B = B & ~(friendlyPieces << (i * 7));
+                //No bits in bitboard
+                if (B == 0L)
                 {
                     break;
                 }
-
-                //If outside the board, left
-                else if ((B << i & file_H) != 0L)
-                {
-                    break;
-                }
-
-                else if ((B >> (i * 7) & friendlyPieces) != 0L)
-                {
-                    break;
-                }
-
-                else if ((B >> (i * 7) & enemyPieces) != 0L)
-                {
-                    legalMoves = legalMoves | B >> (i * 7);
-                    break;
-                }
-
+                //Append legal moves
                 legalMoves = legalMoves | (B >> (i * 7) & ~friendlyPieces);
+                //Enemy piece in the way
+                B = B & ~(enemyPieces << (i * 7));
             }
 
             return legalMoves;
@@ -462,15 +458,32 @@ namespace ChessGame
             return legalMoves | LegalMoves_Bishop(Q, friendlyPieces, enemyPieces) | LegalMoves_Rook(Q, friendlyPieces, enemyPieces) ;
         }
 
-        public static ulong LegalMoves_King(ulong K, ulong friendlyPieces) // King || Need to consider attacked squares
+        public static ulong LegalMoves_King(ulong K, ulong friendlyPieces, ulong enemyPieces, bool whiteTurn, bool legal) // King || Need to consider attacked squares
         {
             ulong legalMoves = 0L;
+            ulong attackedSquares = 0L;
 
-            //Generate attacked squares
+            //Check if legal since it may be generating for attackedSquares, so it avoids an overlap
+            if (legal)
+            {
+                //Generate attacked squares
+                if (whiteTurn) //White moving
+                {
+                    //Generate black moves to show the squares they are attacking
+                    attackedSquares = AttackedSquares(Board.bK, Board.bQ, Board.bR, Board.bB, Board.bN, Board.bP, K, friendlyPieces, enemyPieces, whiteTurn);
+                }
+                else // Black moving
+                {
+                    //Generate white moves to show the squares they are attacking
+                    attackedSquares = AttackedSquares(Board.wK, Board.wQ, Board.wR, Board.wB, Board.wN, Board.wP, K, friendlyPieces, enemyPieces, whiteTurn);
+                }
+            }
 
             //King move all around but only by one square
             legalMoves = legalMoves | (K << 1 & ~friendlyPieces | K << 9 & ~friendlyPieces | K >> 7 & ~friendlyPieces) & ~file_H | K << 8 & ~friendlyPieces | (K << 7 & ~friendlyPieces |
                 K >> 1 & ~friendlyPieces | K >> 9 & ~friendlyPieces) & ~file_A | K >> 8 & ~friendlyPieces;
+            //Filter illegal moves
+            legalMoves = legalMoves & ~attackedSquares;
 
             return legalMoves;
         }
@@ -544,11 +557,8 @@ namespace ChessGame
 
             //Since we are generating moves for the enemy, we would assume that we would have to give enemyPieces bitboard for the friendlyPieces arguement, etc, but it would be invalid
             //because we have to show that our piece protects our own piece by attacking the square our own piece is on so the enemy king cant capture it.
-            attackedSquares = attackedSquares | pawnAttackingSquares | LegalMoves_King(eK, friendlyPieces) | LegalMoves_Knight(eN, friendlyPieces) | LegalMoves_Rook(eR, friendlyPieces, enemyPieces);
-
-            //Must be individual generations for these:
-            // Bishops, Rooks and Queens
-            //attackedSquares = attackedSquares | LegalMoves_Bishop(eB, friendlyPieces, enemyPieces) | LegalMoves_Rook(eR, friendlyPieces, enemyPieces) | LegalMoves_Queen(eQ, friendlyPieces, enemyPieces);
+            attackedSquares = attackedSquares | pawnAttackingSquares | LegalMoves_King(eK, friendlyPieces, enemyPieces, whiteTurn, false) | LegalMoves_Knight(eN, friendlyPieces) | 
+                LegalMoves_Rook(eR, friendlyPieces, enemyPieces) | LegalMoves_Bishop(eB, friendlyPieces, enemyPieces) | LegalMoves_Queen(eQ, friendlyPieces, enemyPieces);
 
             return attackedSquares;
         }
