@@ -29,7 +29,7 @@ namespace ChessGame
 
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
-        private string FEN = "1krq2nr/1ppp1p1p/Bn2b3/3b2p1/3P3P/p4N2/PPP3P1/RNBQK2R w KQ - 0 1";
+        private string FEN = "3r1R2/2k1r3/2R5/7R/2r1R3/4K3/3RP3/1R6 w - - 0 1";
 
 
         //For bitboards IMPROVEMENT _________________________ *****
@@ -101,6 +101,26 @@ namespace ChessGame
 
                 pieceSelected = false;
                 Moves.whiteTurn = true;
+            }
+
+            //'D' is pressed -- for debugging purposes
+            if (Keyboard.GetState().IsKeyDown(Keys.D))
+            {
+
+                //Clear board from dots and target squares
+                for (int i = 0; i < 64; i++)
+                {
+                    squares[i].targetSquare = false;
+                    squares[i].dot = false;
+                }
+
+
+                foreach (int e in Moves.DebugSquares())
+                {
+                    squares[e].targetSquare = true;
+                }
+
+                
             }
 
             PieceSelection();
