@@ -56,6 +56,11 @@ namespace ChessGame
             List<int> legalSquares = new List<int>();
             ulong legalULong = 0L;
 
+            if(KingHits(Board.bK, false, whitePieces, blackPieces) != 0L)
+            {
+                System.Diagnostics.Debug.WriteLine("CHECKED BY A KNIGHT");
+            }
+
             //Check if piece is white
             if (((piece & Piece.White) == Piece.White) & whiteTurn)
             {
@@ -501,9 +506,28 @@ namespace ChessGame
         //This is played after an assumed move
 
         //Check for checks
-        List<int> KingHits()
+        public static ulong KingHits(ulong k, bool whiteTurn, ulong friendlyPieces, ulong enemyPieces)
         {
-            return null;
+
+            
+            ulong aN = 0L;
+
+            //LegalMoves_Knight(k, friendlyPieces) & (enemyPieces & (Board.wN | Board.bN) -- Method for not knowing the colour
+            if (whiteTurn) //White to play (if check then black just checked white)
+            {
+                
+
+            }
+
+            else //Black to play (if check then white just checked black)
+            {
+                //Check from king square
+                aN = LegalMoves_Knight(k, enemyPieces) & Board.wN;
+            }
+            
+
+
+            return aN;
         }
 
 
