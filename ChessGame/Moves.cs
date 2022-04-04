@@ -48,7 +48,7 @@ namespace ChessGame
         {
             whitePieces = Board.wK | Board.wQ | Board.wR | Board.wB | Board.wN | Board.wP;
             blackPieces = Board.bK | Board.bQ | Board.bR | Board.bB | Board.bN | Board.bP;
-            emptySquares = ~(whitePieces | blackPieces); 
+            emptySquares = ~(whitePieces | blackPieces);
         }
 
         //For when player selects a piece manually
@@ -58,9 +58,6 @@ namespace ChessGame
 
             List<int> legalSquares = new List<int>();
             ulong legalULong = 0L;
-
-
-            
 
 
             //Check if piece is white
@@ -137,41 +134,41 @@ namespace ChessGame
 
 
 
-            else // Not in check, can play normally
-            {
-                switch (piece & 0b00111)
+                else // Not in check, can play normally
                 {
-                    case Piece.King:
-                        //King legal moves bitboard
-                        legalULong = LegalMoves_King(pieceLocation & Board.wK, whitePieces, blackPieces, whiteTurn, true);
-                        break;
+                    switch (piece & 0b00111)
+                    {
+                        case Piece.King:
+                            //King legal moves bitboard
+                            legalULong = LegalMoves_King(pieceLocation & Board.wK, whitePieces, blackPieces, whiteTurn, true);
+                            break;
 
-                    case Piece.Pawn:
-                        //White pawn legal moves bitboard
-                        legalULong = LegalMoves_WPawn(pieceLocation & Board.wP);
-                        break;
+                        case Piece.Pawn:
+                            //White pawn legal moves bitboard
+                            legalULong = LegalMoves_WPawn(pieceLocation & Board.wP);
+                            break;
 
-                    case Piece.Knight:
-                        //Knight legal moves bitboard
-                        legalULong = LegalMoves_Knight(pieceLocation & Board.wN, whitePieces);
-                        break;
+                        case Piece.Knight:
+                            //Knight legal moves bitboard
+                            legalULong = LegalMoves_Knight(pieceLocation & Board.wN, whitePieces);
+                            break;
 
-                    case Piece.Bishop:
-                        //Bishop legal moves bitboard
-                        legalULong = LegalMoves_Bishop(pieceLocation & Board.wB, whitePieces, blackPieces);
-                        break;
+                        case Piece.Bishop:
+                            //Bishop legal moves bitboard
+                            legalULong = LegalMoves_Bishop(pieceLocation & Board.wB, whitePieces, blackPieces);
+                            break;
 
-                    case Piece.Rook:
-                        //Rook legal moves bitboard
-                        legalULong = LegalMoves_Rook(pieceLocation & Board.wR, whitePieces, blackPieces);
-                        break;
+                        case Piece.Rook:
+                            //Rook legal moves bitboard
+                            legalULong = LegalMoves_Rook(pieceLocation & Board.wR, whitePieces, blackPieces);
+                            break;
 
-                    case Piece.Queen:
-                        //Queen legal moves bitboard
-                        legalULong = LegalMoves_Queen(pieceLocation & Board.wQ, whitePieces, blackPieces);
-                        break;
+                        case Piece.Queen:
+                            //Queen legal moves bitboard
+                            legalULong = LegalMoves_Queen(pieceLocation & Board.wQ, whitePieces, blackPieces);
+                            break;
+                    }
                 }
-            }
 
             }
             else if (!whiteTurn) //Black piece
@@ -271,7 +268,7 @@ namespace ChessGame
             {
 
                 if (((legalULong >> i) & 1L) == 1L) { legalSquares.Add(63 - i); }
-                
+
             }
 
             return legalSquares;
@@ -317,7 +314,7 @@ namespace ChessGame
             return legalMoves;
         }
 
-        
+
 
 
         public static ulong LegalMoves_Knight(ulong N, ulong friendlyPieces) //Knights
@@ -359,7 +356,7 @@ namespace ChessGame
 
 
             //Have to run loop until there is a piece to the right of the rook
-            
+
             //Moving Horizontally Right
             for (int i = 1; i < 8; i++)
             {
@@ -424,14 +421,14 @@ namespace ChessGame
             //Moving Vertically Down
             for (int i = 1; i < 8; i++)
             {
-                
+
                 //Can't go further down
                 R = R >> (i * 8);
                 R = R << (i * 8);
                 //Friendly piece in the way
                 R = R & ~(friendlyPieces << (i * 8));
                 //No more bits
-                if (R == 0L) 
+                if (R == 0L)
                 {
                     break;
                 }
@@ -596,7 +593,7 @@ namespace ChessGame
             ulong legalMoves = 0L;
 
             //Considering that the queen is both rook and bishop combined
-            return legalMoves | LegalMoves_Bishop(Q, friendlyPieces, enemyPieces) | LegalMoves_Rook(Q, friendlyPieces, enemyPieces) ;
+            return legalMoves | LegalMoves_Bishop(Q, friendlyPieces, enemyPieces) | LegalMoves_Rook(Q, friendlyPieces, enemyPieces);
         }
 
         public static ulong LegalMoves_King(ulong K, ulong friendlyPieces, ulong enemyPieces, bool whiteTurn, bool legal) // King || Need to consider attacked squares
@@ -633,7 +630,7 @@ namespace ChessGame
 
 
         //Generating each move from king and checking for same piece (Very efficient)
-        
+
         //Generate from king and each hit we check what piece it is
         //This is played after an assumed move
 
@@ -767,7 +764,7 @@ namespace ChessGame
 
             //Since we are generating moves for the enemy, we would assume that we would have to give enemyPieces bitboard for the friendlyPieces arguement, etc, but it would be invalid
             //because we have to show that our piece protects our own piece by attacking the square our own piece is on so the enemy king cant capture it.
-            attackedSquares = attackedSquares | pawnAttackingSquares | LegalMoves_King(eK, friendlyPieces, enemyPieces, whiteTurn, false) | LegalMoves_Knight(eN, friendlyPieces) | 
+            attackedSquares = attackedSquares | pawnAttackingSquares | LegalMoves_King(eK, friendlyPieces, enemyPieces, whiteTurn, false) | LegalMoves_Knight(eN, friendlyPieces) |
                 LegalMoves_Rook(eR, friendlyPieces, enemyPieces) | LegalMoves_Bishop(eB, friendlyPieces, enemyPieces) | LegalMoves_Queen(eQ, friendlyPieces, enemyPieces);
 
             return attackedSquares;
@@ -787,9 +784,9 @@ namespace ChessGame
             for (int i = 0; i < 64; i++)
             {
 
-                if (((squares >> i) & 1L) == 1L) 
-                { 
-                    debugSquares.Add(63 - i); 
+                if (((squares >> i) & 1L) == 1L)
+                {
+                    debugSquares.Add(63 - i);
                 }
 
             }
@@ -797,5 +794,38 @@ namespace ChessGame
             return debugSquares;
 
         }
+
+        struct LegalMoves
+        {
+            uint from;
+            uint to;
+            uint moveType;
+
+            uint move;
+
+            //https://chess.stackexchange.com/questions/18017/whats-the-right-approach-of-storing-moves-generated-using-bitboards
+            public LegalMoves(int move)
+            {
+                //0000 0000 0000 0000  to store moveType | to | from
+                //From: 0000 0000 0011 1111
+                this.move = 
+                //To: 0000 1111 1100 0000
+
+                //moveType: 0011 0000 0000 0000
+
+
+                this.move
+            }
+            
+
+
+        }
+
+
+        enum MoveType
+        {
+            QUIET, CAPTURE, EVASION, ENPASSANT, CASTLING
+        }
+
     }
 }
