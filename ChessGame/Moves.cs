@@ -352,6 +352,7 @@ namespace ChessGame
 
         public static ulong LegalMoves_Rook(ulong R, ulong friendlyPieces, ulong enemyPieces) //Rooks
         {
+
             ulong legalMoves = 0L;
             //Replace bitboard since it gets removed
             ulong fixedR = R;
@@ -362,7 +363,7 @@ namespace ChessGame
             //Moving Horizontally Right
             for (int i = 1; i < 8; i++)
             {
-                /*
+                /* Inefficient method
                 //If outside the board
                 if ((R >> i & file_A) != 0L)
                 {
@@ -822,13 +823,91 @@ namespace ChessGame
 
         uint[] GenerateAllMoves() // 0000 0000 0000 0000  to store: flag | to | from
         {
-            Square[] squares = Board.squares;
-            //Go through each square and generate moves for that square, including the piece that's on the square
-            for(int i = 0; i < 64; i++)
-            {
-                switch (squares[i].piece)
-                {
+            List<uint> pieces = Board.piecesInfo;
+            //Used for getting all the ulong bitboard move locations
+            ulong legalULong = 0L;
 
+            //Go through each square and generate moves for that square, including the piece that's on the square
+            foreach(uint e in pieces)
+            {
+                legalULong = 0L;
+
+                if (whiteTurn & ((e & Piece.White) >> 6 != 0L)) // White to play and the piece is white
+                {
+                    //Create the bitboard for the piece location
+                    Board.BinaryStringToBitboard(e & 0b111111)
+
+                    switch (e >> 6 & 0b00111)
+                    {
+                        case Piece.King:
+                            //King legal moves bitboard
+                            legalULong = LegalMoves_King(e & 0b111111, whitePieces, blackPieces, whiteTurn, true);
+                            break;
+
+                        case Piece.Pawn:
+                            //White pawn legal moves bitboard
+                            legalULong = LegalMoves_WPawn(e & 0b111111);
+                            break;
+
+                        case Piece.Knight:
+                            //Knight legal moves bitboard
+                            legalULong = LegalMoves_Knight(e & 0b111111, whitePieces);
+                            break;
+
+                        case Piece.Bishop:
+                            //Bishop legal moves bitboard
+                            legalULong = LegalMoves_Bishop(e & 0b111111, whitePieces, blackPieces);
+                            break;
+
+                        case Piece.Rook:
+                            //Rook legal moves bitboard
+                            legalULong = LegalMoves_Rook(e & 0b111111, whitePieces, blackPieces);
+                            break;
+
+                        case Piece.Queen:
+                            //Queen legal moves bitboard
+                            legalULong = LegalMoves_Queen(e & 0b111111, whitePieces, blackPieces);
+                            break;
+                    }
+                }
+
+                else if (!whiteTurn & ((e & Piece.Black) >> 6 != 0L)) //Black to play and the piece is black
+                {
+                    //Create the bitboard for the piece location
+                    Board.BinaryStringToBitboard((int)e & 0b111111);
+
+                    switch (e >> 6 & 0b00111)
+                    {
+                        case Piece.King:
+                            //King legal moves bitboard
+                            legalULong = LegalMoves_King(e & 0b111111, blackPieces, whitePieces, whiteTurn, true);
+                            break;
+
+                        case Piece.Pawn:
+                            //Black pawn legal moves
+                            legalULong = LegalMoves_BPawn(e & 0b111111);
+                            break;
+
+                        case Piece.Knight:
+                            //Knight legal moves bitboard
+                            legalULong = LegalMoves_Knight(e & 0b111111, blackPieces);
+                            break;
+
+                        case Piece.Bishop:
+                            //Bishop legal moves bitboard
+                            legalULong = LegalMoves_Bishop(e & 0b111111, blackPieces, whitePieces);
+                            break;
+
+                        case Piece.Rook:
+                            //Rook legal moves bitboard
+                            legalULong = LegalMoves_Rook(e & 0b111111, blackPieces, whitePieces);
+                            break;
+
+                        case Piece.Queen:
+                            //Queen legal moves bitboard
+                            legalULong = LegalMoves_Queen(e & 0b111111, blackPieces, whitePieces);
+                            break;
+                    }
                 }
             }
         } 

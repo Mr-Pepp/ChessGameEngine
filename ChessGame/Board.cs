@@ -14,8 +14,8 @@ namespace ChessGame
         //pieceInfo //Piece information Piece
         //Stores the information of all the pieces on the board
         // 
-        // Piece Information: Colour | Piece, Flag | To | From 
-        List<uint[]> piecesInfo = new List<uint[]>() { };
+        // Piece Information: Colour | Piece | Location
+        public static List<int> piecesInfo = new List<int>() { };
 
 
         Dictionary<string, Color> _colorDic;
@@ -613,22 +613,59 @@ namespace ChessGame
                 }
                 else { sideIndex = i; }
 
-                //Assign squares; //Assing to piece information // Piece Information: Colour | Piece, Flag | To | From 
-                if (((wK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.King;
-                    // Piece Information: Colour | Piece, Flag | To | From 
-                    piecesInfo[i][0] = Piece.White | Piece.King; piecesInfo[i][1] = 0 | (uint)i | 0; }
-                else if (((wQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Queen; }
-                else if (((wR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Rook; }
-                else if (((wB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Bishop; }
-                else if (((wN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Knight; }
-                else if (((wP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Pawn; }
+                
 
-                else if (((bK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.King; }
-                else if (((bQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Queen; }
-                else if (((bR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Rook; }
-                else if (((bB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Bishop; }
-                else if (((bN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Knight; }
-                else if (((bP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Pawn; }
+                //Assign squares; //Assing to piece information // Piece Information: Colour | Piece, Flag | To | From 
+                //**Implement flags and other piece information
+                if (((wK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.King;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.White | Piece.King) << 6 | i; }
+
+                else if (((wQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Queen;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.White | Piece.Queen) << 6 | i;
+                }
+                else if (((wR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Rook;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.White | Piece.Rook) << 6 | i;
+                }
+                else if (((wB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Bishop;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.White | Piece.Bishop) << 6 | i;
+                }
+                else if (((wN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Knight;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.White | Piece.Knight) << 6 | i;
+                }
+                else if (((wP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Pawn;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.White | Piece.Pawn) << 6 | i;
+                }
+
+                else if (((bK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.King;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.Black | Piece.King) << 6 | i;
+                }
+                else if (((bQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Queen;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.Black | Piece.Queen) << 6 | i;
+                }
+                else if (((bR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Rook;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.Black | Piece.Rook) << 6 | i;
+                }
+                else if (((bB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Bishop;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.Black | Piece.Bishop) << 6 | i;
+                }
+                else if (((bN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Knight;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.Black | Piece.Knight) << 6 | i;
+                }
+                else if (((bP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Pawn;
+                    // Piece Information: Colour | Piece, Location 
+                    piecesInfo[i] = (Piece.Black | Piece.Pawn) << 6 | i;
+                }
                 
                 else { squares[sideIndex].piece = Piece.None; }
 
