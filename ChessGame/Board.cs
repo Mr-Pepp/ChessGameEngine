@@ -110,6 +110,12 @@ namespace ChessGame
                 Moves.whiteTurn = true;
             }
 
+            if (Keyboard.GetState().IsKeyDown(Keys.T))
+            {
+                System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
+      
+            }
+
             //'D' is pressed -- for debugging purposes
             if (Keyboard.GetState().IsKeyDown(Keys.D))
             {
@@ -598,6 +604,9 @@ namespace ChessGame
 
             Moves.InitBitboards();
 
+            //Init PiecesInfo
+            piecesInfo = new List<int>();
+
 
             //wK = Moves.LegalMoves_WPawn(wP);
 
@@ -613,61 +622,65 @@ namespace ChessGame
                 }
                 else { sideIndex = i; }
 
-                
 
-                //Assign squares; //Assing to piece information // Piece Information: Colour | Piece, Flag | To | From 
+
+                //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
                 //**Implement flags and other piece information
                 if (((wK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.King;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.White | Piece.King) << 6 | i; }
-
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.White | Piece.King) << 6 | (63 - i));    
+                }
                 else if (((wQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Queen;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.White | Piece.Queen) << 6 | i;
+                    // Piece Information: Colour | Piece | Location 
+                    piecesInfo.Add((Piece.White | Piece.Queen) << 6 | (63 - i));
                 }
                 else if (((wR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Rook;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.White | Piece.Rook) << 6 | i;
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.White | Piece.Rook) << 6 | (63 - i));
                 }
                 else if (((wB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Bishop;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.White | Piece.Bishop) << 6 | i;
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.White | Piece.Bishop) << 6 | (63 - i));
+
+                    System.Diagnostics.Debug.WriteLine((63 - i));
                 }
                 else if (((wN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Knight;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.White | Piece.Knight) << 6 | i;
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.White | Piece.Knight) << 6 | (63 - i));
                 }
                 else if (((wP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Pawn;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.White | Piece.Pawn) << 6 | i;
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.White | Piece.Pawn) << 6 | (63 - i));
                 }
 
                 else if (((bK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.King;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.Black | Piece.King) << 6 | i;
+                    // Piece Information: Colour | Piece | Location 
+                    piecesInfo.Add((Piece.Black | Piece.King) << 6 | (63 - i));
                 }
                 else if (((bQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Queen;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.Black | Piece.Queen) << 6 | i;
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.Black | Piece.Queen) << 6 | (63 - i));
                 }
                 else if (((bR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Rook;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.Black | Piece.Rook) << 6 | i;
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.Black | Piece.Rook) << 6 | (63 - i));
                 }
                 else if (((bB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Bishop;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.Black | Piece.Bishop) << 6 | i;
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.Black | Piece.Bishop) << 6 | (63 - i));
                 }
                 else if (((bN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Knight;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.Black | Piece.Knight) << 6 | i;
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.Black | Piece.Knight) << 6 | (63 - i));
                 }
                 else if (((bP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Pawn;
-                    // Piece Information: Colour | Piece, Location 
-                    piecesInfo[i] = (Piece.Black | Piece.Pawn) << 6 | i;
+                    // Piece Information: Colour | Piece | Location
+                    piecesInfo.Add((Piece.Black | Piece.Pawn) << 6 | (63 - i));
                 }
                 
                 else { squares[sideIndex].piece = Piece.None; }
+
+                
 
                 squares[sideIndex].AssignPiece();
             }
