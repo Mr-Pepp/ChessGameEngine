@@ -8,8 +8,15 @@ namespace ChessGame
 {
     class Board
     {
-        private Square[] squares = new Square[64]; //1D array for FEN
+        public static Square[] squares = new Square[64]; //1D array for FEN
         private OutsideBoard outsideBoard;
+
+        //pieceInfo //Piece information Piece
+        //Stores the information of all the pieces on the board
+        // 
+        // Piece Information: Colour | Piece, Flag | To | From 
+        List<uint[]> piecesInfo = new List<uint[]>() { };
+
 
         Dictionary<string, Color> _colorDic;
 
@@ -606,7 +613,10 @@ namespace ChessGame
                 }
                 else { sideIndex = i; }
 
-                if (((wK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.King; }
+                //Assign squares; //Assing to piece information // Piece Information: Colour | Piece, Flag | To | From 
+                if (((wK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.King;
+                    // Piece Information: Colour | Piece, Flag | To | From 
+                    piecesInfo[i][0] = Piece.White | Piece.King; piecesInfo[i][1] = 0 | (uint)i | 0; }
                 else if (((wQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Queen; }
                 else if (((wR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Rook; }
                 else if (((wB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Bishop; }

@@ -44,6 +44,8 @@ namespace ChessGame
         static ulong blockMask;
         static ulong captureMask;
 
+        static ulong moves;
+
         public static void InitBitboards()
         {
             whitePieces = Board.wK | Board.wQ | Board.wR | Board.wB | Board.wN | Board.wP;
@@ -774,7 +776,6 @@ namespace ChessGame
         //used for debugging and returning the squares for bitboard
         public static List<int> DebugSquares()
         {
-
             List<int> debugSquares = new List<int>();
 
             //Generate squares that are attacked by black pieces sicne since it's black's turn in this debugging example
@@ -792,39 +793,94 @@ namespace ChessGame
             }
 
             return debugSquares;
-
         }
 
-        struct LegalMoves
+        public struct MakeMove
         {
-            uint from;
-            uint to;
-            uint moveType;
-
             uint move;
 
             //https://chess.stackexchange.com/questions/18017/whats-the-right-approach-of-storing-moves-generated-using-bitboards
-            public LegalMoves(int move)
+             public MakeMove(uint from, uint to, uint flag)
             {
                 //0000 0000 0000 0000  to store moveType | to | from
                 //From: 0000 0000 0011 1111
-                this.move = 
+                from = 0b111111 & from;
                 //To: 0000 1111 1100 0000
-
+                to = (0b111111 & to) << 6;
                 //moveType: 0011 0000 0000 0000
+                flag = (0b11 & flag) << 12;
 
-
-                this.move
+                this.move = flag | to | from;
             }
-            
+        }
 
-
+        enum Flag
+        {
+            QUIET, CAPTURE, EVASION, ENPASSANT, CASTLING
         }
 
 
-        enum MoveType
+        uint[] GenerateAllMoves() // 0000 0000 0000 0000  to store: flag | to | from
         {
-            QUIET, CAPTURE, EVASION, ENPASSANT, CASTLING
+            Square[] squares = Board.squares;
+            //Go through each square and generate moves for that square, including the piece that's on the square
+            for(int i = 0; i < 64; i++)
+            {
+                switch (squares[i].piece)
+                {
+
+                }
+            }
+        } 
+
+        uint[] GetValidMoves()
+        {
+            uint[] moves;
+
+            if (whiteTurn) // White to move
+            {
+                //First check whether youre in check
+                // [Knights, Bishops, Rooks, Queens, Pawns]
+                ulong[] checks = KingHits(Board.wK, whiteTurn, whitePieces, blackPieces);
+
+                if (checks.Length > 0)
+                {
+                    //Generate legal king moves
+
+                    if (checks.Length == 1) // Only one check, king can move, piece can block, can be captured
+                    {
+                        //Capture Checker: use same method as for king to see if there are any pieces that can capture it
+
+
+                    }
+                }
+                else // Not in check, generate all moves
+                {
+
+                }
+            }
+            else // Black to Move
+            {
+
+            }
+
+            return moves;
+        }
+
+        //Generate the moves & store them
+        struct MoveGeneration
+        {
+            public List<uint[]> moves;
+
+            void GenerateMoves()
+            {
+                
+                
+                
+
+
+
+            }
         }
 
     }
