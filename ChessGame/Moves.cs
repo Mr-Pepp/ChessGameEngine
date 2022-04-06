@@ -821,6 +821,12 @@ namespace ChessGame
         }
 
 
+        //Pinned Piece Solution:
+        //Calculate all sliding piece moves (for each sliding piece)
+        //Calculating sliding piece moves from the king (for each sliding piece)
+        //If bitboards overlap with the friendly pieces then can't move that piece
+
+        //Will not generate pinned piece moves
         public static List<int> GenerateAllMoves() // 0000 0000 0000 0000  to store: flag | to | from
         {
             List<int> legalSquares = new List<int>();
@@ -830,8 +836,8 @@ namespace ChessGame
             //Used for getting all the ulong bitboard move locations
             ulong legalULong = 0L;
 
-            System.Diagnostics.Debug.WriteLine(pieces[1] & 0b11111 << 6);
-
+            //System.Diagnostics.Debug.WriteLine(pieces[1] & 0b11111 << 6);
+            
             //Go through each square and generate moves for that square, including the piece that's on the square
             foreach (int e in pieces)
             {
@@ -916,12 +922,12 @@ namespace ChessGame
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine(legalULong);
+                //System.Diagnostics.Debug.WriteLine(legalULong);
                 //Append to list the legal squares
                 for (int i = 0; i < 64; i++)
                 {
-
-                    if (((legalULong >> i) & 1L) == 1L) { legalSquares.Add(63 - i); }
+                    //flag | to | from
+                    if (((legalULong >> i) & 1L) == 1L) { legalSquares.Add((63 - i) << 6 | (e & 0b111111)); }
 
                 }
 

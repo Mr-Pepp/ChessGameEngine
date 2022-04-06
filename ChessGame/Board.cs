@@ -198,15 +198,21 @@ namespace ChessGame
                 }
             }
 
-
             goto loopEnd;
 
-            //needs changing. Used since we are breaking from a nested loop
+
+            //Used since we are breaking from a nested loop
             loopEnd:
 
             //holding the piece
             if (pieceSelected && mousePressed)
             {
+                //Generate all the moves and add it to the moves list
+                //Then export all the (to) moves into another list based on the (from) matching the current square
+                List<int> moves = Moves.GenerateAllMoves();
+
+
+
                 //place piece at mouse point ---- !! Future make this run only once !!
                 mousePieceRect = new Rectangle(Game1.mousePoint.X - (_squareSize / 2), Game1.mousePoint.Y - (_squareSize / 2), _squareSize, _squareSize);
 
@@ -641,8 +647,6 @@ namespace ChessGame
                 else if (((wB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Bishop;
                     // Piece Information: Colour | Piece | Location
                     piecesInfo.Add((Piece.White | Piece.Bishop) << 6 | (63 - i));
-
-                    System.Diagnostics.Debug.WriteLine((63 - i));
                 }
                 else if (((wN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Knight;
                     // Piece Information: Colour | Piece | Location
