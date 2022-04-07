@@ -45,6 +45,15 @@ namespace ChessGame
         public static ulong wK = 0L, wQ = 0L, wR = 0L, wN = 0L, wB = 0L, wP = 0L, bK = 0L, bQ = 0L, bR = 0L, bN = 0L, bB = 0L, bP = 0L;
 
 
+        //For when the piece is selected
+        //See if the moves have been generated for the piece selection
+        bool generateMoves;
+        //Make a list of moves that are only appropriate 
+        List<int> fromMoves;
+        //For storing the generated moves in current position
+        List<int> moves;
+
+
         public Board(int squareSize, Vector2 initPos, Dictionary<string, Color> colorDic )
         {
             _initPos = initPos;
@@ -192,6 +201,24 @@ namespace ChessGame
                             //set piece selected as true
                             pieceSelected = true;
 
+
+                            //Generate all the moves and add it to the moves list
+                            //Then export all the (to) moves into another list based on the (from) matching the current square
+
+                            //To only run the move generation once
+                            moves = Moves.GenerateAllMoves();
+                            fromMoves = new List<int>();
+
+                            //Go through the generated moves and select the appropriate move
+                            foreach (int e in moves)
+                            {
+                                //If the from destination is correct then store it in the list that allow the piece to go to the right square
+                                if ((e & 0b111111) == square) //flag | to | from
+                                {
+                                    fromMoves.Add(e);
+                                }
+                            }
+
                             goto loopEnd;
                         }
                     }
@@ -207,29 +234,31 @@ namespace ChessGame
             //holding the piece
             if (pieceSelected && mousePressed)
             {
-                //Generate all the moves and add it to the moves list
-                //Then export all the (to) moves into another list based on the (from) matching the current square
-                List<int> moves = Moves.GenerateAllMoves();
-
-
 
                 //place piece at mouse point ---- !! Future make this run only once !!
                 mousePieceRect = new Rectangle(Game1.mousePoint.X - (_squareSize / 2), Game1.mousePoint.Y - (_squareSize / 2), _squareSize, _squareSize);
 
                 //Need to find a way to do this with bitboards
-                foreach(int e in Moves.CheckLegalMoves(tempPiece, square))
+                foreach(int e in fromMoves)
                 {
+
+                    //System.Diagnostics.Debug.WriteLine(e);
+
+                    int to = e >> 6 & 0b111111;
+                    
+                    //System.Diagnostics.Debug.WriteLine(to);
+
                     //Show available moves
-                    if (squares[e].piece == 0)
+                    if (squares[to].piece == 0)
                     {
-                        squares[e].dot = true;
+                        squares[to].dot = true;
                     }
 
                     else // there is a piece
                     {
                         //colour square to indicate the ability to take the piece
 
-                        squares[e].targetSquare = true;
+                        squares[to].targetSquare = true;
                     }
                 }
                 
@@ -245,11 +274,13 @@ namespace ChessGame
                     squares[square].AssignPiece();
 
                     //Need to find a way for this with bitboards
-                    foreach (int e in Moves.CheckLegalMoves(tempPiece, square))
+                    foreach (int e in fromMoves)
                     {
+                        int to = e >> 6 & 0b111111;
+
                         //Remove
-                        squares[e].dot = false;
-                        squares[e].targetSquare = false;
+                        squares[to].dot = false;
+                        squares[to].targetSquare = false;
                     }
 
                 }
@@ -287,8 +318,6 @@ namespace ChessGame
                         //square is at current mouse position
                         if (squares[square].rect.Contains(Game1.mousePoint) && Moves.CheckLegalMoves(tempPiece, tempSquare).Contains(square))
                         {
-                            //Future add an if statement to determine white / black move and then do the checks.
-
 
                             //Filter piece to update the correct bitboard
 
@@ -414,9 +443,6 @@ namespace ChessGame
 
                             // ADD MOVEHISTORY:  Piece, From, To, Captured
                             Moves.moveHistory.Add(new int[] { tempPiece, tempSquare, square, squares[square].piece });
-
-                            //System.Diagnostics.Debug.WriteLine(Moves.moveHistory[0][0].ToString() + Moves.moveHistory[0][1].ToString() + Moves.moveHistory[0][2].ToString() + Moves.moveHistory[0][3].ToString());
-
 
                             Moves.whiteTurn = !Moves.whiteTurn;
                             
