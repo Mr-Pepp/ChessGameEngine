@@ -15,8 +15,9 @@ namespace ChessGame
         //Stores the information of all the pieces on the board
         // 
         // Piece Information: Colour | Piece | Location
-        public static List<int> piecesInfo = new List<int>() { };
-
+        //public static List<int> piecesInfo = new List<int>() { }; 
+        //Use a 64 bit array (instead)
+        //public static int[] piecesInfo = new int[64]; //Creates a 64 length array
 
         Dictionary<string, Color> _colorDic;
 
@@ -54,7 +55,7 @@ namespace ChessGame
         List<int> moves;
 
 
-        public Board(int squareSize, Vector2 initPos, Dictionary<string, Color> colorDic )
+        public Board(int squareSize, Vector2 initPos, Dictionary<string, Color> colorDic)
         {
             _initPos = initPos;
             _squareSize = squareSize;
@@ -65,12 +66,12 @@ namespace ChessGame
         public void LoadContent(SpriteBatch _spriteBatch, GraphicsDevice _graphicsDevice)
         {
             // create a white texture pixel
-            Texture2D blankTexture = new Texture2D(_spriteBatch.GraphicsDevice, 1, 1); 
+            Texture2D blankTexture = new Texture2D(_spriteBatch.GraphicsDevice, 1, 1);
             blankTexture.SetData(new Color[] { Color.White });
 
 
             // Create board
-            for (int iy = 1; iy <= 8; iy++) 
+            for (int iy = 1; iy <= 8; iy++)
             {
                 for (int ix = 1; ix <= 8; ix++)
                 {
@@ -121,8 +122,8 @@ namespace ChessGame
 
             if (Keyboard.GetState().IsKeyDown(Keys.T))
             {
-                System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
-      
+                //System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
+
             }
 
             //'D' is pressed -- for debugging purposes
@@ -142,11 +143,11 @@ namespace ChessGame
                     squares[e].targetSquare = true;
                 }
 
-                
+
             }
 
             PieceSelection();
-        } 
+        }
 
 
         //Draw, looped
@@ -206,16 +207,18 @@ namespace ChessGame
                             //Then export all the (to) moves into another list based on the (from) matching the current square
 
                             //To only run the move generation once
-                            moves = Moves.GenerateAllMoves();
+                            moves = Moves.GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
                             fromMoves = new List<int>();
 
                             //Go through the generated moves and select the appropriate move
                             foreach (int e in moves)
                             {
+                                //System.Diagnostics.Debug.WriteLine(e);
+
                                 //If the from destination is correct then store it in the list that allow the piece to go to the right square
                                 if ((e & 0b111111) == square) //flag | to | from
                                 {
-                                    fromMoves.Add(e);
+                                    fromMoves.Add(e); //Will only contain the moves from the selected square
                                 }
                             }
 
@@ -228,8 +231,11 @@ namespace ChessGame
             goto loopEnd;
 
 
-            //Used since we are breaking from a nested loop
-            loopEnd:
+        //Used since we are breaking from a nested loop
+        loopEnd:
+            
+            //To store the "to" value from the element of fromMoves
+            int to;
 
             //holding the piece
             if (pieceSelected && mousePressed)
@@ -239,13 +245,9 @@ namespace ChessGame
                 mousePieceRect = new Rectangle(Game1.mousePoint.X - (_squareSize / 2), Game1.mousePoint.Y - (_squareSize / 2), _squareSize, _squareSize);
 
                 //Need to find a way to do this with bitboards
-                foreach(int e in fromMoves)
+                foreach (int e in fromMoves)
                 {
-
-                    //System.Diagnostics.Debug.WriteLine(e);
-
-                    int to = e >> 6 & 0b111111;
-                    
+                    to = e >> 6 & 0b111111;
                     //System.Diagnostics.Debug.WriteLine(to);
 
                     //Show available moves
@@ -261,7 +263,7 @@ namespace ChessGame
                         squares[to].targetSquare = true;
                     }
                 }
-                
+
                 //if right button is pressed when holding piece
                 if (Mouse.GetState().RightButton == ButtonState.Pressed)
                 {
@@ -273,10 +275,12 @@ namespace ChessGame
                     //assign texture and moves
                     squares[square].AssignPiece();
 
+
+
                     //Need to find a way for this with bitboards
                     foreach (int e in fromMoves)
                     {
-                        int to = e >> 6 & 0b111111;
+                        to = e >> 6 & 0b111111;
 
                         //Remove
                         squares[to].dot = false;
@@ -301,11 +305,14 @@ namespace ChessGame
                 //temp square to place back the piece in case
                 int tempSquare = square;
 
-                foreach (int e in Moves.CheckLegalMoves(tempPiece, tempSquare))
+                
+                foreach (int e in fromMoves)
                 {
+                    to = e >> 6 & 0b111111;
+
                     //Remove
-                    squares[e].dot = false;
-                    squares[e].targetSquare = false;
+                    squares[to].dot = false;
+                    squares[to].targetSquare = false;
                 }
 
                 //place Piece at current square
@@ -316,8 +323,39 @@ namespace ChessGame
                         square = SquareID(iy, ix);
                         //add rules to if
                         //square is at current mouse position
-                        if (squares[square].rect.Contains(Game1.mousePoint) && Moves.CheckLegalMoves(tempPiece, tempSquare).Contains(square))
+                        //Flag | To | From
+                        if (squares[square].rect.Contains(Game1.mousePoint) && fromMoves.Contains(square << 6 | tempSquare))
                         {
+
+
+                            //The main issue is that I would have to update the new board and remove the old piece from it.
+                            //This is a pain because
+                            /*
+                             * I have no clue how to do this efficiently
+                             * From a list you have to do a bunch of searches so it makes sense to use a 64 array?.. So that's what I'm using...
+                             * 
+                             */
+                            /*
+                            //Remove piece from pieceInfo and add the new piece location
+                            // Consider --- Pawn Promotion, Captures
+                            foreach (int e in piecesInfo)//Loops through the pieceInfo list
+                            {
+                                if ((e & 0b111111) == tempSquare) //Remove previous square
+                                {
+                                    //piecesInfo.Remove(e);
+                                }
+
+                                else if ((e & 0b111111) == square) //Remove current square piece
+                                {
+                                    //piecesInfo.Remove(e);
+                                }
+                            }*/
+
+
+                            //Colour | Piece | Position
+                            //piecesInfo.Add(squares[square].piece << 6 | square);
+
+
 
                             //Filter piece to update the correct bitboard
 
@@ -445,8 +483,8 @@ namespace ChessGame
                             Moves.moveHistory.Add(new int[] { tempPiece, tempSquare, square, squares[square].piece });
 
                             Moves.whiteTurn = !Moves.whiteTurn;
-                            
-                            
+
+
                             // REVERSE BOARD (In future... to develop)
                             //BitboardOutput(Moves.whiteTurn);
 
@@ -471,7 +509,7 @@ namespace ChessGame
                 squares[tempSquare].AssignPiece();
 
             }
-            loopEnd2:
+        loopEnd2:
             { } //pass
         }
 
@@ -513,7 +551,7 @@ namespace ChessGame
 
             int i = 0;
 
-            
+
 
             //Checks how to deal with each symbol and does it
             foreach (string e in fenList)
@@ -532,7 +570,7 @@ namespace ChessGame
                     else
                     {
                         //populate bitboard
-                        switch(c)
+                        switch (c)
                         {
                             case 'K': //White King
                                 wK += BinaryStringToBitboard(i);
@@ -636,10 +674,6 @@ namespace ChessGame
 
             Moves.InitBitboards();
 
-            //Init PiecesInfo
-            piecesInfo = new List<int>();
-
-
             //wK = Moves.LegalMoves_WPawn(wP);
 
 
@@ -658,67 +692,67 @@ namespace ChessGame
 
                 //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
                 //**Implement flags and other piece information
-                if (((wK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.King;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.White | Piece.King) << 6 | (63 - i));    
+                if (((wK >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.White | Piece.King;
                 }
-                else if (((wQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Queen;
-                    // Piece Information: Colour | Piece | Location 
-                    piecesInfo.Add((Piece.White | Piece.Queen) << 6 | (63 - i));
+                else if (((wQ >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.White | Piece.Queen;
                 }
-                else if (((wR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Rook;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.White | Piece.Rook) << 6 | (63 - i));
+                else if (((wR >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.White | Piece.Rook;
                 }
-                else if (((wB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Bishop;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.White | Piece.Bishop) << 6 | (63 - i));
+                else if (((wB >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.White | Piece.Bishop;
                 }
-                else if (((wN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Knight;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.White | Piece.Knight) << 6 | (63 - i));
+                else if (((wN >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.White | Piece.Knight;
                 }
-                else if (((wP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.White | Piece.Pawn;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.White | Piece.Pawn) << 6 | (63 - i));
+                else if (((wP >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.White | Piece.Pawn;
                 }
 
-                else if (((bK >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.King;
-                    // Piece Information: Colour | Piece | Location 
-                    piecesInfo.Add((Piece.Black | Piece.King) << 6 | (63 - i));
+                else if (((bK >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.Black | Piece.King;
                 }
-                else if (((bQ >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Queen;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.Black | Piece.Queen) << 6 | (63 - i));
+                else if (((bQ >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.Black | Piece.Queen;
                 }
-                else if (((bR >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Rook;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.Black | Piece.Rook) << 6 | (63 - i));
+                else if (((bR >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.Black | Piece.Rook;
                 }
-                else if (((bB >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Bishop;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.Black | Piece.Bishop) << 6 | (63 - i));
+                else if (((bB >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.Black | Piece.Bishop;
                 }
-                else if (((bN >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Knight;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.Black | Piece.Knight) << 6 | (63 - i));
+                else if (((bN >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.Black | Piece.Knight;
                 }
-                else if (((bP >> i) & 1L) == 1L) { squares[sideIndex].piece = Piece.Black | Piece.Pawn;
-                    // Piece Information: Colour | Piece | Location
-                    piecesInfo.Add((Piece.Black | Piece.Pawn) << 6 | (63 - i));
+                else if (((bP >> i) & 1L) == 1L)
+                {
+                    squares[sideIndex].piece = Piece.Black | Piece.Pawn;
                 }
-                
+
                 else { squares[sideIndex].piece = Piece.None; }
 
-                
+
 
                 squares[sideIndex].AssignPiece();
             }
 
-            
+
         }
 
-        public static ulong BinaryStringToBitboard( int index )
+        public static ulong BinaryStringToBitboard(int index)
         {
             string binary = "0000000000000000000000000000000000000000000000000000000000000000"; //64 bit
 

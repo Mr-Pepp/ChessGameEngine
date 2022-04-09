@@ -796,6 +796,7 @@ namespace ChessGame
             return debugSquares;
         }
 
+
         public struct MakeMove
         {
             uint move;
@@ -827,110 +828,130 @@ namespace ChessGame
         //If bitboards overlap with the friendly pieces then can't move that piece
 
         //Will not generate pinned piece moves
-        public static List<int> GenerateAllMoves() // 0000 0000 0000 0000  to store: flag | to | from
+        public static List<int> GenerateAllMoves(ulong wK, ulong wQ, ulong wR, ulong wB, ulong wN, ulong wP,
+            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP) // 0000 0000 0000 0000  to store: flag | to | from
         {
             List<int> legalSquares = new List<int>();
-            InitBitboards();
+            InitBitboards(); // Initiate bitboards
 
-            List<int> pieces = Board.piecesInfo;
+            ulong pieceLocation = 0;
+            int correctFrom;
+
             //Used for getting all the ulong bitboard move locations
             ulong legalULong = 0L;
 
             //System.Diagnostics.Debug.WriteLine(pieces[1] & 0b11111 << 6);
-            
-            //Go through each square and generate moves for that square, including the piece that's on the square
-            foreach (int e in pieces)
+
+            //read bitboards as index
+            //the bitwise operations will reverse the board so initially the board will be on blacks side
+            for (int i = 63; i > 0; i--)
             {
-                //System.Diagnostics.Debug.WriteLine(e.ToString());
+                //System.Diagnostics.Debug.WriteLine(i);
 
-                legalULong = 0L;
-                //Create the bitboard for the piece location
-                ulong pieceLocation = Board.BinaryStringToBitboard(e & 0b111111);
-                
+                //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
+                //**Implement flags and other piece information
 
-                if (whiteTurn & ((e >> 6 & Piece.White) != 0L)) // White to play and the piece is white
+
+                //First continue if no pieces because that is most likely as there are more empty squares than any other
+                if ((blackPieces | whitePieces) == 0L) { continue; } //pass
+
+                else //There is a piece to generate moves for
                 {
+                    //Since the index is reversed for bitboards
+                    correctFrom = 63 - i;
+                    //Convert the index to bitboard
+                    pieceLocation = Board.BinaryStringToBitboard(correctFrom);
 
-                    switch (e >> 6 & 0b00111)
+
+                    if (whiteTurn) // White to play
                     {
-                        case Piece.King:
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation, whitePieces, blackPieces, whiteTurn, true);
-                            break;
+                        //System.Diagnostics.Debug.WriteLine(i);
 
-                        case Piece.Pawn:
+                        if (((wP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
+                        {
                             //White pawn legal moves bitboard
                             legalULong = LegalMoves_WPawn(pieceLocation);
-                            break;
-
-                        case Piece.Knight:
-                            //Knight legal moves bitboard
-                            legalULong = LegalMoves_Knight(pieceLocation, whitePieces);
-                            break;
-
-                        case Piece.Bishop:
-                            //Bishop legal moves bitboard
-                            legalULong = LegalMoves_Bishop(pieceLocation, whitePieces, blackPieces);
-                            break;
-
-                        case Piece.Rook:
-                            //Rook legal moves bitboard
-                            legalULong = LegalMoves_Rook(pieceLocation, whitePieces, blackPieces);
-                            break;
-
-                        case Piece.Queen:
+                        }
+                        else if (((wK >> i) & 1L) == 1L)
+                        {
+                            //King legal moves bitboard
+                            legalULong = LegalMoves_King(pieceLocation, whitePieces, blackPieces, whiteTurn, true);
+                        }
+                        else if (((wQ >> i) & 1L) == 1L)
+                        {
                             //Queen legal moves bitboard
                             legalULong = LegalMoves_Queen(pieceLocation, whitePieces, blackPieces);
-                            break;
+                        }
+                        else if (((wR >> i) & 1L) == 1L)
+                        {
+                            //Rook legal moves bitboard
+                            legalULong = LegalMoves_Rook(pieceLocation, whitePieces, blackPieces);
+                        }
+                        else if (((wB >> i) & 1L) == 1L)
+                        {
+                            //Bishop legal moves bitboard
+                            legalULong = LegalMoves_Bishop(pieceLocation, whitePieces, blackPieces);
+                            System.Diagnostics.Debug.WriteLine((63 - i));
+                        }
+                        else if (((wN >> i) & 1L) == 1L)
+                        {
+                            //Knight legal moves bitboard
+                            legalULong = LegalMoves_Knight(pieceLocation, whitePieces);
+                        }
                     }
-                }
 
-                else if (!whiteTurn & ((e >> 6 & Piece.Black) != 0L)) //Black to play and the piece is black
-                {
-
-                    switch (e >> 6 & 0b00111)
+                    else // Black to play
                     {
-                        case Piece.King:
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation, blackPieces, whitePieces, whiteTurn, true);
-                            break;
-
-                        case Piece.Pawn:
+                        if (((bP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
+                        {
                             //Black pawn legal moves
                             legalULong = LegalMoves_BPawn(pieceLocation);
-                            break;
-
-                        case Piece.Knight:
-                            //Knight legal moves bitboard
-                            legalULong = LegalMoves_Knight(pieceLocation, blackPieces);
-                            break;
-
-                        case Piece.Bishop:
-                            //Bishop legal moves bitboard
-                            legalULong = LegalMoves_Bishop(pieceLocation, blackPieces, whitePieces);
-                            break;
-
-                        case Piece.Rook:
-                            //Rook legal moves bitboard
-                            legalULong = LegalMoves_Rook(pieceLocation, blackPieces, whitePieces);
-                            break;
-
-                        case Piece.Queen:
+                        }
+                        else if (((bK >> i) & 1L) == 1L)
+                        {
+                            //King legal moves bitboard
+                            legalULong = LegalMoves_King(pieceLocation, blackPieces, whitePieces, whiteTurn, true);
+                        }
+                        else if (((bQ >> i) & 1L) == 1L)
+                        {
                             //Queen legal moves bitboard
                             legalULong = LegalMoves_Queen(pieceLocation, blackPieces, whitePieces);
-                            break;
+                        }
+                        else if (((bR >> i) & 1L) == 1L)
+                        {
+                            //Rook legal moves bitboard
+                            legalULong = LegalMoves_Rook(pieceLocation, blackPieces, whitePieces);
+                        }
+                        else if (((bB >> i) & 1L) == 1L)
+                        {
+                            //Bishop legal moves bitboard
+                            legalULong = LegalMoves_Bishop(pieceLocation, blackPieces, whitePieces);
+                        }
+                        else if (((bN >> i) & 1L) == 1L)
+                        {
+                            //Knight legal moves bitboard
+                            legalULong = LegalMoves_Knight(pieceLocation, blackPieces);
+                        }
+                    }
+                    //System.Diagnostics.Debug.WriteLine(legalULong.ToString() + i);
+                    //System.Diagnostics.Debug.WriteLine(legalULong);
+                    //Append to list the legal squares
+                    if (legalULong != 0L)
+                    {
+                        for (int y = 0; y < 64; y++)
+                        {
+                            //flag | to | from
+                            if (((legalULong >> y) & 1L) == 1L)
+                            {
+                                legalSquares.Add((63 - y) << 6 | correctFrom);
+
+                            }
+
+                        }
                     }
                 }
-
-                //System.Diagnostics.Debug.WriteLine(legalULong);
-                //Append to list the legal squares
-                for (int i = 0; i < 64; i++)
-                {
-                    //flag | to | from
-                    if (((legalULong >> i) & 1L) == 1L) { legalSquares.Add((63 - i) << 6 | (e & 0b111111)); }
-
-                }
-
+                
+                
             }
 
 
