@@ -279,10 +279,10 @@ namespace ChessGame
             ulong legalMoves = 0L;
 
             //Captures top left
-            legalMoves = legalMoves | ((wP << 9) & blackPieces & ~file_H);
+            legalMoves = legalMoves | ((wP << 9) & enemyPieces & ~file_H);
 
             //Captures top right
-            legalMoves = legalMoves | ((wP << 7) & blackPieces & ~file_A);
+            legalMoves = legalMoves | ((wP << 7) & enemyPieces & ~file_A);
 
             //Pushing forward
             legalMoves = legalMoves | ((wP << 8) & emptySquares);
@@ -298,10 +298,10 @@ namespace ChessGame
             ulong legalMoves = 0L;
 
             //Captures bottom left
-            legalMoves = legalMoves | ((bP >> 7) & whitePieces & ~file_H);
+            legalMoves = legalMoves | ((bP >> 7) & enemyPieces & ~file_H);
 
             //Captures bottom right
-            legalMoves = legalMoves | ((bP >> 9) & whitePieces & ~file_A);
+            legalMoves = legalMoves | ((bP >> 9) & enemyPieces & ~file_A);
 
             //Pushing down
             legalMoves = legalMoves | ((bP >> 8) & emptySquares);
@@ -894,6 +894,9 @@ namespace ChessGame
                     //Format legalULong
                     legalULong = 0L;
 
+                    //Bool if there is a pin. (Used for knights)
+                    bool pin = false;
+
                     //initiate friendlyPieces
                     ulong friendlyPieces;
 
@@ -910,6 +913,8 @@ namespace ChessGame
                     //pieceLocation offset for pinned pieces
                     if (((pins >> i) & 1L) == 1L) //There is a pinned piece
                     {
+                        pin = true;
+
                         //Diagonal Pins first as they are more common
                         if (((BLTRPins >> i) & 1L) == 1L) //BLTR = Bottom Left, Top Right
                         {
@@ -954,7 +959,7 @@ namespace ChessGame
                         if (((wP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
                         {
                             //White pawn legal moves bitboard
-                            legalULong = LegalMoves_WPawn(pieceLocation, friendlyPieces, emptySquares);
+                            legalULong = LegalMoves_WPawn(pieceLocation, blackPieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
                         }
                         else if (((wK >> i) & 1L) == 1L)
                         {
@@ -976,7 +981,7 @@ namespace ChessGame
                             //Bishop legal moves bitboard
                             legalULong = LegalMoves_Bishop(pieceLocation, friendlyPieces, blackPieces);
                         }
-                        else if (((wN >> i) & 1L) == 1L)
+                        else if (((wN >> i) & 1L) == 1L & !pin)
                         {
                             //Knight legal moves bitboard
                             legalULong = LegalMoves_Knight(pieceLocation, friendlyPieces);
@@ -991,7 +996,7 @@ namespace ChessGame
                         if (((bP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
                         {
                             //Black pawn legal moves
-                            legalULong = LegalMoves_BPawn(pieceLocation, friendlyPieces, emptySquares);
+                            legalULong = LegalMoves_BPawn(pieceLocation, whitePieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
                         }
                         else if (((bK >> i) & 1L) == 1L)
                         {
@@ -1013,7 +1018,7 @@ namespace ChessGame
                             //Bishop legal moves bitboard
                             legalULong = LegalMoves_Bishop(pieceLocation, friendlyPieces, whitePieces);
                         }
-                        else if (((bN >> i) & 1L) == 1L)
+                        else if (((bN >> i) & 1L) == 1L & !pin)
                         {
                             //Knight legal moves bitboard
                             legalULong = LegalMoves_Knight(pieceLocation, friendlyPieces);
