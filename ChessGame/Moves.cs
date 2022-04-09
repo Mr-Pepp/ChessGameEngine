@@ -274,7 +274,7 @@ namespace ChessGame
 
 
         //Pawns for bitboard move generation
-        public static ulong LegalMoves_WPawn(ulong wP) //White Pawns
+        public static ulong LegalMoves_WPawn(ulong wP, ulong enemyPieces, ulong emptySquares) //White Pawns
         {
             ulong legalMoves = 0L;
 
@@ -293,7 +293,7 @@ namespace ChessGame
             return legalMoves;
         }
 
-        public static ulong LegalMoves_BPawn(ulong bP) //Black Pawns
+        public static ulong LegalMoves_BPawn(ulong bP, ulong enemyPieces, ulong emptySquares) //Black Pawns
         {
             ulong legalMoves = 0L;
 
@@ -828,7 +828,7 @@ namespace ChessGame
         //Calculating sliding piece moves from the king (for each sliding piece)
         //If bitboards overlap with the friendly pieces then can't move that piece
 
-        //Will not generate pinned piece moves
+        //Will generate pinned piece moves
         public static List<int> GenerateAllMoves(ulong wK, ulong wQ, ulong wR, ulong wB, ulong wN, ulong wP,
             ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP) // 0000 0000 0000 0000  to store: flag | to | from
         {
@@ -843,8 +843,39 @@ namespace ChessGame
 
             //System.Diagnostics.Debug.WriteLine(pieces[1] & 0b11111 << 6);
 
-            
+            //Generate a pinned pieces mask to identify pinned pieces
+            ulong pins;
 
+            ulong horizontalPins;
+            ulong verticalPins;
+
+            ulong BLTRPins;
+            ulong BRTLPins;
+
+            if (whiteTurn) //White to play
+            {
+                //Generate mask horizontal and vertical pins
+                horizontalPins = Pins_Horizontal(wK, whitePieces, blackPieces, bR, bQ);
+                verticalPins = Pins_Vertical(wK, whitePieces, blackPieces, bR, bQ);
+
+                BLTRPins = Pins_BLTR(wK, whitePieces, blackPieces, bB, bQ);
+                BRTLPins = Pins_BRTL(wK, whitePieces, blackPieces, bB, bQ);
+
+                //Generate overall pin mask
+                pins = horizontalPins | verticalPins | BRTLPins | BLTRPins;
+            }
+
+            else //Black to play
+            {
+                horizontalPins = Pins_Horizontal(bK, blackPieces, whitePieces, wR, wQ);
+                verticalPins = Pins_Vertical(bK, blackPieces, whitePieces, wR, wQ);
+
+                BLTRPins = Pins_BLTR(wK, blackPieces, whitePieces, wB, wQ);
+                BRTLPins = Pins_BRTL(wK, blackPieces, whitePieces, wB, wQ);
+
+                //Generate overall pin mask
+                pins = horizontalPins | verticalPins | BRTLPins | BLTRPins;
+            }
 
             //read bitboards as index
             //the bitwise operations will reverse the board so initially the board will be on blacks side
@@ -855,8 +886,6 @@ namespace ChessGame
                 //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
                 //**Implement flags and other piece information
 
-                
-
                 //First continue if no pieces because that is most likely as there are more empty squares than any other
                 if ((blackPieces | whitePieces) == 0L) { continue; } //pass
 
@@ -865,85 +894,129 @@ namespace ChessGame
                     //Format legalULong
                     legalULong = 0L;
 
+                    //initiate friendlyPieces
+                    ulong friendlyPieces;
+
+                    //Set pinnedBlock to 0 initially, this is used to block calculations in the wrong directions by placing a friendly piece
+                    //in the way
+                    ulong pinnedBlock = 0L;
+
                     //Since the index is reversed for bitboards
                     correctFrom = 63 - i;
 
                     //Convert the index to bitboard
                     pieceLocation = Board.BinaryStringToBitboard(correctFrom);
 
+                    //pieceLocation offset for pinned pieces
+                    if (((pins >> i) & 1L) == 1L) //There is a pinned piece
+                    {
+                        //Diagonal Pins first as they are more common
+                        if (((BLTRPins >> i) & 1L) == 1L) //BLTR = Bottom Left, Top Right
+                        {
+                            //Pinned blocked
+                            //Place the "friendly piece" mask everywhere but the pin location
+                            pinnedBlock = pieceLocation << 1 | pieceLocation << 9 | pieceLocation << 8 |
+                                pieceLocation >> 1 | pieceLocation >> 9 | pieceLocation >> 8;
+                        }
+
+                        else if (((BRTLPins >> i) & 1L) == 1L) //BRTL = Bottom Right, Top Left
+                        {
+                            //Pinned blocked
+                            //Place the "friendly piece" mask everywhere but the pin location
+                            pinnedBlock = pieceLocation << 1 | pieceLocation << 8 | pieceLocation << 7 |
+                                pieceLocation >> 1 | pieceLocation >> 8 | pieceLocation >> 7;
+                        }
+
+                        //Horizontal Pin
+                        else if (((horizontalPins >> i) & 1L) == 1L)
+                        {
+                            //Pinned blocked
+                            //Place the "friendly piece" mask everywhere but the pin location
+                            pinnedBlock = pieceLocation << 9 | pieceLocation << 8 | pieceLocation << 7 |
+                                pieceLocation >> 9 | pieceLocation >> 8 | pieceLocation >> 7;
+                        }
+                        else //Vertical pin
+                        {
+                            //Pinned blocked
+                            //Place the "friendly piece" mask everywhere but the pin location
+                            pinnedBlock = pieceLocation << 1 | pieceLocation << 9 | pieceLocation << 7 |
+                                pieceLocation >> 1 | pieceLocation >> 9 | pieceLocation >> 7;
+                        }
+                    }
+
                     if (whiteTurn) // White to play
                     {
                         //System.Diagnostics.Debug.WriteLine(i);
 
-                        //Generate pin mask (For white)
-                        ulong pins = PinnedPieces(wK, whitePieces, blackPieces, bR, bB, bQ);
+                        //Assign friendlyPieces including pinnedPiece block
+                        friendlyPieces = whitePieces | pinnedBlock;
 
                         if (((wP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
                         {
                             //White pawn legal moves bitboard
-                            legalULong = LegalMoves_WPawn(pieceLocation);
+                            legalULong = LegalMoves_WPawn(pieceLocation, friendlyPieces, emptySquares);
                         }
                         else if (((wK >> i) & 1L) == 1L)
                         {
                             //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation, whitePieces, blackPieces, whiteTurn, true);
+                            legalULong = LegalMoves_King(pieceLocation, friendlyPieces, blackPieces, whiteTurn, true);
                         }
                         else if (((wQ >> i) & 1L) == 1L)
                         {
                             //Queen legal moves bitboard
-                            legalULong = LegalMoves_Queen(pieceLocation, whitePieces, blackPieces);
+                            legalULong = LegalMoves_Queen(pieceLocation, friendlyPieces, blackPieces);
                         }
                         else if (((wR >> i) & 1L) == 1L)
                         {
                             //Rook legal moves bitboard
-                            legalULong = LegalMoves_Rook(pieceLocation, whitePieces, blackPieces);
+                            legalULong = LegalMoves_Rook(pieceLocation, friendlyPieces, blackPieces);
                         }
                         else if (((wB >> i) & 1L) == 1L)
                         {
                             //Bishop legal moves bitboard
-                            legalULong = LegalMoves_Bishop(pieceLocation, whitePieces, blackPieces);
+                            legalULong = LegalMoves_Bishop(pieceLocation, friendlyPieces, blackPieces);
                         }
                         else if (((wN >> i) & 1L) == 1L)
                         {
                             //Knight legal moves bitboard
-                            legalULong = LegalMoves_Knight(pieceLocation, whitePieces);
+                            legalULong = LegalMoves_Knight(pieceLocation, friendlyPieces);
                         }
                     }
 
                     else // Black to play
                     {
-                        //Generate pin mask (For white)
-                        ulong pins = PinnedPieces(bK, blackPieces, whitePieces, wR, wB, wQ);
+                        //Assign friendlyPieces including pinnedPiece block
+                        friendlyPieces = blackPieces | pinnedBlock;
 
                         if (((bP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
                         {
                             //Black pawn legal moves
-                            legalULong = LegalMoves_BPawn(pieceLocation);
+                            legalULong = LegalMoves_BPawn(pieceLocation, friendlyPieces, emptySquares);
                         }
                         else if (((bK >> i) & 1L) == 1L)
                         {
                             //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation, blackPieces, whitePieces, whiteTurn, true);
+                            legalULong = LegalMoves_King(pieceLocation, friendlyPieces, whitePieces, whiteTurn, true);
                         }
                         else if (((bQ >> i) & 1L) == 1L)
                         {
                             //Queen legal moves bitboard
-                            legalULong = LegalMoves_Queen(pieceLocation, blackPieces, whitePieces);
+                            legalULong = LegalMoves_Queen(pieceLocation, friendlyPieces, whitePieces);
                         }
                         else if (((bR >> i) & 1L) == 1L)
                         {
                             //Rook legal moves bitboard
-                            legalULong = LegalMoves_Rook(pieceLocation, blackPieces, whitePieces);
+                            legalULong = LegalMoves_Rook(pieceLocation, friendlyPieces, whitePieces);
                         }
                         else if (((bB >> i) & 1L) == 1L)
                         {
                             //Bishop legal moves bitboard
-                            legalULong = LegalMoves_Bishop(pieceLocation, blackPieces, whitePieces);
+                            legalULong = LegalMoves_Bishop(pieceLocation, friendlyPieces, whitePieces);
                         }
                         else if (((bN >> i) & 1L) == 1L)
                         {
                             //Knight legal moves bitboard
-                            legalULong = LegalMoves_Knight(pieceLocation, blackPieces);
+                            legalULong = LegalMoves_Knight(pieceLocation, friendlyPieces);
                         }
                     }
 
@@ -966,9 +1039,79 @@ namespace ChessGame
 
 
             return legalSquares;
-        } 
+        }
 
         //Pinned pieces bitboard
+
+        //Horizontal pinned pieces
+        public static ulong Pins_Horizontal (ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eR, ulong eQ)
+        {
+            //Horizontal Movement
+            ulong rookBlockMask_Horizontal = eR << 1 | eR >> 1;
+            ulong queenBlockMask_Horizontal = eQ << 1 | eQ >> 1;
+            ulong kingBlockMask_Horizontal = fK << 1 | fK >> 1;
+
+            ulong kingRook_Horizontal = LegalMoves_Rook(fK, enemyPieces | kingBlockMask_Horizontal, friendlyPieces);
+            ulong enemyQueen_Horizontal = LegalMoves_Rook(eQ, enemyPieces | queenBlockMask_Horizontal, friendlyPieces);
+            ulong enemyRook_Horizontal = LegalMoves_Rook(eR, enemyPieces | rookBlockMask_Horizontal, friendlyPieces);
+
+            //Return all pin locations 
+            return kingRook_Horizontal & (enemyQueen_Horizontal | enemyRook_Horizontal);
+        }
+
+        //Vertical pinned pieces
+        public static ulong Pins_Vertical(ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eR, ulong eQ)
+        {
+            //Vertical Movement
+            ulong rookBlockMask_Vertical = eR << 8 | eR >> 8;
+            ulong queenBlockMask_Vertical = eQ << 8 | eQ >> 8;
+            ulong kingBlockMask_Vertical = fK << 8 | fK >> 8;
+
+            ulong kingRook_Vertical = LegalMoves_Rook(fK, enemyPieces | kingBlockMask_Vertical, friendlyPieces);
+            ulong enemyQueen_Vertical = LegalMoves_Rook(eQ, enemyPieces | queenBlockMask_Vertical, friendlyPieces);
+            ulong enemyRook_Vertical = LegalMoves_Rook(eR, enemyPieces | rookBlockMask_Vertical, friendlyPieces);
+
+            return kingRook_Vertical & (enemyQueen_Vertical | enemyRook_Vertical);
+        }
+
+        //Diagonal pins
+        //Bottom Left - Top Right pin ray
+        public static ulong Pins_BLTR(ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eB, ulong eQ)
+        {
+            //Diagonal (Top right, bottom left ray)
+            ulong bishopBlockMask_BRTL = eB << 9 | eB >> 9;
+            //Diagonal for Queen
+            ulong queenBlockMask_BRTL = eQ << 9 | eQ >> 9;
+            ulong kingBlockMask_BRTL = fK << 9 | fK >> 9;
+
+            //Generate a move ray based on one diagonal
+            ulong enemyBishop_BLTR_Ray = LegalMoves_Bishop(eB, enemyPieces | bishopBlockMask_BRTL, friendlyPieces);
+            ulong enemyQueen_BLTR_Ray = LegalMoves_Bishop(eQ, enemyPieces | queenBlockMask_BRTL, friendlyPieces);
+            ulong kingBishop_BLTR_Ray = LegalMoves_Bishop(fK, enemyPieces | kingBlockMask_BRTL, friendlyPieces);
+
+            //Pins overlap mask
+            return kingBishop_BLTR_Ray & (enemyBishop_BLTR_Ray | enemyQueen_BLTR_Ray);
+        }
+
+        //Bottom Right - Top Left pin ray
+        public static ulong Pins_BRTL(ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eB, ulong eQ)
+        {
+            //Diagonal (Top left, bottom right ray)
+            ulong bishopBlockMask_BRTL = eB << 7 | eB >> 7;
+            //Diagonal for Queen
+            ulong queenBlockMask_BRTL = eQ << 7 | eQ >> 7;
+            ulong kingBlockMask_BRTL = fK << 7 | fK >> 7;
+
+            //Generate a move ray based on one diagonal
+            ulong enemyBishop_BRTL_Ray = LegalMoves_Bishop(eB, enemyPieces | bishopBlockMask_BRTL, friendlyPieces);
+            ulong enemyQueen_BRTL_Ray = LegalMoves_Bishop(eQ, enemyPieces | queenBlockMask_BRTL, friendlyPieces);
+            ulong kingBishop_BRTL_Ray = LegalMoves_Bishop(fK, enemyPieces | kingBlockMask_BRTL, friendlyPieces);
+
+            return kingBishop_BRTL_Ray & (enemyBishop_BRTL_Ray | enemyQueen_BRTL_Ray);
+        }
+
+
+        //All pinned pieces bitboard
         public static ulong PinnedPieces(ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eR, ulong eB, ulong eQ)
         {
             //Generate sliding pieces moves from friendly king
