@@ -218,6 +218,7 @@ namespace ChessGame
                                 //If the from destination is correct then store it in the list that allow the piece to go to the right square
                                 if ((e & 0b111111) == square) //flag | to | from
                                 {
+                                    //System.Diagnostics.Debug.WriteLine(e & 0b111111);
                                     fromMoves.Add(e); //Will only contain the moves from the selected square
                                 }
                             }

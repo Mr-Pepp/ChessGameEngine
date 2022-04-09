@@ -851,6 +851,8 @@ namespace ChessGame
                 //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
                 //**Implement flags and other piece information
 
+                //Format legalULong
+                legalULong = 0L;
 
                 //First continue if no pieces because that is most likely as there are more empty squares than any other
                 if ((blackPieces | whitePieces) == 0L) { continue; } //pass
@@ -891,7 +893,6 @@ namespace ChessGame
                         {
                             //Bishop legal moves bitboard
                             legalULong = LegalMoves_Bishop(pieceLocation, whitePieces, blackPieces);
-                            System.Diagnostics.Debug.WriteLine((63 - i));
                         }
                         else if (((wN >> i) & 1L) == 1L)
                         {
@@ -933,8 +934,7 @@ namespace ChessGame
                             legalULong = LegalMoves_Knight(pieceLocation, blackPieces);
                         }
                     }
-                    //System.Diagnostics.Debug.WriteLine(legalULong.ToString() + i);
-                    //System.Diagnostics.Debug.WriteLine(legalULong);
+
                     //Append to list the legal squares
                     if (legalULong != 0L)
                     {
@@ -944,7 +944,6 @@ namespace ChessGame
                             if (((legalULong >> y) & 1L) == 1L)
                             {
                                 legalSquares.Add((63 - y) << 6 | correctFrom);
-
                             }
 
                         }
