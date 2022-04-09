@@ -43,7 +43,7 @@ namespace ChessGame
         //Other 
         public static Texture2D dot;
 
-        //dictionary for reference 
+        //dictionary for reference
         static public Dictionary<int, Texture2D> pieceTextureDic;
 
         //Piece info

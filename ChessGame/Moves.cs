@@ -53,6 +53,7 @@ namespace ChessGame
             emptySquares = ~(whitePieces | blackPieces);
         }
 
+        /* --No use for this algorithm because of move generation
         //For when player selects a piece manually
         public static List<int> CheckLegalMoves(int piece, int squares)
         {
@@ -129,11 +130,6 @@ namespace ChessGame
                 }
 
                 // NO CHECK
-
-
-
-
-
 
 
                 else // Not in check, can play normally
@@ -274,7 +270,7 @@ namespace ChessGame
             }
 
             return legalSquares;
-        }
+        }*/
 
 
         //Pawns for bitboard move generation
@@ -428,15 +424,19 @@ namespace ChessGame
                 //Can't go further down
                 R = R >> (i * 8);
                 R = R << (i * 8);
+
                 //Friendly piece in the way
                 R = R & ~(friendlyPieces << (i * 8));
+
                 //No more bits
                 if (R == 0L)
                 {
                     break;
                 }
+
                 //Add to legal moves
                 legalMoves = legalMoves | (R >> (i * 8) & ~friendlyPieces);
+
                 //If there is an enemy piece there (after legal moves because we want to be able to capture the enemy piece)
                 R = R & ~(enemyPieces << (i * 8));
             }
@@ -780,7 +780,8 @@ namespace ChessGame
             List<int> debugSquares = new List<int>();
 
             //Generate squares that are attacked by black pieces sicne since it's black's turn in this debugging example
-            ulong squares = AttackedSquares(Board.wK, Board.wQ, Board.wR, Board.wB, Board.wN, Board.wP, Board.bK, blackPieces, whitePieces, false);
+            //ulong squares = AttackedSquares(Board.wK, Board.wQ, Board.wR, Board.wB, Board.wN, Board.wP, Board.bK, blackPieces, whitePieces, false);
+            ulong squares = PinnedPieces(Board.wK, whitePieces, blackPieces, Board.bR, Board.bB, Board.bQ);
 
             //Append to list the legal squares
             for (int i = 0; i < 64; i++)
@@ -842,6 +843,9 @@ namespace ChessGame
 
             //System.Diagnostics.Debug.WriteLine(pieces[1] & 0b11111 << 6);
 
+            
+
+
             //read bitboards as index
             //the bitwise operations will reverse the board so initially the board will be on blacks side
             for (int i = 63; i > 0; i--)
@@ -851,23 +855,28 @@ namespace ChessGame
                 //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
                 //**Implement flags and other piece information
 
-                //Format legalULong
-                legalULong = 0L;
+                
 
                 //First continue if no pieces because that is most likely as there are more empty squares than any other
                 if ((blackPieces | whitePieces) == 0L) { continue; } //pass
 
                 else //There is a piece to generate moves for
                 {
+                    //Format legalULong
+                    legalULong = 0L;
+
                     //Since the index is reversed for bitboards
                     correctFrom = 63 - i;
+
                     //Convert the index to bitboard
                     pieceLocation = Board.BinaryStringToBitboard(correctFrom);
-
 
                     if (whiteTurn) // White to play
                     {
                         //System.Diagnostics.Debug.WriteLine(i);
+
+                        //Generate pin mask (For white)
+                        ulong pins = PinnedPieces(wK, whitePieces, blackPieces, bR, bB, bQ);
 
                         if (((wP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
                         {
@@ -903,6 +912,9 @@ namespace ChessGame
 
                     else // Black to play
                     {
+                        //Generate pin mask (For white)
+                        ulong pins = PinnedPieces(bK, blackPieces, whitePieces, wR, wB, wQ);
+
                         if (((bP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
                         {
                             //Black pawn legal moves
@@ -950,12 +962,94 @@ namespace ChessGame
                     }
                 }
                 
-                
             }
 
 
             return legalSquares;
         } 
+
+        //Pinned pieces bitboard
+        public static ulong PinnedPieces(ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eR, ulong eB, ulong eQ)
+        {
+            //Generate sliding pieces moves from friendly king
+            //Sliding pieces from king (Queen, Rook, Bishop) where they attack friendly pieces to check for overlap in bitboards
+
+            //Reverse enemy and friendly pieces to allow for an overlap with friendly pieces
+            //Don't need to generate queen moves since it's only Rook & Bishop combined, so we can separate them
+
+            //Need to separate into both vertical and horizontal to create a single ray
+            //Horizontal Movement
+            ulong rookBlockMask_Horizontal = eR << 1 | eR >> 1;
+            ulong queenBlockMask_Horizontal = eQ << 1 | eQ >> 1;
+            ulong kingBlockMask_Horizontal = fK << 1 | fK >> 1;
+
+            ulong kingRook_Horizontal = LegalMoves_Rook(fK, enemyPieces | kingBlockMask_Horizontal, friendlyPieces);
+            ulong enemyQueen_Horizontal = LegalMoves_Rook(eQ, enemyPieces | queenBlockMask_Horizontal, friendlyPieces);
+            ulong enemyRook_Horizontal = LegalMoves_Rook(eR, enemyPieces | rookBlockMask_Horizontal, friendlyPieces);
+
+            //Vertical Movement
+            ulong rookBlockMask_Vertical = eR << 8 | eR >> 8;
+            ulong queenBlockMask_Vertical = eQ << 8 | eQ >> 8;
+            ulong kingBlockMask_Vertical = fK << 8 | fK >> 8;
+
+            ulong kingRook_Vertical = LegalMoves_Rook(fK, enemyPieces | kingBlockMask_Vertical, friendlyPieces);
+            ulong enemyQueen_Vertical = LegalMoves_Rook(eQ, enemyPieces | queenBlockMask_Vertical, friendlyPieces);
+            ulong enemyRook_Vertical = LegalMoves_Rook(eR, enemyPieces | rookBlockMask_Vertical, friendlyPieces);
+
+            //Check for pinned pieces
+            ulong queenPins_Horizontal = kingRook_Horizontal & enemyQueen_Horizontal;
+            ulong queenPins_Vertical = kingRook_Vertical & enemyQueen_Vertical;
+
+            ulong rookPins_Horizontal = kingRook_Horizontal & enemyRook_Horizontal;
+            ulong rookPins_Vertical = kingRook_Vertical & enemyRook_Vertical;
+
+            //Generate enemy sliding piece moves (enemy pieces = black)
+
+            //Need to separate the diagonal rays because they can overlap without the piece being actually pinned
+            //To separate we block one of the diagonals by placing "friendly pieces" there
+            //Diagonal (Top right, bottom left ray)
+            ulong bishopBlockMask_TLBR = eB << 9 | eB >> 9;
+            //Diagonal for Queen
+            ulong queenBlockMask_TLBR = eQ << 9 | eQ >> 9;
+            ulong kingBlockMask_TLBR = fK << 9 | fK >> 9;
+
+            //Generate a move ray based on one diagonal
+            ulong enemyBishop_TRBL_Ray = LegalMoves_Bishop(eB, enemyPieces | bishopBlockMask_TLBR, friendlyPieces);
+            ulong enemyQueen_TRBL_Ray = LegalMoves_Bishop(eQ, enemyPieces | queenBlockMask_TLBR, friendlyPieces);
+            ulong kingBishop_TRBL_Ray = LegalMoves_Bishop(fK, enemyPieces | kingBlockMask_TLBR, friendlyPieces);
+
+            //Queen pin mask (Looking for overlaps)
+            ulong queenPins_TRBL_Ray = kingBishop_TRBL_Ray & enemyQueen_TRBL_Ray;
+            //Bishop pin mask (Looking for overlaps)
+            ulong bishopPins_TRBL_Ray = kingBishop_TRBL_Ray & enemyBishop_TRBL_Ray;
+
+            //Diagonal (Top left, bottom right ray)
+            ulong bishopBlockMask_TRBL = eB << 7 | eB >> 7;
+            //Diagonal for Queen
+            ulong queenBlockMask_TRBL = eQ << 7 | eQ >> 7;
+            ulong kingBlockMask_TRBL = fK << 7 | fK >> 7;
+
+            //Generate a move ray based on one diagonal
+            ulong enemyBishop_TLBR_Ray = LegalMoves_Bishop(eB, enemyPieces | bishopBlockMask_TRBL, friendlyPieces);
+            ulong enemyQueen_TLBR_Ray = LegalMoves_Bishop(eQ, enemyPieces | queenBlockMask_TRBL, friendlyPieces);
+            ulong kingBishop_TLBR_Ray = LegalMoves_Bishop(fK, enemyPieces | kingBlockMask_TRBL, friendlyPieces);
+
+            //Queen pin mask (Looking for overlaps)
+            ulong queenPins_TLBR_Ray = kingBishop_TLBR_Ray & enemyQueen_TLBR_Ray;
+            //Bishop pin mask (Looking for overlaps)
+            ulong bishopPins_TLBR_Ray = kingBishop_TLBR_Ray & enemyBishop_TLBR_Ray;
+
+            //Combine the pins
+            ulong queenPins = queenPins_TLBR_Ray | queenPins_TRBL_Ray | queenPins_Horizontal | queenPins_Vertical;
+            ulong bishopPins = bishopPins_TLBR_Ray | bishopPins_TRBL_Ray;
+            ulong rookPins = rookPins_Horizontal | rookPins_Vertical;
+
+            //Return pinned pieces mask
+            return rookPins | bishopPins | queenPins;
+
+        }
+
+
 
         /*
         int[] GetValidMoves()
@@ -991,8 +1085,6 @@ namespace ChessGame
 
             return moves;
         }*/
-
-
 
 
         //Generate the moves & store them

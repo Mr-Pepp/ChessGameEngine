@@ -137,7 +137,6 @@ namespace ChessGame
                     squares[i].dot = false;
                 }
 
-
                 foreach (int e in Moves.DebugSquares())
                 {
                     squares[e].targetSquare = true;
