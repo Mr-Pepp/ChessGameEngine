@@ -830,7 +830,7 @@ namespace ChessGame
 
         //Will generate pinned piece moves
         public static List<int> GenerateAllMoves(ulong wK, ulong wQ, ulong wR, ulong wB, ulong wN, ulong wP,
-            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP) // 0000 0000 0000 0000  to store: flag | to | from
+            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP, bool genKingMoves, ulong allowMask) // 0000 0000 0000 0000  to store: flag | to | from
         {
             List<int> legalSquares = new List<int>();
             InitBitboards(); // Initiate bitboards
@@ -965,7 +965,7 @@ namespace ChessGame
                             //White pawn legal moves bitboard
                             legalULong = LegalMoves_WPawn(pieceLocation, blackPieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
                         }
-                        else if (((wK >> i) & 1L) == 1L)
+                        else if (((wK >> i) & 1L) == 1L & genKingMoves)
                         {
                             //King legal moves bitboard
                             legalULong = LegalMoves_King(pieceLocation, friendlyPieces, blackPieces, whiteTurn, true);
@@ -1004,7 +1004,7 @@ namespace ChessGame
                             //Black pawn legal moves
                             legalULong = LegalMoves_BPawn(pieceLocation, whitePieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
                         }
-                        else if (((bK >> i) & 1L) == 1L)
+                        else if (((bK >> i) & 1L) == 1L & genKingMoves)
                         {
                             //King legal moves bitboard
                             legalULong = LegalMoves_King(pieceLocation, friendlyPieces, whitePieces, whiteTurn, true);
@@ -1031,8 +1031,11 @@ namespace ChessGame
                         }
                     }
 
+                    //Filter blocked moves (For checks; blocking moves and capturing piece)
+                    legalULong = legalULong & allowMask;
+
                     //Append to list the legal squares
-                    if (legalULong != 0L)
+                    if (legalULong != 0L) // There are moves to append
                     {
                         for (int y = 0; y < 64; y++)
                         {
@@ -1051,6 +1054,186 @@ namespace ChessGame
 
             return legalSquares;
         }
+
+
+        public static List<int> GenerateGameMoves(ulong wK, ulong wQ, ulong wR, ulong wB, ulong wN, ulong wP,
+            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP)
+        {
+            ulong[] checkArray;
+            ulong legalULong = 0L;
+            ulong pieceLocation;
+
+            List<int> legalSquares = new List<int>();
+
+            //InitBitboards();
+
+            //Check for checks
+            if (whiteTurn) //White to move
+            {
+                //System.Diagnostics.Debug.WriteLine(whitePieces);
+
+                // [Knights, Bishops, Rooks, Queens, Pawns]
+                checkArray = KingHits(wK, whiteTurn, whitePieces, blackPieces);
+            }
+            else //Black to move
+            {
+                //System.Diagnostics.Debug.WriteLine(blackPieces);
+
+                // [Knights, Bishops, Rooks, Queens, Pawns]
+                checkArray = KingHits(bK, whiteTurn, blackPieces, whitePieces);
+            }
+
+            int checks = 0;
+            
+            foreach (ulong e in checkArray)
+            {
+                if (e != 0L) //There is a check
+                {
+                    checks++;
+                }
+            }
+
+            if (checks > 0) //There is a check
+            {
+                if (checks == 1) //Single check, therefore king can move, checker can be captured, or the check can be blocked
+                {
+
+                    //For generating all moves except from king to check for blocks or piece captures
+                    List<int> pseudoLegalMoves;
+                    ulong allowedMask = 0L; // Used for filtering moves when generating moves (on blocked or king captures)
+                    ulong kingLocation;
+                    
+                    if (whiteTurn) // White to play
+                    {
+                        kingLocation = wK;
+
+                        //Only king moves
+                        legalULong = LegalMoves_King(kingLocation, whitePieces, blackPieces, whiteTurn, true);
+
+                    }
+                    else // Black to play
+                    {
+                        kingLocation = bK;
+
+                        //Only king moves
+                        legalULong = LegalMoves_King(kingLocation, blackPieces, whitePieces, whiteTurn, true);
+
+                    }
+
+                    
+
+                    //Blocking the check
+                    //If a sliding piece checked (Queen, Rook, Bishop), can block
+                    //checkArray = [Knights, Bishops, Rooks, Queens, Pawns]
+
+                    if ((checkArray[1] | checkArray[2] | checkArray[3]) != 0L) //The checker is a sliding piece
+                    {
+                        //find King index in bitboard
+
+                        if (checkArray[1] != 0) // Check by Bishop
+                        {
+                            //To allow for the capture of the checker
+                            allowedMask = checkArray[1];
+
+                            //Get the index of the checker
+                        }
+                        else if (checkArray[2] != 0) // Check by Rook
+                        {
+                            //To allow for the capture of the checker
+                            allowedMask = checkArray[2];
+
+                            //Get the index of the checker
+                        }
+                        else if (checkArray[3] != 0) // Check by Queen
+                        {
+                            //To allow for the capture of the checker
+                            allowedMask = checkArray[3];
+                        }
+                    }
+
+                    legalSquares = ulongTranslator(kingLocation, legalULong, legalSquares);
+
+                    foreach (int e in GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, false,
+                        allowedMask)) //loop through blocks and capturing checker moves to then append to the move list
+                    {
+                        legalSquares.Add(e); //Add to legal squares list
+                    }
+                    
+                    return legalSquares;
+                }
+
+                else //Double check, therefore the king can only move
+                {
+                    if (whiteTurn) // White to move
+                    {
+                        pieceLocation = wK;
+
+                        //Only king moves
+                        legalULong = LegalMoves_King(pieceLocation, whitePieces, blackPieces, whiteTurn, true);
+                    }
+                    else // Black to move
+                    {
+                        pieceLocation = bK;
+
+                        //Only king moves
+                        legalULong = LegalMoves_King(pieceLocation, blackPieces, whitePieces, whiteTurn, true);
+                    }
+
+                    if (legalULong != 0L) // There are king moves available
+                    {
+                        //Add moves to the list
+                        //Double check, therefore only king can move
+
+                        legalSquares = ulongTranslator(pieceLocation, legalULong, legalSquares);
+
+                        return legalSquares;
+
+                    }
+
+                    else // CHECKMATE since can't move king
+                    {
+                        System.Diagnostics.Debug.WriteLine("Checkmate");
+
+                        // Return checkmate
+                        return legalSquares;
+                    }
+                }
+            }
+
+            else //No check
+            {
+                System.Diagnostics.Debug.WriteLine("No check");
+                return GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, true, ~(ulong)0L);
+            }
+        }
+
+        public static List<int> ulongTranslator(ulong pieceLocation, ulong legalULong, List<int> legalSquares) //Used for single pieces because of break
+        {
+            for (int i = 0; i < 64; i++) // Locate the index of the square that the bitboard is on
+            {
+                if (((pieceLocation >> i) & 1L) == 1L) // If the king bit is located
+                {
+                    int correctFrom = 63 - i; // Reverses bitboard to read
+
+                    for (int y = 0; y < 64; y++)
+                    {
+
+                        if (((legalULong >> y) & 1L) == 1L)
+                        {
+                            // Flag | To | From
+                            legalSquares.Add((63 - y) << 6 | correctFrom);
+                        }
+
+                    }
+
+                    break; // Used for single pieces because of break
+                }
+            }
+
+            return legalSquares;
+        }
+
+
 
         //Pinned pieces bitboard
 

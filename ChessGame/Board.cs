@@ -206,7 +206,7 @@ namespace ChessGame
                             //Then export all the (to) moves into another list based on the (from) matching the current square
 
                             //To only run the move generation once
-                            moves = Moves.GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
+                            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
                             fromMoves = new List<int>();
 
                             //Go through the generated moves and select the appropriate move
