@@ -781,7 +781,7 @@ namespace ChessGame
 
             //Generate squares that are attacked by black pieces sicne since it's black's turn in this debugging example
             //ulong squares = AttackedSquares(Board.wK, Board.wQ, Board.wR, Board.wB, Board.wN, Board.wP, Board.bK, blackPieces, whitePieces, false);
-            ulong squares = PinnedPieces(Board.wK, whitePieces, blackPieces, Board.bR, Board.bB, Board.bQ);
+            ulong squares = PinnedPieces(Board.bK, blackPieces, whitePieces, Board.wR, Board.wB, Board.wQ);
 
             //Append to list the legal squares
             for (int i = 0; i < 64; i++)
@@ -858,6 +858,7 @@ namespace ChessGame
                 horizontalPins = Pins_Horizontal(wK, whitePieces, blackPieces, bR, bQ);
                 verticalPins = Pins_Vertical(wK, whitePieces, blackPieces, bR, bQ);
 
+                //Generate mask diagonal pins
                 BLTRPins = Pins_BLTR(wK, whitePieces, blackPieces, bB, bQ);
                 BRTLPins = Pins_BRTL(wK, whitePieces, blackPieces, bB, bQ);
 
@@ -867,11 +868,13 @@ namespace ChessGame
 
             else //Black to play
             {
+                //Generate mask horizontal and vertical pins
                 horizontalPins = Pins_Horizontal(bK, blackPieces, whitePieces, wR, wQ);
                 verticalPins = Pins_Vertical(bK, blackPieces, whitePieces, wR, wQ);
 
-                BLTRPins = Pins_BLTR(wK, blackPieces, whitePieces, wB, wQ);
-                BRTLPins = Pins_BRTL(wK, blackPieces, whitePieces, wB, wQ);
+                //Generate mask diagonal pins
+                BLTRPins = Pins_BLTR(bK, blackPieces, whitePieces, wB, wQ);
+                BRTLPins = Pins_BRTL(bK, blackPieces, whitePieces, wB, wQ);
 
                 //Generate overall pin mask
                 pins = horizontalPins | verticalPins | BRTLPins | BLTRPins;
@@ -947,6 +950,7 @@ namespace ChessGame
                             pinnedBlock = pieceLocation << 1 | pieceLocation << 9 | pieceLocation << 7 |
                                 pieceLocation >> 1 | pieceLocation >> 9 | pieceLocation >> 7;
                         }
+
                     }
 
                     if (whiteTurn) // White to play
@@ -956,7 +960,7 @@ namespace ChessGame
                         //Assign friendlyPieces including pinnedPiece block
                         friendlyPieces = whitePieces | pinnedBlock;
 
-                        if (((wP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
+                        if (((wP >> i) & 1L) == 1L) //Pawns first as they are most likely to appear since they are more common
                         {
                             //White pawn legal moves bitboard
                             legalULong = LegalMoves_WPawn(pieceLocation, blackPieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
@@ -990,10 +994,12 @@ namespace ChessGame
 
                     else // Black to play
                     {
+                        //System.Diagnostics.Debug.WriteLine(pin);
+
                         //Assign friendlyPieces including pinnedPiece block
                         friendlyPieces = blackPieces | pinnedBlock;
 
-                        if (((bP >> i) & 1L) == 1L) //Pawns first as most likely since they are more common
+                        if (((bP >> i) & 1L) == 1L) //Pawns first as they are most likely to appear since they are more common
                         {
                             //Black pawn legal moves
                             legalULong = LegalMoves_BPawn(pieceLocation, whitePieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
