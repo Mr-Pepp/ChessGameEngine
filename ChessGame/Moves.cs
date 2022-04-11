@@ -446,7 +446,7 @@ namespace ChessGame
             //Moving Vertically Up
             for (int i = 1; i < 8; i++)
             {
-                //Can't go further down
+                //Can't go further up
                 R = R << (i * 8);
                 R = R >> (i * 8);
                 //Friendly piece in the way
@@ -882,7 +882,7 @@ namespace ChessGame
 
             //read bitboards as index
             //the bitwise operations will reverse the board so initially the board will be on blacks side
-            for (int i = 63; i > 0; i--)
+            for (int i = 63; i >= 0; i--)
             {
                 //System.Diagnostics.Debug.WriteLine(i);
 
@@ -1098,11 +1098,12 @@ namespace ChessGame
                 if (checks == 1) //Single check, therefore king can move, checker can be captured, or the check can be blocked
                 {
 
-                    //For generating all moves except from king to check for blocks or piece captures
-                    List<int> pseudoLegalMoves;
                     ulong allowedMask = 0L; // Used for filtering moves when generating moves (on blocked or king captures)
                     ulong kingLocation;
-                    
+
+                    //Combine all the check locations for capturing the checker
+                    ulong checkerMask = checkArray[0] | checkArray[1] | checkArray[2] | checkArray[3] | checkArray[4];
+
                     if (whiteTurn) // White to play
                     {
                         kingLocation = wK;
@@ -1120,36 +1121,43 @@ namespace ChessGame
 
                     }
 
-                    
+                    //Mask for capturing the checker, to allow for the capture of the checker
+                    allowedMask = checkerMask;
 
                     //Blocking the check
                     //If a sliding piece checked (Queen, Rook, Bishop), can block
                     //checkArray = [Knights, Bishops, Rooks, Queens, Pawns]
 
-                    if ((checkArray[1] | checkArray[2] | checkArray[3]) != 0L) //The checker is a sliding piece
+                    if ((checkArray[1] | checkArray[2] | checkArray[3]) != 0) //sliding piece
                     {
-                        //find King index in bitboard
 
+                        //The checker is a sliding piece if conditions are met
                         if (checkArray[1] != 0) // Check by Bishop
                         {
-                            //To allow for the capture of the checker
-                            allowedMask = checkArray[1];
 
-                            //Get the index of the checker
+
                         }
                         else if (checkArray[2] != 0) // Check by Rook
                         {
-                            //To allow for the capture of the checker
-                            allowedMask = checkArray[2];
 
-                            //Get the index of the checker
+
                         }
-                        else if (checkArray[3] != 0) // Check by Queen
+                        else // Check by Queen
                         {
-                            //To allow for the capture of the checker
-                            allowedMask = checkArray[3];
+
                         }
+
+                        //Get the index of the checker
+                        int checkerIndex = GetBitboardIndex(checkerMask);
+
+                        //Get the index of the king
+                        int kingIndex = GetBitboardIndex(kingLocation);
+
+                        //Create a mask for squares in between the check
+                        BetweenPieceRay(1, kingLocation, checkerMask, emptySquares);
+
                     }
+
 
                     legalSquares = ulongTranslator(kingLocation, legalULong, legalSquares);
 
@@ -1202,9 +1210,25 @@ namespace ChessGame
 
             else //No check
             {
-                System.Diagnostics.Debug.WriteLine("No check");
+                //Generate moves normally
                 return GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, true, ~(ulong)0L);
             }
+        }
+
+        public static int GetBitboardIndex(ulong pieceLocation) // Used for single piece bitboard
+        {
+            int pieceIndex = 0;
+            //Get the index of the bitboard piece
+            for (int i = 0; i < 64; i++)
+            {
+                //Can set a condition equal to 1 without an AND bitwise operation because there is only one bit
+                if ((pieceLocation >> i) == 1L) //There is a bit on the index
+                {
+                    pieceIndex = 63 - i;
+                    break;
+                }
+            }
+            return pieceIndex;
         }
 
         public static List<int> ulongTranslator(ulong pieceLocation, ulong legalULong, List<int> legalSquares) //Used for single pieces because of break
@@ -1234,6 +1258,246 @@ namespace ChessGame
         }
 
 
+        //For sliding pieces
+        public enum Slider // Remove if not in use ____
+        {
+            Bishop, Rook, Queen
+        }
+
+
+
+        public static ulong BetweenPieceRay(int slider, ulong fromPiece, ulong toPiece, ulong emptySquares)
+        {
+            //fromPiece is king
+            //toPiece is checker
+
+            ulong inBetweenMask = 0L;
+            ulong fixedFromPiece = fromPiece;
+
+            // Adding the toPiece to emptySquares, so it does not remove the bit from fromPieces, breaking the loop
+            emptySquares = emptySquares | toPiece;
+
+            if (fromPiece < toPiece) // Left, TL, Up, TR
+            {
+                //slider: 0 = Bishop, 1 = Rook, 2 = Queen
+                if (slider == 1 | slider == 2) // Rook or Queen
+                {
+
+                    // Ray Left
+                    for (int i = 1; i < 8; i++)
+                    {
+                        //Move by one
+                        //fromPiece out of the board & If there is a piece in the way
+                        fixedFromPiece = (fixedFromPiece << 1) & ~(file_H) & emptySquares;
+
+                        if (fixedFromPiece == 0L)
+                        {
+                            break;
+                        }
+
+                        else if (fixedFromPiece == toPiece) //If it has found the checker
+                        {
+                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
+                            return inBetweenMask;
+                        }
+                        //Add to inBetweenMask
+                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                    }
+
+                    //If not found then format inBetweenMask and fixedFromPiece
+                    inBetweenMask = 0L;
+                    fixedFromPiece = fromPiece;
+
+                    // Ray Up
+                    for (int i = 1; i < 8; i++)
+                    {
+                        //Move by one
+                        //fromPiece out of the board & If there is a piece in the way
+                        fixedFromPiece = (fixedFromPiece << 8) & emptySquares;
+
+                        System.Diagnostics.Debug.WriteLine(fixedFromPiece);
+
+                        if (fixedFromPiece == 0L)
+                        {
+                            break;
+                        }
+
+                        else if (fixedFromPiece == toPiece) //If it has found the checker
+                        {
+                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
+                            return inBetweenMask;
+                        }
+                        //Add to inBetweenMask
+                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                    }
+
+                }
+
+                if (slider == 0 | slider == 2) // Bishop or Queen
+                {
+                    // Ray TL
+
+
+                    // Ray TR
+
+
+                }
+
+
+            }
+            else // Right, BR, Down, BL
+            {
+                //slider: 0 = Bishop, 1 = Rook, 2 = Queen
+                if (slider == 1 | slider == 2)
+                {
+                    // Ray Right
+                    for (int i = 1; i < 8; i++)
+                    {
+                        //Move by one
+                        //fromPiece out of the board & If there is a piece in the way
+                        fixedFromPiece = (fixedFromPiece >> 1) & ~(file_A) & emptySquares;
+
+                        if (fixedFromPiece == 0L)
+                        {
+                            break;
+                        }
+
+                        else if (fixedFromPiece == toPiece) //If it has found the checker
+                        {
+                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
+                            return inBetweenMask;
+                        }
+                        //Add to inBetweenMask
+                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                    }
+
+                    //If not found then format inBetweenMask and fixedFromPiece
+                    inBetweenMask = 0L;
+                    fixedFromPiece = fromPiece;
+
+                    // Ray Down
+                    for (int i = 1; i < 8; i++)
+                    {
+                        //Move by one
+                        //fromPiece out of the board & If there is a piece in the way
+                        fixedFromPiece = (fixedFromPiece >> 8) & emptySquares;
+
+                        System.Diagnostics.Debug.WriteLine(fixedFromPiece);
+
+                        if (fixedFromPiece == 0L)
+                        {
+                            break;
+                        }
+
+                        else if (fixedFromPiece == toPiece) //If it has found the checker
+                        {
+                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
+                            return inBetweenMask;
+                        }
+                        //Add to inBetweenMask
+                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                    }
+                }
+
+                if (slider == 0 | slider == 2)
+                {
+                    // Ray BR
+
+
+                    // Ray BL
+
+
+                }
+
+            }
+
+
+
+            /*
+            ulong legalMoves = 0L;
+            //Replace bitboard since it gets removed
+            ulong fixedR = R;
+
+
+            //Have to run loop until there is a piece to the right of the rook
+
+            //Moving Horizontally Right
+            for (int i = 1; i < 8; i++)
+            {
+
+                //If outside of bounds on file A, remove the appropriate rook bit(s)
+                R = R & ~(file_A << i);
+                //If friendly piece in the way, remove the appropriate rook bit(s)
+                R = R & ~(friendlyPieces << i);
+
+                //No more bits in bitboard
+                if (R == 0L)
+                {
+                    break;
+                }
+
+                legalMoves = legalMoves | (R >> i);
+
+                //Does this operation after because we still want to capture the enemy piece
+                R = R & ~(enemyPieces << i);
+            }
+
+            //instantiate original bitboard
+            R = fixedR;
+            
+
+            //instantiate original bitboard
+            R = fixedR;
+            //Moving Vertically Down
+            for (int i = 1; i < 8; i++)
+            {
+
+                //Can't go further down
+                R = R >> (i * 8);
+                R = R << (i * 8);
+
+                //Friendly piece in the way
+                R = R & ~(friendlyPieces << (i * 8));
+
+                //No more bits
+                if (R == 0L)
+                {
+                    break;
+                }
+
+                //Add to legal moves
+                legalMoves = legalMoves | (R >> (i * 8) & ~friendlyPieces);
+
+                //If there is an enemy piece there (after legal moves because we want to be able to capture the enemy piece)
+                R = R & ~(enemyPieces << (i * 8));
+            }
+
+            //instantiate original bitboard
+            R = fixedR;
+            //Moving Vertically Up
+            for (int i = 1; i < 8; i++)
+            {
+                //Can't go further down
+                R = R << (i * 8);
+                R = R >> (i * 8);
+                //Friendly piece in the way
+                R = R & ~(friendlyPieces >> (i * 8));
+                //No more bits
+                if (R == 0L)
+                {
+                    break;
+                }
+                //Add to legal moves
+                legalMoves = legalMoves | (R << (i * 8) & ~friendlyPieces);
+                //If there is an enemy piece there (after legal moves because we want to be able to capture the enemy piece)
+                R = R & ~(enemyPieces >> (i * 8));
+            }
+
+            */
+
+            return 0L;
+        }
+        
 
         //Pinned pieces bitboard
 
@@ -1431,10 +1695,6 @@ namespace ChessGame
 
             void GenerateMoves()
             {
-                
-                
-                
-
 
 
             }
