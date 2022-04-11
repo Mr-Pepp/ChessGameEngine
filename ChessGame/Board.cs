@@ -11,6 +11,11 @@ namespace ChessGame
         public static Square[] squares = new Square[64]; //1D array for FEN
         private OutsideBoard outsideBoard;
 
+        
+
+        //EndGameScreen
+        private EndGameScreen endGameScreen;
+
         //pieceInfo //Piece information Piece
         //Stores the information of all the pieces on the board
         // 
@@ -34,6 +39,9 @@ namespace ChessGame
         private bool mousePressed;
         private Rectangle mousePieceRect;
 
+        //Public Blank texture to pass
+        public Texture2D blankTexture;
+
 
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
@@ -47,8 +55,6 @@ namespace ChessGame
 
 
         //For when the piece is selected
-        //See if the moves have been generated for the piece selection
-        bool generateMoves;
         //Make a list of moves that are only appropriate 
         List<int> fromMoves;
         //For storing the generated moves in current position
@@ -66,7 +72,7 @@ namespace ChessGame
         public void LoadContent(SpriteBatch _spriteBatch, GraphicsDevice _graphicsDevice)
         {
             // create a white texture pixel
-            Texture2D blankTexture = new Texture2D(_spriteBatch.GraphicsDevice, 1, 1);
+            blankTexture = new Texture2D(_spriteBatch.GraphicsDevice, 1, 1);
             blankTexture.SetData(new Color[] { Color.White });
 
 
@@ -101,6 +107,13 @@ namespace ChessGame
                 position = _initPos,
             };
 
+            endGameScreen = new EndGameScreen(blankTexture, _colorDic["Endgame Background"], _colorDic["Endgame Line"], _squareSize)
+            {
+                position = _initPos,
+            };
+
+            endGameScreen.OnLoad();
+
             //run load FEN position
             LoadFEN(FEN);
 
@@ -110,46 +123,47 @@ namespace ChessGame
         //Update, looped
         public void Update()
         {
-            //'R' is pressed
-            if (Keyboard.GetState().IsKeyDown(Keys.R))
+            
+
+            if (GameState.state == 0) // If not check or stalemate
             {
-                //load starting pos
-                LoadFEN(defaultFEN);
-
-                pieceSelected = false;
-                Moves.whiteTurn = true;
-            }
-
-            if (Keyboard.GetState().IsKeyDown(Keys.T))
-            {
-                //System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
-
-            }
-
-            //'D' is pressed -- for debugging purposes
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-            {
-
-                //Clear board from dots and target squares
-                for (int i = 0; i < 64; i++)
+                //'R' is pressed
+                if (Keyboard.GetState().IsKeyDown(Keys.R))
                 {
-                    squares[i].targetSquare = false;
-                    squares[i].dot = false;
+                    //load starting pos
+                    LoadFEN(defaultFEN);
+
+                    pieceSelected = false;
+                    Moves.whiteTurn = true;
                 }
 
-                foreach (int e in Moves.DebugSquares())
+                if (Keyboard.GetState().IsKeyDown(Keys.T))
                 {
-                    squares[e].targetSquare = true;
+                    //System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
+
                 }
 
+                //'D' is pressed -- for debugging purposes
+                if (Keyboard.GetState().IsKeyDown(Keys.D))
+                {
 
-            }
+                    //Clear board from dots and target squares
+                    for (int i = 0; i < 64; i++)
+                    {
+                        squares[i].targetSquare = false;
+                        squares[i].dot = false;
+                    }
 
-            if (GameState.state == 0)
-            {
+                    foreach (int e in Moves.DebugSquares())
+                    {
+                        squares[e].targetSquare = true;
+                    }
+
+
+                }
+
                 PieceSelection();
             }
-            
         }
 
 
@@ -169,6 +183,9 @@ namespace ChessGame
                 //draw piece at mouse point
                 _spriteBatch.Draw(mousePiece, mousePieceRect, Color.White);
             }
+
+            //Will draw if there is a check / stalemate
+            endGameScreen.Draw(_spriteBatch);
 
         }
 

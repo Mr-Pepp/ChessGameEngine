@@ -11,7 +11,10 @@ namespace ChessGame
         private SpriteBatch _spriteBatch;
         RenderTarget2D renderTarget;
 
-        public float scale = 0.44444f;
+        //Create the font
+        public static SpriteFont text; // Public to use at anytime
+
+        //public float scale = 0.44444f;
 
         private Board board;
 
@@ -23,6 +26,8 @@ namespace ChessGame
             { "Inner Outside Board", new Color(194, 141, 103) },
             { "Background", new Color(74, 44, 42) },
             { "Target Colour", new Color(254, 172, 238) }, // currently not referenced. [new] in Square.cs
+            { "Endgame Background", new Color(93, 119, 123, 215) },
+            { "Endgame Line", new Color(65, 86, 86) }
         };
 
         private int squareSize;
@@ -48,8 +53,8 @@ namespace ChessGame
         {
             // TODO: Add your initialization logic here
 
-            _graphics.PreferredBackBufferWidth = 1200;
-            _graphics.PreferredBackBufferHeight = 1200;
+            _graphics.PreferredBackBufferWidth = 900;
+            _graphics.PreferredBackBufferHeight = 900;
             _graphics.ApplyChanges();
 
             base.Initialize();
@@ -60,6 +65,9 @@ namespace ChessGame
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             renderTarget = new RenderTarget2D(GraphicsDevice, 1920, 1080);
+
+            //Load font
+            text = Content.Load<SpriteFont>("Fonts/Ubuntu32");
 
             //load & set textures
             Piece.whiteKing = Content.Load<Texture2D>(dir + "White_King");
@@ -101,8 +109,8 @@ namespace ChessGame
             };
 
             //Set other parameters
-            initPos = new Vector2(120, 120);
-            squareSize = 120;
+            initPos = new Vector2(90, 90);
+            squareSize = 90;
 
             board = new Board(squareSize, initPos, colorDic);
 
