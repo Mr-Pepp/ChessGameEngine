@@ -1172,6 +1172,7 @@ namespace ChessGame
                     if (legalSquares.Count == 0) // Checkmate since no moves + in check
                     {
                         System.Diagnostics.Debug.WriteLine("Checkmate");
+                        legalSquares.Add(1 << 14); //Adds a checkmate flag
                     }
                     
                     return legalSquares;
@@ -1208,6 +1209,7 @@ namespace ChessGame
                     else // CHECKMATE since can't move king
                     {
                         System.Diagnostics.Debug.WriteLine("Checkmate");
+                        legalSquares.Add(1 << 14);
 
                         // Return checkmate
                         return legalSquares;
@@ -1222,6 +1224,7 @@ namespace ChessGame
                 if (legalSquares.Count == 0) // Stalemate
                 {
                     System.Diagnostics.Debug.WriteLine("Stalemate");
+                    legalSquares.Add(1 << 15);
                 }
 
                 return legalSquares;
@@ -1433,7 +1436,6 @@ namespace ChessGame
 
                         else if (fixedFromPiece == toPiece) //If it has found the checker
                         {
-                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
                             return inBetweenMask;
                         }
                         //Add to inBetweenMask
@@ -1458,14 +1460,13 @@ namespace ChessGame
 
                         else if (fixedFromPiece == toPiece) //If it has found the checker
                         {
-                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
                             return inBetweenMask;
                         }
                         //Add to inBetweenMask
                         inBetweenMask = inBetweenMask | fixedFromPiece;
                     }
                 }
-                System.Diagnostics.Debug.WriteLine(slider);
+
                 if (slider == 0 | slider == 2) // Bishop or Queen
                 {
 
@@ -1494,7 +1495,6 @@ namespace ChessGame
 
                         else if (fixedFromPiece == toPiece) //If it has found the checker
                         {
-                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
                             return inBetweenMask;
                         }
 
@@ -1527,7 +1527,6 @@ namespace ChessGame
 
                         else if (fixedFromPiece == toPiece) //If it has found the checker
                         {
-                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
                             return inBetweenMask;
                         }
 
@@ -1539,60 +1538,6 @@ namespace ChessGame
 
             }
 
-
-
-            /*
-            
-            //Restore bitboard
-            B = fixedB;
-            //Moving Diagonally Top-Right
-            for (int i = 1; i < 8; i++)
-            {
-                //Outside the board (Top)
-                B = B << (i * 8);
-                B = B >> (i * 8);
-                //Outside the board (Right)
-                //Shifting to left makes the file_A bitboard go up a file which means that it can miss the piece
-                //So we have to shift the file_A bitboard down by 1 after the bitwise operation
-                B = B & ~((file_A << i) >> 8);
-                //Friendly piece in the way
-                B = B & ~(friendlyPieces >> (i * 7));
-                //No bits in bitboard
-                if (B == 0L)
-                {
-                    break;
-                }
-                //Append legal moves
-                legalMoves = legalMoves | (B << (i * 7) & ~friendlyPieces);
-                //Enemy piece in the way
-                B = B & ~(enemyPieces >> (i * 7));
-            }
-
-            //Restore bitboard
-            B = fixedB;
-            //Moving Diagonally Bottom-Right
-            for (int i = 1; i < 8; i++)
-            {
-                //Outside the board (Bottom)
-                B = B >> (i * 8);
-                B = B << (i * 8);
-                //Outside the board (Right)
-                B = B & ~(file_A << i);
-                //Friendly piece in the way
-                B = B & ~(friendlyPieces << (i * 9));
-                //No bits in bitboard
-                if (B == 0L)
-                {
-                    break;
-                }
-                //Append legal moves
-                legalMoves = legalMoves | (B >> (i * 9) & ~friendlyPieces);
-                //Enemy piece in the way
-                B = B & ~(enemyPieces << (i * 9));
-            }
-
-        */
-
             return 0L;
         }
         
@@ -1603,9 +1548,9 @@ namespace ChessGame
         public static ulong Pins_Horizontal (ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eR, ulong eQ)
         {
             //Horizontal Movement
-            ulong rookBlockMask_Horizontal = eR << 1 | eR >> 1;
-            ulong queenBlockMask_Horizontal = eQ << 1 | eQ >> 1;
-            ulong kingBlockMask_Horizontal = fK << 1 | fK >> 1;
+            ulong rookBlockMask_Horizontal = eR << 8 | eR >> 8;
+            ulong queenBlockMask_Horizontal = eQ << 8 | eQ >> 8;
+            ulong kingBlockMask_Horizontal = fK << 8 | fK >> 8;
 
             ulong kingRook_Horizontal = LegalMoves_Rook(fK, enemyPieces | kingBlockMask_Horizontal, friendlyPieces);
             ulong enemyQueen_Horizontal = LegalMoves_Rook(eQ, enemyPieces | queenBlockMask_Horizontal, friendlyPieces);
@@ -1619,9 +1564,9 @@ namespace ChessGame
         public static ulong Pins_Vertical(ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eR, ulong eQ)
         {
             //Vertical Movement
-            ulong rookBlockMask_Vertical = eR << 8 | eR >> 8;
-            ulong queenBlockMask_Vertical = eQ << 8 | eQ >> 8;
-            ulong kingBlockMask_Vertical = fK << 8 | fK >> 8;
+            ulong rookBlockMask_Vertical = eR << 1 | eR >> 1;
+            ulong queenBlockMask_Vertical = eQ << 1 | eQ >> 1;
+            ulong kingBlockMask_Vertical = fK << 1 | fK >> 1;
 
             ulong kingRook_Vertical = LegalMoves_Rook(fK, enemyPieces | kingBlockMask_Vertical, friendlyPieces);
             ulong enemyQueen_Vertical = LegalMoves_Rook(eQ, enemyPieces | queenBlockMask_Vertical, friendlyPieces);

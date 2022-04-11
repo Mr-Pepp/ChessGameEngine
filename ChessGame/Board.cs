@@ -206,7 +206,8 @@ namespace ChessGame
                             //Then export all the (to) moves into another list based on the (from) matching the current square
 
                             //Fetch all the moves from the current square
-                            fromMoves = new List<int>();
+                            fromMoves = new List<int>(); 
+
 
                             //Go through the generated moves and select the appropriate move
                             foreach (int e in moves)
@@ -495,6 +496,22 @@ namespace ChessGame
 
                             //Generate moves once a new position is established
                             moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
+
+
+                            // (Stalemate | Checkmate) (0b1100 0000 0000 0000) | flag | to | from
+
+                            if (moves.Count == 1) // Only one move, therefore could have returned gamestate
+                            {
+                                if (moves[0] >> 14 == 1L) // Checkmate
+                                {
+                                    // Checkmate State
+                                }
+
+                                else if (moves[0] >> 15 == 1L) // Stalemate
+                                {
+                                    // Stalemate State
+                                }
+                            }
 
                             //end loop
                             goto loopEnd2;
