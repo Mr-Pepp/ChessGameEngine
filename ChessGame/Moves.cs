@@ -681,7 +681,7 @@ namespace ChessGame
             }
 
             // [Knights, Bishops, Rooks, Queens, Pawns]
-            return new ulong[] { aN, aR, aB, aQ, aP };
+            return new ulong[] { aN, aB, aR, aQ, aP };
         }
 
 
@@ -1130,9 +1130,10 @@ namespace ChessGame
 
                     if ((checkArray[1] | checkArray[2] | checkArray[3]) != 0) //sliding piece
                     {
-                        //slider: 0 = Bishop, 1 = Rook, 2 = Queen 
+                        //slider: 0 = Bishop,   1 = Rook,   2 = Queen 
                         int sliderPiece;
 
+                        // [Knights, Bishops, Rooks, Queens, Pawns]
                         //The checker is a sliding piece if conditions are met
                         if (checkArray[1] != 0) // Check by Bishop
                         {
@@ -1153,7 +1154,7 @@ namespace ChessGame
                         //Get the index of the king
                         int kingIndex = GetBitboardIndex(kingLocation);
 
-                        //Creates a mask for squares in between the check
+                        //Creates a mask for squares in-between the check
                         allowedMask = allowedMask | BetweenPieceRay(sliderPiece, kingLocation, checkerMask, emptySquares);
 
                     }
@@ -1165,6 +1166,11 @@ namespace ChessGame
                         allowedMask)) //loop through blocks and capturing checker moves to then append to the move list
                     {
                         legalSquares.Add(e); //Add to legal squares list
+                    }
+
+                    if (legalSquares.Count == 0) // Checkmate since no moves + in check
+                    {
+                        System.Diagnostics.Debug.WriteLine("Checkmate");
                     }
                     
                     return legalSquares;
@@ -1211,7 +1217,13 @@ namespace ChessGame
             else //No check
             {
                 //Generate moves normally
-                return GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, true, ~(ulong)0L);
+                legalSquares = GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, true, ~(ulong)0L);
+                if (legalSquares.Count == 0) // Stalemate
+                {
+                    System.Diagnostics.Debug.WriteLine("Stalemate");
+                }
+
+                return legalSquares;
             }
         }
 
@@ -1297,7 +1309,6 @@ namespace ChessGame
 
                         else if (fixedFromPiece == toPiece) //If it has found the checker
                         {
-                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
                             return inBetweenMask;
                         }
                         //Add to inBetweenMask
@@ -1322,7 +1333,6 @@ namespace ChessGame
 
                         else if (fixedFromPiece == toPiece) //If it has found the checker
                         {
-                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
                             return inBetweenMask;
                         }
                         //Add to inBetweenMask
@@ -1330,9 +1340,12 @@ namespace ChessGame
                     }
 
                 }
+                
 
                 if (slider == 0 | slider == 2) // Bishop or Queen
                 {
+
+
                     //format inBetweenMask and fixedFromPiece for Queen
                     inBetweenMask = 0L;
                     fixedFromPiece = fromPiece;
@@ -1357,7 +1370,6 @@ namespace ChessGame
 
                         else if (fixedFromPiece == toPiece) //If it has found the checker
                         {
-                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
                             return inBetweenMask;
                         }
 
@@ -1390,7 +1402,6 @@ namespace ChessGame
 
                         else if (fixedFromPiece == toPiece) //If it has found the checker
                         {
-                            System.Diagnostics.Debug.WriteLine("Found checker!!!");
                             return inBetweenMask;
                         }
                         
@@ -1405,7 +1416,7 @@ namespace ChessGame
             else // Right, BR, Down, BL
             {
                 //slider: 0 = Bishop, 1 = Rook, 2 = Queen
-                if (slider == 1 | slider == 2)
+                if (slider == 1 | slider == 2) // Rook or Queen
                 {
                     // Ray Right
                     for (int i = 1; i < 8; i++)
@@ -1453,8 +1464,8 @@ namespace ChessGame
                         inBetweenMask = inBetweenMask | fixedFromPiece;
                     }
                 }
-
-                if (slider == 0 | slider == 2)
+                System.Diagnostics.Debug.WriteLine(slider);
+                if (slider == 0 | slider == 2) // Bishop or Queen
                 {
 
 
