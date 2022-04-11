@@ -145,7 +145,11 @@ namespace ChessGame
 
             }
 
-            PieceSelection();
+            if (GameState.state == 0)
+            {
+                PieceSelection();
+            }
+            
         }
 
 
@@ -505,11 +509,13 @@ namespace ChessGame
                                 if (moves[0] >> 14 == 1L) // Checkmate
                                 {
                                     // Checkmate State
+                                    GameState.state = 1;
                                 }
 
                                 else if (moves[0] >> 15 == 1L) // Stalemate
                                 {
                                     // Stalemate State
+                                    GameState.state = 2;
                                 }
                             }
 
