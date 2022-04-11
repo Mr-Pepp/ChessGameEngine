@@ -205,8 +205,7 @@ namespace ChessGame
                             //Generate all the moves and add it to the moves list
                             //Then export all the (to) moves into another list based on the (from) matching the current square
 
-                            //To only run the move generation once
-                            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
+                            //Fetch all the moves from the current square
                             fromMoves = new List<int>();
 
                             //Go through the generated moves and select the appropriate move
@@ -494,9 +493,8 @@ namespace ChessGame
                             //assign texture and moves
                             squares[square].AssignPiece();
 
-                            //Initialise bitboards in the Moves class
-                            Moves.InitBitboards();
-
+                            //Generate moves once a new position is established
+                            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
 
                             //end loop
                             goto loopEnd2;
@@ -749,6 +747,8 @@ namespace ChessGame
                 squares[sideIndex].AssignPiece();
             }
 
+            //Generate legal moves once a new position is established
+            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
 
         }
 

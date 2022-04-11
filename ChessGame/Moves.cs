@@ -833,7 +833,6 @@ namespace ChessGame
             ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP, bool genKingMoves, ulong allowMask) // 0000 0000 0000 0000  to store: flag | to | from
         {
             List<int> legalSquares = new List<int>();
-            InitBitboards(); // Initiate bitboards
 
             ulong pieceLocation = 0;
             int correctFrom;
@@ -1062,6 +1061,8 @@ namespace ChessGame
             ulong[] checkArray;
             ulong legalULong = 0L;
             ulong pieceLocation;
+
+            InitBitboards(); // Initiate bitboards
 
             List<int> legalSquares = new List<int>();
 
