@@ -64,6 +64,12 @@ namespace ChessGame
             }
 
             xBackgroundPosition = (int)squarePosition.X - _pxSize * 2;
+
+            if(xBackgroundPosition < 0) // Off screen
+            {
+                //Adjust
+                xBackgroundPosition += _pxSize;
+            }
             yBackgroundPosition = promotionPosition;
 
             //Can promote to Bishop, Rook, Queen, Knight

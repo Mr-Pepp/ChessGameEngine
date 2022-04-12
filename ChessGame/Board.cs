@@ -615,32 +615,8 @@ namespace ChessGame
                             }
                             else 
                             {
-                                // End of all moves this turn, therefore
-                                //End of turn; other colour turn
-                                Moves.whiteTurn = !Moves.whiteTurn;
-                            }
-
-                            
-
-                            //Generate moves once a new position is established
-                            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
-
-
-                            // (Stalemate | Checkmate) (0b1100 0000 0000 0000) | flag | to | from
-
-                            if (moves.Count == 1) // Only one move, therefore could have returned gamestate
-                            {
-                                if (moves[0] >> 15 == 1L) // Checkmate
-                                {
-                                    // Checkmate State
-                                    GameState.state = 1;
-                                }
-
-                                else if (moves[0] >> 16 == 1L) // Stalemate
-                                {
-                                    // Stalemate State
-                                    GameState.state = 2;
-                                }
+                                //End of turn
+                                EndOfTurn();
                             }
 
                             //end loop
@@ -786,8 +762,10 @@ namespace ChessGame
                     promotionSquare.AssignPiece();
                     //Remove pawn from bitboard square
                     if (Moves.whiteTurn) { wP = wP & ~squareBitboard; } else { bP = bP & ~squareBitboard; }
-                    // End of turn
-                    Moves.whiteTurn = !Moves.whiteTurn;
+
+                    //End of turn
+                    EndOfTurn();
+
                 }
             }
         }
@@ -945,6 +923,35 @@ namespace ChessGame
             //Leave at true for now...
             BitboardOutput(true);
 
+        }
+
+        void EndOfTurn()
+        {
+            // End of all moves this turn, therefore
+            //End of turn; other colour turn
+            Moves.whiteTurn = !Moves.whiteTurn;
+
+
+            //Generate moves once a new position is established
+            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
+
+
+            // (Stalemate | Checkmate) (0b1100 0000 0000 0000) | flag | to | from
+
+            if (moves.Count == 1) // Only one move, therefore could have returned gamestate
+            {
+                if (moves[0] >> 15 == 1L) // Checkmate
+                {
+                    // Checkmate State
+                    GameState.state = 1;
+                }
+
+                else if (moves[0] >> 16 == 1L) // Stalemate
+                {
+                    // Stalemate State
+                    GameState.state = 2;
+                }
+            }
         }
 
         //Make bitboard into the game board
