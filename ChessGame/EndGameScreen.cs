@@ -91,38 +91,33 @@ namespace ChessGame
 
         public void Draw(SpriteBatch s)
         {
-            if (GameState.state == 1 | GameState.state == 2) // If there is a check then show this
+            //Draw background box
+            s.Draw(_texture, backgroundRect, null, _backgroundColour);
+
+            //Draw Line in the middle
+            s.Draw(_texture, lineRect, null, _lineColour);
+
+            if (GameState.state == 1) // Checkmate
             {
-
-                //Draw background box
-                s.Draw(_texture, backgroundRect, null, _backgroundColour);
-                
-                //Draw Line in the middle
-                s.Draw(_texture, lineRect, null, _lineColour);
-
-                if (GameState.state == 1) // Checkmate
-                {
-                    stateMsg = "CHECKMATE";
-                }
-                else // Stalemate
-                {
-                    stateMsg = "STALEMATE";
-                }
-
-                stringSize = Game1.text.MeasureString(stateMsg) * scale;
-
-                //Draw the text and allign it on screen
-                s.DrawString(Game1.text, stateMsg, new Vector2(stringVector.X + (xSize - stringSize.X) / 2, 
-                    stringVector.Y + (ySize_background - stringSize.Y) / 4),
-                    Color.Black, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
-
-                //Draw the exit bottom left
-                s.Draw(exitText, exitRect, null, Color.Black);
-
-                //Draw the restart bottom right
-                s.Draw(restartText, restartRect, null, Color.Black);
-
+                stateMsg = "CHECKMATE";
             }
+            else // Stalemate
+            {
+                stateMsg = "STALEMATE";
+            }
+
+            stringSize = Game1.text.MeasureString(stateMsg) * scale;
+
+            //Draw the text and allign it on screen
+            s.DrawString(Game1.text, stateMsg, new Vector2(stringVector.X + (xSize - stringSize.X) / 2,
+                stringVector.Y + (ySize_background - stringSize.Y) / 4),
+                Color.Black, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+
+            //Draw the exit bottom left
+            s.Draw(exitText, exitRect, null, Color.Black);
+
+            //Draw the restart bottom right
+            s.Draw(restartText, restartRect, null, Color.Black);
         }
     }
 }

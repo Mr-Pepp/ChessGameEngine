@@ -11,8 +11,9 @@ namespace ChessGame
          * 0 = Currently playing
          * 1 = Checkmate
          * 2 = Stalemate
+         * 3 = Promoting the pawn
          */
-        public static int state = 1;
+        public static int state = 0;
 
     }
 }

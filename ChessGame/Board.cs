@@ -11,10 +11,11 @@ namespace ChessGame
         public static Square[] squares = new Square[64]; //1D array for FEN
         private OutsideBoard outsideBoard;
 
-        
-
         //EndGameScreen
         private EndGameScreen endGameScreen;
+
+        //Promotion Screen
+        private PromotionScreen promotionScreen;
 
         //pieceInfo //Piece information Piece
         //Stores the information of all the pieces on the board
@@ -30,6 +31,17 @@ namespace ChessGame
         private Vector2 _initPos;
         private Color colour;
 
+        // Promotion:
+        //Used for promotion to know the piece that is promoted to (Does not include colour of the piece)
+        private int promotionPiece;
+        // Promotion piece colour
+        private int promotionColour;
+        //Promotion square
+        private Square promotionSquare;
+
+
+        //To store the bitboard of the "to" square
+        private ulong squareBitboard;
 
         //for selecting piece
         private bool pieceSelected = false;
@@ -45,7 +57,7 @@ namespace ChessGame
 
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
-        private string FEN = "8/6k1/pp3nq1/6p1/5p2/8/PKQ5/3R4 w - - 0 1";
+        private string FEN = "8/P5kP/pp3nq1/6p1/5p2/8/PKQ3pp/3R4 w - - 0 1";
 
 
         //For bitboards IMPROVEMENT _________________________ *****
@@ -74,7 +86,6 @@ namespace ChessGame
             // create a white texture pixel
             blankTexture = new Texture2D(_spriteBatch.GraphicsDevice, 1, 1);
             blankTexture.SetData(new Color[] { Color.White });
-
 
             // Create board
             for (int iy = 1; iy <= 8; iy++)
@@ -107,12 +118,15 @@ namespace ChessGame
                 position = _initPos,
             };
 
+            promotionScreen = new PromotionScreen(blankTexture, _colorDic["Promotion Background"], _squareSize);
+
             endGameScreen = new EndGameScreen(blankTexture, _colorDic["Endgame Background"], _colorDic["Endgame Line"], _squareSize)
             {
                 position = _initPos,
             };
 
             endGameScreen.OnLoad();
+
 
             //run load FEN position
             LoadFEN(FEN);
@@ -164,7 +178,7 @@ namespace ChessGame
 
                 PieceSelection();
             }
-            else // Checkmate or stalemate (endgame screen)
+            else if (GameState.state == 1 | GameState.state == 2) // Checkmate or stalemate (endgame screen)
             {
                 //Pressed left mouse button
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed)
@@ -172,13 +186,18 @@ namespace ChessGame
                     if (endGameScreen.restartRect.Contains(Game1.mousePoint)) // Restart game
                     {
                         GameState.state = 0; // Playing the game
-                        BitboardOutput(true);
+                        Moves.whiteTurn = true;
+                        LoadFEN(defaultFEN);
                     }
                     else if (endGameScreen.exitRect.Contains(Game1.mousePoint))
                     {
                         Game1.self.Exit();
                     }
                 }
+            }
+            else // Promotion
+            {
+                Promotion();
             }
 
         }
@@ -202,7 +221,15 @@ namespace ChessGame
             }
 
             //Will draw if there is a check / stalemate
-            endGameScreen.Draw(_spriteBatch);
+            if (GameState.state == 1 | GameState.state == 2)
+            {
+                endGameScreen.Draw(_spriteBatch);
+            }
+            
+            else if (GameState.state == 3) // Promotion
+            {
+                promotionScreen.Draw(_spriteBatch);
+            }
 
         }
 
@@ -250,7 +277,18 @@ namespace ChessGame
                             //Go through the generated moves and select the appropriate move
                             foreach (int e in moves)
                             {
-                                //System.Diagnostics.Debug.WriteLine(e);
+                                /*
+                                 * Flags (0b111):
+                                 * 000 = Normal Move
+                                 * 001 = Captures
+                                 * 010 = Evasive (From check)
+                                 * 011 = Promotion
+                                 * 100 = Castles Queen Side
+                                 * 101 = Castles King Side
+                                 * 110 = En Passant
+                                 * 
+                                 * 
+                                 */
 
                                 //If the from destination is correct then store it in the list that allow the piece to go to the right square
                                 if ((e & 0b111111) == square) //flag | to | from
@@ -271,9 +309,15 @@ namespace ChessGame
 
         //Used since we are breaking from a nested loop
         loopEnd:
-            
+
             //To store the "to" value from the element of fromMoves
             int to;
+            //To store the "flag" value from the element of fromMoves
+            int flag = 0; // If "to" square is valid then the flag will be assigned
+
+            //To check if the square that is being moves to is correct
+            bool validSquare = false;
+
 
             //holding the piece
             if (pieceSelected && mousePressed)
@@ -359,12 +403,29 @@ namespace ChessGame
                     for (int ix = 1; ix <= 8; ix++)
                     {
                         square = SquareID(iy, ix);
+                        //Assigning before to avoid bugs
+                        validSquare = false; 
+
+                        //Loop through the fromMoves to see if it can be placed on the right sqauare and fetch information from
+                        foreach (int e in fromMoves)
+                        {
+                            to = (e >> 6 & 0b111111);
+                            if (to == square) // The square is valid with the "to" value
+                            {
+                                validSquare = true;
+                                //Extract the flag of the piece placement
+                                // Flags are 3 bit
+                                flag = (e >> 12) & 0b111;
+                                break;
+                            }
+                        }
+
+
                         //add rules to if
                         //square is at current mouse position
                         //Flag | To | From
-                        if (squares[square].rect.Contains(Game1.mousePoint) && fromMoves.Contains(square << 6 | tempSquare))
+                        if (squares[square].rect.Contains(Game1.mousePoint) && validSquare)
                         {
-
 
                             //The main issue is that I would have to update the new board and remove the old piece from it.
                             //This is a pain because
@@ -394,6 +455,7 @@ namespace ChessGame
                             //piecesInfo.Add(squares[square].piece << 6 | square);
 
 
+                            squareBitboard = BinaryStringToBitboard(square);
 
                             //Filter piece to update the correct bitboard
 
@@ -402,52 +464,52 @@ namespace ChessGame
                             {
                                 //White Pieces
                                 case Piece.White | Piece.King:
-                                    wK = wK & ~BinaryStringToBitboard(square);
+                                    wK = wK & ~squareBitboard;
                                     break;
 
                                 case (Piece.White | Piece.Queen):
-                                    wQ = wQ & ~BinaryStringToBitboard(square);
+                                    wQ = wQ & ~squareBitboard;
                                     break;
 
                                 case Piece.White | Piece.Rook:
-                                    wR = wR & ~BinaryStringToBitboard(square);
+                                    wR = wR & ~squareBitboard;
                                     break;
 
                                 case (Piece.White | Piece.Bishop):
-                                    wB = wB & ~BinaryStringToBitboard(square);
+                                    wB = wB & ~squareBitboard;
                                     break;
 
                                 case Piece.White | Piece.Knight:
-                                    wN = wN & ~BinaryStringToBitboard(square);
+                                    wN = wN & ~squareBitboard;
                                     break;
 
                                 case (Piece.White | Piece.Pawn):
-                                    wP = wP & ~BinaryStringToBitboard(square);
+                                    wP = wP & ~squareBitboard;
                                     break;
 
                                 //Black Pieces
                                 case Piece.Black | Piece.King:
-                                    bK = bK & ~BinaryStringToBitboard(square);
+                                    bK = bK & ~squareBitboard;
                                     break;
 
                                 case (Piece.Black | Piece.Queen):
-                                    bQ = bQ & ~BinaryStringToBitboard(square);
+                                    bQ = bQ & ~squareBitboard;
                                     break;
 
                                 case Piece.Black | Piece.Rook:
-                                    bR = bR & ~BinaryStringToBitboard(square);
+                                    bR = bR & ~squareBitboard;
                                     break;
 
                                 case (Piece.Black | Piece.Bishop):
-                                    bB = bB & ~BinaryStringToBitboard(square);
+                                    bB = bB & ~squareBitboard;
                                     break;
 
                                 case Piece.Black | Piece.Knight:
-                                    bN = bN & ~BinaryStringToBitboard(square);
+                                    bN = bN & ~squareBitboard;
                                     break;
 
                                 case (Piece.Black | Piece.Pawn):
-                                    bP = bP & ~BinaryStringToBitboard(square);
+                                    bP = bP & ~squareBitboard;
                                     break;
                             }
 
@@ -456,63 +518,63 @@ namespace ChessGame
                             {
                                 //White Pieces
                                 case Piece.White | Piece.King:
-                                    wK = wK | BinaryStringToBitboard(square);
+                                    wK = wK | squareBitboard;
                                     wK = wK & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case (Piece.White | Piece.Queen):
-                                    wQ = wQ | BinaryStringToBitboard(square);
+                                    wQ = wQ | squareBitboard;
                                     wQ = wQ & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case Piece.White | Piece.Rook:
-                                    wR = wR | BinaryStringToBitboard(square);
+                                    wR = wR | squareBitboard;
                                     wR = wR & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case (Piece.White | Piece.Bishop):
-                                    wB = wB | BinaryStringToBitboard(square);
+                                    wB = wB | squareBitboard;
                                     wB = wB & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case Piece.White | Piece.Knight:
-                                    wN = wN | BinaryStringToBitboard(square);
+                                    wN = wN | squareBitboard;
                                     wN = wN & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case (Piece.White | Piece.Pawn):
-                                    wP = wP | BinaryStringToBitboard(square);
+                                    wP = wP | squareBitboard;
                                     wP = wP & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 //Black Pieces
                                 case Piece.Black | Piece.King:
-                                    bK = bK | BinaryStringToBitboard(square);
+                                    bK = bK | squareBitboard;
                                     bK = bK & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case (Piece.Black | Piece.Queen):
-                                    bQ = bQ | BinaryStringToBitboard(square);
+                                    bQ = bQ | squareBitboard;
                                     bQ = bQ & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case Piece.Black | Piece.Rook:
-                                    bR = bR | BinaryStringToBitboard(square);
+                                    bR = bR | squareBitboard;
                                     bR = bR & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case (Piece.Black | Piece.Bishop):
-                                    bB = bB | BinaryStringToBitboard(square);
+                                    bB = bB | squareBitboard;
                                     bB = bB & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case Piece.Black | Piece.Knight:
-                                    bN = bN | BinaryStringToBitboard(square);
+                                    bN = bN | squareBitboard;
                                     bN = bN & ~BinaryStringToBitboard(tempSquare);
                                     break;
 
                                 case (Piece.Black | Piece.Pawn):
-                                    bP = bP | BinaryStringToBitboard(square);
+                                    bP = bP | squareBitboard;
                                     bP = bP & ~BinaryStringToBitboard(tempSquare);
                                     break;
                             }
@@ -520,17 +582,45 @@ namespace ChessGame
                             // ADD MOVEHISTORY:  Piece, From, To, Captured
                             Moves.moveHistory.Add(new int[] { tempPiece, tempSquare, square, squares[square].piece });
 
-                            Moves.whiteTurn = !Moves.whiteTurn;
-
 
                             // REVERSE BOARD (In future... to develop)
                             //BitboardOutput(Moves.whiteTurn);
-
 
                             //Update the square
                             squares[square].piece = tempPiece;
                             //assign texture and moves
                             squares[square].AssignPiece();
+
+
+                            /*
+                                 * Flags (0b111):
+                                 * 000 = Normal Move
+                                 * 001 = Captures
+                                 * 010 = Evasive (From check)
+                                 * 011 = Promotion
+                                 * 100 = Castles Queen Side
+                                 * 101 = Castles King Side
+                                 * 110 = En Passant
+                                 * 
+                                 */
+
+                            //Check flag
+                            if (flag == (int)Moves.Flag.Promotion) // Pawn promotion
+                            {
+
+                                //Set state for promotion
+                                GameState.state = 3;
+                                //Update class with square position
+                                promotionScreen.Update(squares[square].position);
+                            }
+                            else 
+                            {
+                                // End of all moves this turn, therefore
+                                //End of turn; other colour turn
+                                Moves.whiteTurn = !Moves.whiteTurn;
+                            }
+
+                            
 
                             //Generate moves once a new position is established
                             moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
@@ -540,13 +630,13 @@ namespace ChessGame
 
                             if (moves.Count == 1) // Only one move, therefore could have returned gamestate
                             {
-                                if (moves[0] >> 14 == 1L) // Checkmate
+                                if (moves[0] >> 15 == 1L) // Checkmate
                                 {
                                     // Checkmate State
                                     GameState.state = 1;
                                 }
 
-                                else if (moves[0] >> 15 == 1L) // Stalemate
+                                else if (moves[0] >> 16 == 1L) // Stalemate
                                 {
                                     // Stalemate State
                                     GameState.state = 2;
@@ -567,6 +657,141 @@ namespace ChessGame
         loopEnd2:
             { } //pass
         }
+
+
+        private void Promotion()
+        {
+            //If mouse pressed
+            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+            {
+                //Assing promotion square
+                promotionSquare = squares[square];
+
+                //Check if pressed on a promotion piece
+                // If pressed on the bishop
+                if (promotionScreen.bishopRect.Contains(Game1.mousePoint))
+                {
+                    promotionPiece = Piece.Bishop;
+
+                    //Update bishop bitboard and set the correct piece colour
+                    if (Moves.whiteTurn) // White to move
+                    {
+                        //Set piece colour
+                        promotionColour = Piece.White;
+
+                        //Update the piece's bitboard
+                        wB = wB | squareBitboard;
+                    }
+                    else // Black to move
+                    {
+                        //Set piece colour
+                        promotionColour = Piece.Black;
+
+                        //Update the piece's bitboard
+                        bB = bB | squareBitboard;
+                    }
+
+                    //Set state back
+                    GameState.state = 0;
+                }
+
+                //If pressed on the rook
+                else if (promotionScreen.rookRect.Contains(Game1.mousePoint))
+                {
+                    promotionPiece = Piece.Rook;
+
+                    //Update rook bitboard and set the correct piece colour
+                    if (Moves.whiteTurn) // White to move
+                    {
+                        //Set piece colour
+                        promotionColour = Piece.White;
+
+                        //Update the piece's bitboard
+                        wR = wR | squareBitboard;
+                    }
+                    else // Black to move
+                    {
+                        //Set piece colour
+                        promotionColour = Piece.Black;
+
+                        //Update the piece's bitboard
+                        bR = bR | squareBitboard;
+                    }
+
+
+                    //Set state back
+                    GameState.state = 0;
+                }
+
+                //If pressed on the queen
+                else if (promotionScreen.queenRect.Contains(Game1.mousePoint))
+                {
+                    promotionPiece = Piece.Queen;
+
+                    //Update rook bitboard and set the correct piece colour
+                    if (Moves.whiteTurn) // White to move
+                    {
+                        //Set piece colour
+                        promotionColour = Piece.White;
+
+                        //Update the piece's bitboard
+                        wQ = wQ | squareBitboard;
+                    }
+                    else // Black to move
+                    {
+                        //Set piece colour
+                        promotionColour = Piece.Black;
+
+                        //Update the piece's bitboard
+                        bQ = bQ | squareBitboard;
+                    }
+
+                    //Set state back
+                    GameState.state = 0;
+                }
+
+                //If pressed on the knight
+                else if (promotionScreen.knightRect.Contains(Game1.mousePoint))
+                {
+                    promotionPiece = Piece.Knight;
+
+                    //Update rook bitboard and set the correct piece colour
+                    if (Moves.whiteTurn) // White to move
+                    {
+                        //Set piece colour
+                        promotionColour = Piece.White;
+
+                        //Update the piece's bitboard
+                        wN = wN | squareBitboard;
+                    }
+                    else // Black to move
+                    {
+                        //Set piece colour
+                        promotionColour = Piece.Black;
+
+                        //Update the piece's bitboard
+                        bN = bN | squareBitboard;
+                    }
+
+                    //Set state back
+                    GameState.state = 0;
+                }
+
+                // State set back to 0, therefore a promotion piece was selected
+                if (GameState.state == 0)
+                {
+                    // Assign the correct piece
+                    promotionSquare.piece = promotionColour | promotionPiece;
+                    // Assign promotion piece
+                    promotionSquare.AssignPiece();
+                    //Remove pawn from bitboard square
+                    if (Moves.whiteTurn) { wP = wP & ~squareBitboard; } else { bP = bP & ~squareBitboard; }
+                    // End of turn
+                    Moves.whiteTurn = !Moves.whiteTurn;
+                }
+            }
+        }
+
 
 
         private void LoadFEN(string FEN) //Makes FEN readable for computer

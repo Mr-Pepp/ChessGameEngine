@@ -817,9 +817,20 @@ namespace ChessGame
             }
         }
 
-        enum Flag
+        public enum Flag
         {
-            QUIET, CAPTURE, EVASION, ENPASSANT, CASTLING
+            /*
+            * Flags (0b111):
+            * 000 = Normal Move
+            * 001 = Captures
+            * 010 = Evasion (From check)
+            * 011 = Promotion
+            * 100 = Castles Queen Side
+            * 101 = Castles King Side
+            * 110 = En Passant
+            *                     
+            */
+            Normal_Move = 0b000, Captures = 0b001, Evasion = 0b010, Promotion = 0b011, Castles_QS = 0b100, Castles_KS = 101, En_Passant = 110
         }
 
 
@@ -850,6 +861,20 @@ namespace ChessGame
 
             ulong BLTRPins;
             ulong BRTLPins;
+
+            /*
+            * Flags (0b111):
+            * 000 = Normal Move
+            * 001 = Captures
+            * 010 = Evasion (From check)
+            * 011 = Promotion
+            * 100 = Castles Queen Side
+            * 101 = Castles King Side
+            * 110 = En Passant
+            *                     
+            */
+            
+            int flag = (int)Flag.Normal_Move;
 
             if (whiteTurn) //White to play
             {
@@ -883,7 +908,8 @@ namespace ChessGame
             //the bitwise operations will reverse the board so initially the board will be on blacks side
             for (int i = 63; i >= 0; i--)
             {
-                //System.Diagnostics.Debug.WriteLine(i);
+                //Default to a normal move each loop
+                flag = (int)Flag.Normal_Move;
 
                 //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
                 //**Implement flags and other piece information
@@ -963,6 +989,14 @@ namespace ChessGame
                         {
                             //White pawn legal moves bitboard
                             legalULong = LegalMoves_WPawn(pieceLocation, blackPieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
+
+                            // Is on the first rank (promotion)
+                            if ((legalULong & rank_8) != 0L)
+                            {
+
+                                System.Diagnostics.Debug.WriteLine("Flag");
+                                flag = (int)Flag.Promotion;
+                            }
                         }
                         else if (((wK >> i) & 1L) == 1L & genKingMoves)
                         {
@@ -1002,6 +1036,13 @@ namespace ChessGame
                         {
                             //Black pawn legal moves
                             legalULong = LegalMoves_BPawn(pieceLocation, whitePieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
+                            // Is on the first rank (promotion)
+                            if ((legalULong & rank_1) != 0L)
+                            {
+
+                                System.Diagnostics.Debug.WriteLine("Flag");
+                                flag = (int)Flag.Promotion;
+                            }
                         }
                         else if (((bK >> i) & 1L) == 1L & genKingMoves)
                         {
@@ -1041,7 +1082,7 @@ namespace ChessGame
                             //flag | to | from
                             if (((legalULong >> y) & 1L) == 1L)
                             {
-                                legalSquares.Add((63 - y) << 6 | correctFrom);
+                                legalSquares.Add(flag << 12 | (63 - y) << 6 | correctFrom);
                             }
 
                         }
@@ -1171,8 +1212,7 @@ namespace ChessGame
 
                     if (legalSquares.Count == 0) // Checkmate since no moves + in check
                     {
-                        System.Diagnostics.Debug.WriteLine("Checkmate");
-                        legalSquares.Add(1 << 14); //Adds a checkmate flag
+                        legalSquares.Add(1 << 15); //Adds a checkmate flag
                     }
                     
                     return legalSquares;
@@ -1208,8 +1248,7 @@ namespace ChessGame
 
                     else // CHECKMATE since can't move king
                     {
-                        System.Diagnostics.Debug.WriteLine("Checkmate");
-                        legalSquares.Add(1 << 14);
+                        legalSquares.Add(1 << 15);
 
                         // Return checkmate
                         return legalSquares;
@@ -1223,8 +1262,7 @@ namespace ChessGame
                 legalSquares = GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, true, ~(ulong)0L);
                 if (legalSquares.Count == 0) // Stalemate
                 {
-                    System.Diagnostics.Debug.WriteLine("Stalemate");
-                    legalSquares.Add(1 << 15);
+                    legalSquares.Add(1 << 16);
                 }
 
                 return legalSquares;
