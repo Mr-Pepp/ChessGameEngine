@@ -12,7 +12,7 @@ namespace ChessGame
          * 1 = Checkmate
          * 2 = Stalemate
          */
-        public static int state = 0;
+        public static int state = 1;
 
     }
 }

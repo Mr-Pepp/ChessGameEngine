@@ -11,6 +11,7 @@ namespace ChessGame
         private SpriteBatch _spriteBatch;
         RenderTarget2D renderTarget;
 
+
         //Create the font
         public static SpriteFont text; // Public to use at anytime
 
@@ -86,6 +87,10 @@ namespace ChessGame
 
             //Misc textures
             Square.dotTexture = Content.Load<Texture2D>(otherDir + "Dot");
+
+            //EndGameScreen Textures
+            EndGameScreen.exitText = Content.Load<Texture2D>("EndGame Screen/exit");
+            EndGameScreen.restartText = Content.Load<Texture2D>("EndGame Screen/restart");
 
             //update Piece dictionary. No idea how to update with the whole dictionary in Piece
             Piece.pieceTextureDic =
