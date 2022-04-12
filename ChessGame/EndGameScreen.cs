@@ -111,7 +111,6 @@ namespace ChessGame
 
                 stringSize = Game1.text.MeasureString(stateMsg) * scale;
 
-
                 //Draw the text and allign it on screen
                 s.DrawString(Game1.text, stateMsg, new Vector2(stringVector.X + (xSize - stringSize.X) / 2, 
                     stringVector.Y + (ySize_background - stringSize.Y) / 4),

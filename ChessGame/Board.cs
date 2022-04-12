@@ -164,6 +164,23 @@ namespace ChessGame
 
                 PieceSelection();
             }
+            else // Checkmate or stalemate (endgame screen)
+            {
+                //Pressed left mouse button
+                if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+                {
+                    if (endGameScreen.restartRect.Contains(Game1.mousePoint)) // Restart game
+                    {
+                        GameState.state = 0; // Playing the game
+                        BitboardOutput(true);
+                    }
+                    else if (endGameScreen.exitRect.Contains(Game1.mousePoint))
+                    {
+                        Game1.self.Exit();
+                    }
+                }
+            }
+
         }
 
 

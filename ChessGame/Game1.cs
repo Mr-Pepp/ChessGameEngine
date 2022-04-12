@@ -11,6 +11,8 @@ namespace ChessGame
         private SpriteBatch _spriteBatch;
         RenderTarget2D renderTarget;
 
+        //Reference later for functions like exitting the game
+        public static Game1 self; 
 
         //Create the font
         public static SpriteFont text; // Public to use at anytime
@@ -48,6 +50,7 @@ namespace ChessGame
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            self = this; //Reference to exit
         }
 
         protected override void Initialize()
