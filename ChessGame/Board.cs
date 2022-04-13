@@ -601,7 +601,7 @@ namespace ChessGame
                                  * 100 = Castles Queen Side
                                  * 101 = Castles King Side
                                  * 110 = En Passant
-                                 * 
+                                 * 111 = Double Push
                                  */
 
                             //Check flag
@@ -612,6 +612,31 @@ namespace ChessGame
                                 GameState.state = 3;
                                 //Update class with square position
                                 promotionScreen.Update(squares[square].position);
+                            }
+                            else if (flag == (int)Moves.Flag.En_Passant) // Enable en passant
+                            {
+                                //Check which side
+                                if (Moves.whiteTurn) // White turn 
+                                {
+                                    // Remove pawn below
+                                    squares[square + 8].piece = Piece.None;
+                                    squares[square + 8].AssignPiece();
+
+                                    //Update bitboard
+                                    bP = (squareBitboard >> 8);
+                                }
+                                else // Black turn
+                                {
+                                    // Remove pawn above
+                                    squares[square - 8].piece = Piece.None;
+                                    squares[square - 8].AssignPiece();
+
+                                    //Update bitboard
+                                    wP = (squareBitboard << 8);
+                                }
+
+                                //End of turn
+                                EndOfTurn();
                             }
                             else 
                             {

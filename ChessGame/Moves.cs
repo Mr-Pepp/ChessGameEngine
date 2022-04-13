@@ -44,6 +44,10 @@ namespace ChessGame
         static ulong blockMask;
         static ulong captureMask;
 
+        // When a pawn moves by two, we want to mark the bitboard so that it can be captured as if it moved by one (on next turn)
+        static ulong white_enPassantMask;
+        static ulong black_enPassantMask;
+
         static ulong moves;
 
         public static void InitBitboards()
@@ -274,9 +278,10 @@ namespace ChessGame
 
 
         //Pawns for bitboard move generation
-        public static ulong LegalMoves_WPawn(ulong wP, ulong enemyPieces, ulong emptySquares) //White Pawns
+        public static ulong LegalMoves_WPawn(ulong wP, ulong enemyPieces, ulong emptySquares, ulong black_enPassantMask) //White Pawns
         {
             ulong legalMoves = 0L;
+            enemyPieces = enemyPieces | black_enPassantMask;
 
             //Captures top left
             legalMoves = legalMoves | ((wP << 9) & enemyPieces & ~file_H);
@@ -293,9 +298,10 @@ namespace ChessGame
             return legalMoves;
         }
 
-        public static ulong LegalMoves_BPawn(ulong bP, ulong enemyPieces, ulong emptySquares) //Black Pawns
+        public static ulong LegalMoves_BPawn(ulong bP, ulong enemyPieces, ulong emptySquares, ulong white_enPassantMask) //Black Pawns
         {
             ulong legalMoves = 0L;
+            enemyPieces = enemyPieces | white_enPassantMask;
 
             //Captures bottom left
             legalMoves = legalMoves | ((bP >> 7) & enemyPieces & ~file_H);
@@ -311,9 +317,6 @@ namespace ChessGame
 
             return legalMoves;
         }
-
-
-
 
         public static ulong LegalMoves_Knight(ulong N, ulong friendlyPieces) //Knights
         {
@@ -828,9 +831,10 @@ namespace ChessGame
             * 100 = Castles Queen Side
             * 101 = Castles King Side
             * 110 = En Passant
-            *                     
+            * 111 = Double Push    
             */
-            Normal_Move = 0b000, Captures = 0b001, Evasion = 0b010, Promotion = 0b011, Castles_QS = 0b100, Castles_KS = 101, En_Passant = 110
+            Normal_Move = 0b000, Captures = 0b001, Evasion = 0b010, Promotion = 0b011, Castles_QS = 0b100, Castles_KS = 0b101, 
+            En_Passant = 0b110, Double_Push = 0b111,
         }
 
 
@@ -845,7 +849,7 @@ namespace ChessGame
         {
             List<int> legalSquares = new List<int>();
 
-            ulong pieceLocation = 0;
+            ulong pieceLocation = 0L;
             int correctFrom;
 
             //Used for getting all the ulong bitboard move locations
@@ -862,6 +866,15 @@ namespace ChessGame
             ulong BLTRPins;
             ulong BRTLPins;
 
+            //Used when checking each bit of the generated moves
+            ulong legalULongBit;
+
+            //Double push verify
+            ulong doublePushVerifyMask;
+
+            //En Passant verify
+            ulong enPassantVerifyMask;
+
             /*
             * Flags (0b111):
             * 000 = Normal Move
@@ -871,9 +884,9 @@ namespace ChessGame
             * 100 = Castles Queen Side
             * 101 = Castles King Side
             * 110 = En Passant
-            *                     
+            * 111 = Double Push  
             */
-            
+
             int flag = (int)Flag.Normal_Move;
 
             if (whiteTurn) //White to play
@@ -921,6 +934,12 @@ namespace ChessGame
                 {
                     //Format legalULong
                     legalULong = 0L;
+
+                    //Format double push location
+                    doublePushVerifyMask = 0L;
+
+                    //Format en passant verify mask
+                    enPassantVerifyMask = 0L;
 
                     //Bool if there is a pin. (Used for knights)
                     bool pin = false;
@@ -988,15 +1007,19 @@ namespace ChessGame
                         if (((wP >> i) & 1L) == 1L) //Pawns first as they are most likely to appear since they are more common
                         {
                             //White pawn legal moves bitboard
-                            legalULong = LegalMoves_WPawn(pieceLocation, blackPieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
+                            legalULong = LegalMoves_WPawn(pieceLocation, blackPieces & ~pinnedBlock, emptySquares & ~pinnedBlock,
+                                black_enPassantMask);
 
                             // Is on the first rank (promotion)
                             if ((legalULong & rank_8) != 0L)
                             {
-
-                                System.Diagnostics.Debug.WriteLine("Flag");
                                 flag = (int)Flag.Promotion;
                             }
+                            // En passant possibility
+                            enPassantVerifyMask = legalULong & black_enPassantMask;
+                            //Opening two square push forward, getting the pawn's double push location for en passant
+                            doublePushVerifyMask = legalULong & rank_4;
+
                         }
                         else if (((wK >> i) & 1L) == 1L & genKingMoves)
                         {
@@ -1035,14 +1058,19 @@ namespace ChessGame
                         if (((bP >> i) & 1L) == 1L) //Pawns first as they are most likely to appear since they are more common
                         {
                             //Black pawn legal moves
-                            legalULong = LegalMoves_BPawn(pieceLocation, whitePieces & ~pinnedBlock, emptySquares & ~pinnedBlock);
+                            legalULong = LegalMoves_BPawn(pieceLocation, whitePieces & ~pinnedBlock, emptySquares & ~pinnedBlock,
+                                white_enPassantMask);
                             // Is on the first rank (promotion)
                             if ((legalULong & rank_1) != 0L)
                             {
 
-                                System.Diagnostics.Debug.WriteLine("Flag");
+                                //Assign promotion flag
                                 flag = (int)Flag.Promotion;
                             }
+                            // En passant possibility
+                            enPassantVerifyMask = legalULong & white_enPassantMask;
+                            //Opening two square push forward, getting the pawn's double push location for en passant
+                            doublePushVerifyMask = legalULong & rank_5;
                         }
                         else if (((bK >> i) & 1L) == 1L & genKingMoves)
                         {
@@ -1079,9 +1107,36 @@ namespace ChessGame
                     {
                         for (int y = 0; y < 64; y++)
                         {
+                            // Assign bit
+                            legalULongBit = legalULong >> y & 1L;
+
                             //flag | to | from
-                            if (((legalULong >> y) & 1L) == 1L)
+                            if (legalULongBit == 1L) // There is a bit
                             {
+                                //Check for double push
+                                if (legalULongBit == (doublePushVerifyMask >> y & 1L)) // There was a double push
+                                {
+                                    // Set double push flag
+                                    flag = (int)Flag.Double_Push;
+                                    // Mark en passant location
+                                    if (whiteTurn) // White to play
+                                    {
+                                        // Set en passant location
+                                        white_enPassantMask = doublePushVerifyMask >> 8;
+                                    }
+                                    else // Black to play
+                                    {
+                                        // Set en passant location
+                                        black_enPassantMask = doublePushVerifyMask << 8;
+                                    }
+                                }
+
+                                //If the move is on the En Passant mask
+                                else if (legalULongBit == (enPassantVerifyMask >> y & 1L)) // There was an en passant capture
+                                {
+                                    flag = (int)Flag.En_Passant;
+                                }
+
                                 legalSquares.Add(flag << 12 | (63 - y) << 6 | correctFrom);
                             }
 
