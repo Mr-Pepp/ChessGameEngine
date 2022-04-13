@@ -698,6 +698,8 @@ namespace ChessGame
                                     //Update bitboards
                                     wR = (wR & ~Moves.TRCorner) | Moves.ksCastleRook_black;
                                 }
+                                // End of turn
+                                EndOfTurn();
                             }
                             else if (flag == (int)Moves.Flag.Castles_QS) // Queenside castle
                             {
@@ -726,6 +728,8 @@ namespace ChessGame
                                     //Update bitboards
                                     wR = (wR & ~Moves.TLCorner) | Moves.qsCastleRook_black;
                                 }
+                                // End of turn
+                                EndOfTurn();
                             }
                             else if (flag == (int)Moves.Flag.En_Passant) // En passant move
                             {
