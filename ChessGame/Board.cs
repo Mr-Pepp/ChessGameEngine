@@ -613,7 +613,23 @@ namespace ChessGame
                                 //Update class with square position
                                 promotionScreen.Update(squares[square].position);
                             }
-                            else if (flag == (int)Moves.Flag.En_Passant) // Enable en passant
+                            else if (flag == (int)Moves.Flag.Double_Push) // Double push by pawn
+                            {
+                                // Mark en passant location
+                                if (Moves.whiteTurn) // White to play
+                                {
+                                    // Set en passant location
+                                    Moves.white_enPassantMask = BinaryStringToBitboard(square + 8);
+                                }
+                                else // Black to play
+                                {
+                                    // Set en passant location
+                                    Moves.black_enPassantMask = BinaryStringToBitboard(square - 8);
+                                }
+
+                                EndOfTurn();
+                            }
+                            else if (flag == (int)Moves.Flag.En_Passant) // En passant move
                             {
                                 //Check which side
                                 if (Moves.whiteTurn) // White turn 
@@ -623,7 +639,7 @@ namespace ChessGame
                                     squares[square + 8].AssignPiece();
 
                                     //Update bitboard
-                                    bP = (squareBitboard >> 8);
+                                    bP = bP & ~(squareBitboard >> 8);
                                 }
                                 else // Black turn
                                 {
@@ -632,7 +648,7 @@ namespace ChessGame
                                     squares[square - 8].AssignPiece();
 
                                     //Update bitboard
-                                    wP = (squareBitboard << 8);
+                                    wP = wP & ~(squareBitboard << 8);
                                 }
 
                                 //End of turn
@@ -640,6 +656,11 @@ namespace ChessGame
                             }
                             else 
                             {
+                                //En passant not moved
+                                //Set En passant = 0
+                                // Format both En Passant masks
+                                Moves.white_enPassantMask = 0L;
+                                Moves.black_enPassantMask = 0L;
                                 //End of turn
                                 EndOfTurn();
                             }

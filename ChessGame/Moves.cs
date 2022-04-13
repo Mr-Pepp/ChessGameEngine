@@ -45,8 +45,8 @@ namespace ChessGame
         static ulong captureMask;
 
         // When a pawn moves by two, we want to mark the bitboard so that it can be captured as if it moved by one (on next turn)
-        static ulong white_enPassantMask;
-        static ulong black_enPassantMask;
+        public static ulong white_enPassantMask;
+        public static ulong black_enPassantMask;
 
         static ulong moves;
 
@@ -1015,8 +1015,10 @@ namespace ChessGame
                             {
                                 flag = (int)Flag.Promotion;
                             }
+
                             // En passant possibility
                             enPassantVerifyMask = legalULong & black_enPassantMask;
+
                             //Opening two square push forward, getting the pawn's double push location for en passant
                             doublePushVerifyMask = legalULong & rank_4;
 
@@ -1060,15 +1062,17 @@ namespace ChessGame
                             //Black pawn legal moves
                             legalULong = LegalMoves_BPawn(pieceLocation, whitePieces & ~pinnedBlock, emptySquares & ~pinnedBlock,
                                 white_enPassantMask);
+
                             // Is on the first rank (promotion)
                             if ((legalULong & rank_1) != 0L)
                             {
-
                                 //Assign promotion flag
                                 flag = (int)Flag.Promotion;
                             }
+
                             // En passant possibility
                             enPassantVerifyMask = legalULong & white_enPassantMask;
+
                             //Opening two square push forward, getting the pawn's double push location for en passant
                             doublePushVerifyMask = legalULong & rank_5;
                         }
@@ -1118,22 +1122,13 @@ namespace ChessGame
                                 {
                                     // Set double push flag
                                     flag = (int)Flag.Double_Push;
-                                    // Mark en passant location
-                                    if (whiteTurn) // White to play
-                                    {
-                                        // Set en passant location
-                                        white_enPassantMask = doublePushVerifyMask >> 8;
-                                    }
-                                    else // Black to play
-                                    {
-                                        // Set en passant location
-                                        black_enPassantMask = doublePushVerifyMask << 8;
-                                    }
+                                    
                                 }
 
                                 //If the move is on the En Passant mask
                                 else if (legalULongBit == (enPassantVerifyMask >> y & 1L)) // There was an en passant capture
                                 {
+                                    // Set flag for en passant move
                                     flag = (int)Flag.En_Passant;
                                 }
 
