@@ -144,6 +144,12 @@ namespace ChessGame
                 //'R' is pressed
                 if (Keyboard.GetState().IsKeyDown(Keys.R))
                 {
+                    //Format all
+                    Moves.white_enPassantMask = 0;
+                    Moves.black_enPassantMask = 0;
+                    Moves.whiteCastles = 0b11;
+                    Moves.blackCastles = 0b11;
+
                     //load starting pos
                     LoadFEN(defaultFEN);
 
@@ -454,8 +460,9 @@ namespace ChessGame
                             //Colour | Piece | Position
                             //piecesInfo.Add(squares[square].piece << 6 | square);
 
-
                             squareBitboard = BinaryStringToBitboard(square);
+
+                            ulong previousSquareBitboard;
 
                             //Filter piece to update the correct bitboard
 
@@ -520,6 +527,9 @@ namespace ChessGame
                                 case Piece.White | Piece.King:
                                     wK = wK | squareBitboard;
                                     wK = wK & ~BinaryStringToBitboard(tempSquare);
+
+                                    //King moved, cant castle
+                                    Moves.whiteCastles = 0;
                                     break;
 
                                 case (Piece.White | Piece.Queen):
@@ -530,6 +540,20 @@ namespace ChessGame
                                 case Piece.White | Piece.Rook:
                                     wR = wR | squareBitboard;
                                     wR = wR & ~BinaryStringToBitboard(tempSquare);
+
+                                    //Set previous square bitboard for rook
+                                    previousSquareBitboard = BinaryStringToBitboard(tempSquare);
+
+                                    // Can't castle with that rook
+
+                                    if ((Moves.qsRookCorners & previousSquareBitboard) != 0)// Rook moved on queen side
+                                    {
+                                        Moves.whiteCastles = Moves.whiteCastles & 0b01; // Can't castle queen side
+                                    }
+                                    else if ((Moves.ksRookCorners & previousSquareBitboard) != 0) // Rook moved on king side
+                                    {
+                                        Moves.whiteCastles = Moves.whiteCastles & 0b10; // Can't castle king side
+                                    }
                                     break;
 
                                 case (Piece.White | Piece.Bishop):
@@ -551,6 +575,10 @@ namespace ChessGame
                                 case Piece.Black | Piece.King:
                                     bK = bK | squareBitboard;
                                     bK = bK & ~BinaryStringToBitboard(tempSquare);
+
+                                    //King moved, can't castle
+                                    Moves.blackCastles = 0;
+
                                     break;
 
                                 case (Piece.Black | Piece.Queen):
@@ -561,6 +589,20 @@ namespace ChessGame
                                 case Piece.Black | Piece.Rook:
                                     bR = bR | squareBitboard;
                                     bR = bR & ~BinaryStringToBitboard(tempSquare);
+
+                                    //Set previous square bitboard for rook
+                                    previousSquareBitboard = BinaryStringToBitboard(tempSquare);
+
+                                    // Can't castle with that rook
+
+                                    if ((Moves.qsRookCorners & previousSquareBitboard) != 0)// Rook moved on queen side
+                                    {
+                                        Moves.blackCastles = Moves.blackCastles & 0b01; // Can't castle queen side
+                                    }
+                                    else if ((Moves.ksRookCorners & previousSquareBitboard) != 0) // Rook moved on king side
+                                    {
+                                        Moves.blackCastles = Moves.blackCastles & 0b10; // Can't castle king side
+                                    }
                                     break;
 
                                 case (Piece.Black | Piece.Bishop):
@@ -628,6 +670,62 @@ namespace ChessGame
                                 }
 
                                 EndOfTurn();
+                            }
+                            else if (flag == (int)Moves.Flag.Castles_KS) // Kingside castle
+                            {
+                                // Adjust rook
+                                if (Moves.whiteTurn) // White to play
+                                {
+                                    // Switch rooks
+                                    squares[63].piece = Piece.None;
+                                    squares[61].piece = Piece.White | Piece.Rook;
+
+                                    // Assign piece
+                                    squares[61].AssignPiece();
+
+                                    //Update bitboards
+                                    wR = (wR & ~Moves.BRCorner) | Moves.ksCastleRook_white;
+                                }
+                                else // Black to play
+                                {
+                                    // Switch rooks
+                                    squares[7].piece = Piece.None;
+                                    squares[5].piece = Piece.Black | Piece.Rook;
+
+                                    // Assign piece
+                                    squares[5].AssignPiece();
+
+                                    //Update bitboards
+                                    wR = (wR & ~Moves.TRCorner) | Moves.ksCastleRook_black;
+                                }
+                            }
+                            else if (flag == (int)Moves.Flag.Castles_QS) // Queenside castle
+                            {
+                                // Adjust rook
+                                if (Moves.whiteTurn) // White to play
+                                {
+                                    // Switch rooks
+                                    squares[56].piece = Piece.None;
+                                    squares[59].piece = Piece.White | Piece.Rook;
+
+                                    // Assign piece
+                                    squares[59].AssignPiece();
+
+                                    //Update bitboards
+                                    wR = (wR & ~Moves.BLCorner) | Moves.qsCastleRook_white;
+                                }
+                                else // Black to play
+                                {
+                                    // Switch rooks
+                                    squares[0].piece = Piece.None;
+                                    squares[3].piece = Piece.Black | Piece.Rook;
+
+                                    // Assign piece
+                                    squares[3].AssignPiece();
+
+                                    //Update bitboards
+                                    wR = (wR & ~Moves.TLCorner) | Moves.qsCastleRook_black;
+                                }
                             }
                             else if (flag == (int)Moves.Flag.En_Passant) // En passant move
                             {
@@ -979,7 +1077,7 @@ namespace ChessGame
 
 
             //Generate moves once a new position is established
-            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
+            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, Moves.whiteCastles, Moves.blackCastles);
 
 
             // (Stalemate | Checkmate) (0b1100 0000 0000 0000) | flag | to | from
@@ -1077,13 +1175,11 @@ namespace ChessGame
 
                 else { squares[sideIndex].piece = Piece.None; }
 
-
-
                 squares[sideIndex].AssignPiece();
             }
 
             //Generate legal moves once a new position is established
-            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
+            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, Moves.whiteCastles, Moves.blackCastles);
 
         }
 

@@ -36,6 +36,48 @@ namespace ChessGame
         static ulong kingSide = 1085102592571150095L;
         static ulong queenSide = 17361641481138401520L;
 
+        //Board Corners
+        // Top Left
+        public static ulong TLCorner = file_A & rank_8;
+        // Top Right
+        public static ulong TRCorner = file_H & rank_8;
+        // Bottom Right
+        public static ulong BRCorner = file_H & rank_1;
+        // Bottom Left
+        public static ulong BLCorner = file_A & rank_1;
+
+        //Magic numbers for castling
+        public static ulong ksRookCorners = 72057594037927937L;
+        public static ulong qsRookCorners = 9223372036854775936L;
+        public static ulong rookCorners = ksRookCorners | qsRookCorners;
+        // In between Rook + King (Does not include king and rook)
+        //White
+        static ulong qsKingRook_white = 112L;
+        static ulong ksKingRook_white = 6L;
+        //Black
+        static ulong qsKingRook_black = 8070450532247928832L;
+        static ulong ksKingRook_black = 432345564227567616L;
+        //End up bitboard
+        //White
+        public static ulong qsCastleKing_white = 32L;
+        public static ulong ksCastleKing_white = 2L;
+        //Rook
+        public static ulong qsCastleRook_white = qsCastleKing_white >> 1;
+        public static ulong ksCastleRook_white = ksCastleKing_white << 1;
+        //Black
+        public static ulong qsCastleKing_black = 2305843009213693952L;
+        public static ulong ksCastleKing_black = 144115188075855872L;
+        //Rook
+        public static ulong qsCastleRook_black = qsCastleKing_black >> 1;
+        public static ulong ksCastleRook_black = ksCastleKing_black << 1;
+        //Default King location
+        public static ulong defaultKing_white = 8L;
+        public static ulong defaultKing_black = 576460752303423488L;
+
+
+        public static int whiteCastles = 0b11;
+        public static int blackCastles = 0b11;
+
         static ulong whitePieces;
         static ulong blackPieces;
 
@@ -602,7 +644,8 @@ namespace ChessGame
             return legalMoves | LegalMoves_Bishop(Q, friendlyPieces, enemyPieces) | LegalMoves_Rook(Q, friendlyPieces, enemyPieces);
         }
 
-        public static ulong LegalMoves_King(ulong K, ulong friendlyPieces, ulong enemyPieces, bool whiteTurn, bool legal) // King || Need to consider attacked squares
+        public static ulong LegalMoves_King(ulong K, ulong friendlyPieces, ulong enemyPieces, bool whiteTurn, bool legal, bool inCheck = false,
+            int? whiteCastles = null, int? blackCastles = null) // King || Need to consider attacked squares
         {
             ulong legalMoves = 0L;
             ulong attackedSquares = 0L;
@@ -620,6 +663,55 @@ namespace ChessGame
                 {
                     //Generate white moves to show the squares they are attacking
                     attackedSquares = AttackedSquares(Board.wK, Board.wQ, Board.wR, Board.wB, Board.wN, Board.wP, K, friendlyPieces, enemyPieces, whiteTurn);
+                }
+
+                //Castling
+                if (!inCheck) //Can't castle whilst in check
+                {
+                    // Check side
+                    if (whiteTurn) // White to play
+                    {
+                        if ((whiteCastles & 0b01) == 1) // King side castles 0b01
+                        {
+
+                            //Nothing blocking or attacking squares
+                            if (((friendlyPieces | enemyPieces | attackedSquares) & ksKingRook_white) == 0)
+                            {
+                                //Can castle KS
+                                legalMoves = legalMoves | ksCastleKing_white;
+                            }
+                        }
+                        if (whiteCastles >> 1 == 1) // Queen side castles 0b10
+                        {
+                            //Nothing blocking or attacking squares
+                            if (((friendlyPieces | enemyPieces | attackedSquares) & qsKingRook_white) == 0)
+                            {
+                                //Can castle QS
+                                legalMoves = legalMoves | qsCastleKing_white;
+                            }
+                        }
+                    }
+                    else // Black to play
+                    {
+                        if ((blackCastles & 0b01) == 1) // King side castles 0b01
+                        {
+                            //Nothing blocking or attacking squares
+                            if (((friendlyPieces | enemyPieces | attackedSquares) & ksKingRook_black) == 0)
+                            {
+                                //Can castle KS
+                                legalMoves = legalMoves | ksCastleKing_black;
+                            }
+                        }
+                        if (blackCastles >> 1 == 1) // Queen side castles 0b10
+                        {
+                            //Nothing blocking or attacking squares
+                            if (((friendlyPieces | enemyPieces | attackedSquares) & qsKingRook_black) == 0)
+                            {
+                                //Can castle QS
+                                legalMoves = legalMoves | qsCastleKing_black;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -845,17 +937,17 @@ namespace ChessGame
 
         //Will generate pinned piece moves
         public static List<int> GenerateAllMoves(ulong wK, ulong wQ, ulong wR, ulong wB, ulong wN, ulong wP,
-            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP, bool genKingMoves, ulong allowMask) // 0000 0000 0000 0000  to store: flag | to | from
+            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP, bool genKingMoves, ulong allowMask,
+            int whiteCastles, int blackCastles) // 0000 0000 0000 0000  to store: flag | to | from
         {
             List<int> legalSquares = new List<int>();
 
             ulong pieceLocation = 0L;
             int correctFrom;
 
+
             //Used for getting all the ulong bitboard move locations
             ulong legalULong = 0L;
-
-            //System.Diagnostics.Debug.WriteLine(pieces[1] & 0b11111 << 6);
 
             //Generate a pinned pieces mask to identify pinned pieces
             ulong pins;
@@ -874,6 +966,12 @@ namespace ChessGame
 
             //En Passant verify
             ulong enPassantVerifyMask;
+
+            //Castling Queen Side Verify
+            ulong qsCastleVerifyMask;
+
+            //Castling King Side Verify
+            ulong ksCastleVerifyMask;
 
             /*
             * Flags (0b111):
@@ -940,6 +1038,10 @@ namespace ChessGame
 
                     //Format en passant verify mask
                     enPassantVerifyMask = 0L;
+
+                    //Format castling verify masks
+                    qsCastleVerifyMask = 0L;
+                    ksCastleVerifyMask = 0L;
 
                     //Bool if there is a pin. (Used for knights)
                     bool pin = false;
@@ -1026,7 +1128,20 @@ namespace ChessGame
                         else if (((wK >> i) & 1L) == 1L & genKingMoves)
                         {
                             //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation, friendlyPieces, blackPieces, whiteTurn, true);
+                            legalULong = LegalMoves_King(pieceLocation, friendlyPieces, blackPieces, whiteTurn, true, false, 
+                                whiteCastles, blackCastles);
+
+                            // Add qs and ks castle mask for the flag
+                            if ((defaultKing_white == wK) && (legalULong & qsCastleKing_white) != 0) // King has moved by two to left; QS castles
+                            {
+                                // Set mask for flag
+                                qsCastleVerifyMask = qsCastleKing_white;
+                            }
+                            if ((defaultKing_white == wK) && (legalULong & ksCastleKing_white) != 0) // King has moved by two to right; KS castles
+                            {
+                                // Set mask for flag
+                                ksCastleVerifyMask = ksCastleKing_white;
+                            }
                         }
                         else if (((wQ >> i) & 1L) == 1L)
                         {
@@ -1079,7 +1194,20 @@ namespace ChessGame
                         else if (((bK >> i) & 1L) == 1L & genKingMoves)
                         {
                             //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation, friendlyPieces, whitePieces, whiteTurn, true);
+                            legalULong = LegalMoves_King(pieceLocation, friendlyPieces, whitePieces, whiteTurn, true, false,
+                                whiteCastles, blackCastles);
+
+                            // Add qs and ks castle mask for the flag
+                            if ((defaultKing_black == bK) && (legalULong & qsCastleKing_black) != 0) // King has moved by two to left; QS castles
+                            {
+                                // Set mask for flag
+                                qsCastleVerifyMask = qsCastleKing_black;
+                            }
+                            if ((defaultKing_black == bK) && (legalULong & ksCastleKing_black) != 0) // King has moved by two to right; KS castles
+                            {
+                                // Set mask for flag
+                                ksCastleVerifyMask = ksCastleKing_black;
+                            }
                         }
                         else if (((bQ >> i) & 1L) == 1L)
                         {
@@ -1125,6 +1253,20 @@ namespace ChessGame
                                     
                                 }
 
+                                // Check for king side castle
+                                else if (legalULongBit == (ksCastleVerifyMask >> y & 1L))
+                                {
+                                    // Set kingside castle flag
+                                    flag = (int)Flag.Castles_KS;
+                                }
+
+                                // Check for queen side castle
+                                else if (legalULongBit == (qsCastleVerifyMask >> y & 1L))
+                                {
+                                    // Set queenside castle flag
+                                    flag = (int)Flag.Castles_QS;
+                                }
+
                                 //If the move is on the En Passant mask
                                 else if (legalULongBit == (enPassantVerifyMask >> y & 1L)) // There was an en passant capture
                                 {
@@ -1147,7 +1289,7 @@ namespace ChessGame
 
 
         public static List<int> GenerateGameMoves(ulong wK, ulong wQ, ulong wR, ulong wB, ulong wN, ulong wP,
-            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP)
+            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP, int whiteCastles, int blackCastles)
         {
             ulong[] checkArray;
             ulong legalULong = 0L;
@@ -1201,7 +1343,7 @@ namespace ChessGame
                         kingLocation = wK;
 
                         //Only king moves
-                        legalULong = LegalMoves_King(kingLocation, whitePieces, blackPieces, whiteTurn, true);
+                        legalULong = LegalMoves_King(kingLocation, whitePieces, blackPieces, whiteTurn, true, true);
 
                     }
                     else // Black to play
@@ -1209,7 +1351,7 @@ namespace ChessGame
                         kingLocation = bK;
 
                         //Only king moves
-                        legalULong = LegalMoves_King(kingLocation, blackPieces, whitePieces, whiteTurn, true);
+                        legalULong = LegalMoves_King(kingLocation, blackPieces, whitePieces, whiteTurn, true, true);
 
                     }
 
@@ -1255,7 +1397,7 @@ namespace ChessGame
                     legalSquares = ulongTranslator(kingLocation, legalULong, legalSquares);
 
                     foreach (int e in GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, false,
-                        allowedMask)) //loop through blocks and capturing checker moves to then append to the move list
+                        allowedMask, whiteCastles, blackCastles)) //loop through blocks and capturing checker moves to then append to the move list
                     {
                         legalSquares.Add(e); //Add to legal squares list
                     }
@@ -1309,7 +1451,8 @@ namespace ChessGame
             else //No check
             {
                 //Generate moves normally
-                legalSquares = GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, true, ~(ulong)0L);
+                legalSquares = GenerateAllMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, true, ~(ulong)0L, 
+                    whiteCastles, blackCastles);
                 if (legalSquares.Count == 0) // Stalemate
                 {
                     legalSquares.Add(1 << 16);
