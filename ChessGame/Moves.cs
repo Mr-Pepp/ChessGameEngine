@@ -989,22 +989,31 @@ namespace ChessGame
 
             if (whiteTurn) //White to play
             {
+                //Generate for en passant pins
+                ulong enemyPieces = blackPieces & ~(black_enPassantMask >> 8);
+                //Generate for en passant pins
+                ulong diagonalFriendlyPieces = whitePieces | black_enPassantMask >> 8;
+
                 //Generate mask horizontal and vertical pins
-                horizontalPins = Pins_Horizontal(wK, whitePieces, blackPieces, bR, bQ);
+                horizontalPins = Pins_Horizontal(wK, whitePieces, enemyPieces, bR, bQ);
                 verticalPins = Pins_Vertical(wK, whitePieces, blackPieces, bR, bQ);
 
                 //Generate mask diagonal pins
                 BLTRPins = Pins_BLTR(wK, whitePieces, blackPieces, bB, bQ);
                 BRTLPins = Pins_BRTL(wK, whitePieces, blackPieces, bB, bQ);
-
                 //Generate overall pin mask
                 pins = horizontalPins | verticalPins | BRTLPins | BLTRPins;
             }
 
             else //Black to play
             {
+                //Generate for en passant pins
+                ulong enemyPieces = whitePieces & ~(white_enPassantMask << 8);
+                //Generate for en passant pins
+                ulong diagonalFriendlyPieces = blackPieces | white_enPassantMask << 8;
+
                 //Generate mask horizontal and vertical pins
-                horizontalPins = Pins_Horizontal(bK, blackPieces, whitePieces, wR, wQ);
+                horizontalPins = Pins_Horizontal(bK, blackPieces, enemyPieces, wR, wQ);
                 verticalPins = Pins_Vertical(bK, blackPieces, whitePieces, wR, wQ);
 
                 //Generate mask diagonal pins
@@ -1064,6 +1073,7 @@ namespace ChessGame
                     {
                         pin = true;
 
+
                         //Diagonal Pins first as they are more common
                         if (((BLTRPins >> i) & 1L) == 1L) //BLTR = Bottom Left, Top Right
                         {
@@ -1088,6 +1098,13 @@ namespace ChessGame
                             //Place the "friendly piece" mask everywhere but the pin location
                             pinnedBlock = pieceLocation << 9 | pieceLocation << 8 | pieceLocation << 7 |
                                 pieceLocation >> 9 | pieceLocation >> 8 | pieceLocation >> 7;
+
+                            //Check for en passant pin
+                            if ((pinnedBlock & (white_enPassantMask | black_enPassantMask)) != 0)
+                            {
+                                // There is an en passant pin, therefore block
+                                pinnedBlock = (white_enPassantMask | black_enPassantMask);
+                            }
                         }
                         else //Vertical pin
                         {
@@ -1096,7 +1113,6 @@ namespace ChessGame
                             pinnedBlock = pieceLocation << 1 | pieceLocation << 9 | pieceLocation << 7 |
                                 pieceLocation >> 1 | pieceLocation >> 9 | pieceLocation >> 7;
                         }
-
                     }
 
                     if (whiteTurn) // White to play
@@ -1110,7 +1126,7 @@ namespace ChessGame
                         {
                             //White pawn legal moves bitboard
                             legalULong = LegalMoves_WPawn(pieceLocation, blackPieces & ~pinnedBlock, emptySquares & ~pinnedBlock,
-                                black_enPassantMask);
+                                black_enPassantMask & ~pinnedBlock);
 
                             // Is on the first rank (promotion)
                             if ((legalULong & rank_8) != 0L)
@@ -1176,7 +1192,7 @@ namespace ChessGame
                         {
                             //Black pawn legal moves
                             legalULong = LegalMoves_BPawn(pieceLocation, whitePieces & ~pinnedBlock, emptySquares & ~pinnedBlock,
-                                white_enPassantMask);
+                                white_enPassantMask & ~pinnedBlock);
 
                             // Is on the first rank (promotion)
                             if ((legalULong & rank_1) != 0L)
@@ -1811,6 +1827,7 @@ namespace ChessGame
         //Bottom Left - Top Right pin ray
         public static ulong Pins_BLTR(ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eB, ulong eQ)
         {
+            
             //Diagonal (Top right, bottom left ray)
             ulong bishopBlockMask_BRTL = eB << 9 | eB >> 9;
             //Diagonal for Queen
