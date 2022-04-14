@@ -39,10 +39,6 @@ namespace ChessGame
         //Promotion square
         private Square promotionSquare;
 
-
-        //To store the bitboard of the "to" square
-        private ulong squareBitboard;
-
         //for selecting piece
         private bool pieceSelected = false;
         private int tempPiece;
@@ -53,6 +49,11 @@ namespace ChessGame
 
         //Public Blank texture to pass
         public Texture2D blankTexture;
+
+        private bool playerMove = true;
+
+        // To square bitboar to pass into promotion function
+        private ulong _toSquareBitboard;
 
 
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
@@ -182,7 +183,39 @@ namespace ChessGame
 
                 }
 
-                PieceSelection();
+                if (playerMove) // Player move
+                {
+                    PieceSelection();
+                }
+                else // Computer move
+                {
+                    // Random moves
+                    int RandMove = Engine.RandomMove(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, 
+                        Moves.whiteCastles, Moves.blackCastles, Moves.white_enPassantMask, Moves.black_enPassantMask, Moves.whiteTurn);
+                    
+                    if (RandMove >> 15 == 0) // Not checkmate or stalemate
+                    {
+                        //Set each move information
+                        int flag = RandMove >> 12 & 0b111111;
+                        int to = RandMove >> 6 & 0b111111;
+                        int from = RandMove & 0b111111;
+
+                        MakeMoveOnBoard(flag, to, from, squares[from].piece);
+                    }
+
+                    else
+                    {
+                        if (((RandMove >> 15) & 1) == 1) // Checkmate
+                        {
+                            GameState.state = 1;
+                        }
+                        else // Stalemate
+                        {
+                            GameState.state = 2;
+                        }
+                    }
+                }
+                
             }
             else if (GameState.state == 1 | GameState.state == 2) // Checkmate or stalemate (endgame screen)
             {
@@ -203,7 +236,7 @@ namespace ChessGame
             }
             else // Promotion
             {
-                Promotion();
+                Promotion(_toSquareBitboard);
             }
 
         }
@@ -456,316 +489,7 @@ namespace ChessGame
                                 }
                             }*/
 
-
-                            //Colour | Piece | Position
-                            //piecesInfo.Add(squares[square].piece << 6 | square);
-
-                            squareBitboard = BinaryStringToBitboard(square);
-
-                            ulong previousSquareBitboard;
-
-                            //Filter piece to update the correct bitboard
-
-                            //First update the targetted square piece (won't do anything if the piece is Piece.None)
-                            switch (squares[square].piece)
-                            {
-                                //White Pieces
-                                case Piece.White | Piece.King:
-                                    wK = wK & ~squareBitboard;
-                                    break;
-
-                                case (Piece.White | Piece.Queen):
-                                    wQ = wQ & ~squareBitboard;
-                                    break;
-
-                                case Piece.White | Piece.Rook:
-                                    wR = wR & ~squareBitboard;
-                                    break;
-
-                                case (Piece.White | Piece.Bishop):
-                                    wB = wB & ~squareBitboard;
-                                    break;
-
-                                case Piece.White | Piece.Knight:
-                                    wN = wN & ~squareBitboard;
-                                    break;
-
-                                case (Piece.White | Piece.Pawn):
-                                    wP = wP & ~squareBitboard;
-                                    break;
-
-                                //Black Pieces
-                                case Piece.Black | Piece.King:
-                                    bK = bK & ~squareBitboard;
-                                    break;
-
-                                case (Piece.Black | Piece.Queen):
-                                    bQ = bQ & ~squareBitboard;
-                                    break;
-
-                                case Piece.Black | Piece.Rook:
-                                    bR = bR & ~squareBitboard;
-                                    break;
-
-                                case (Piece.Black | Piece.Bishop):
-                                    bB = bB & ~squareBitboard;
-                                    break;
-
-                                case Piece.Black | Piece.Knight:
-                                    bN = bN & ~squareBitboard;
-                                    break;
-
-                                case (Piece.Black | Piece.Pawn):
-                                    bP = bP & ~squareBitboard;
-                                    break;
-                            }
-
-                            //Update for the piece taking the square
-                            switch (tempPiece)
-                            {
-                                //White Pieces
-                                case Piece.White | Piece.King:
-                                    wK = wK | squareBitboard;
-                                    wK = wK & ~BinaryStringToBitboard(tempSquare);
-
-                                    //King moved, cant castle
-                                    Moves.whiteCastles = 0;
-                                    break;
-
-                                case (Piece.White | Piece.Queen):
-                                    wQ = wQ | squareBitboard;
-                                    wQ = wQ & ~BinaryStringToBitboard(tempSquare);
-                                    break;
-
-                                case Piece.White | Piece.Rook:
-                                    wR = wR | squareBitboard;
-                                    wR = wR & ~BinaryStringToBitboard(tempSquare);
-
-                                    //Set previous square bitboard for rook
-                                    previousSquareBitboard = BinaryStringToBitboard(tempSquare);
-
-                                    // Can't castle with that rook
-
-                                    if ((Moves.qsRookCorners & previousSquareBitboard) != 0)// Rook moved on queen side
-                                    {
-                                        Moves.whiteCastles = Moves.whiteCastles & 0b01; // Can't castle queen side
-                                    }
-                                    else if ((Moves.ksRookCorners & previousSquareBitboard) != 0) // Rook moved on king side
-                                    {
-                                        Moves.whiteCastles = Moves.whiteCastles & 0b10; // Can't castle king side
-                                    }
-                                    break;
-
-                                case (Piece.White | Piece.Bishop):
-                                    wB = wB | squareBitboard;
-                                    wB = wB & ~BinaryStringToBitboard(tempSquare);
-                                    break;
-
-                                case Piece.White | Piece.Knight:
-                                    wN = wN | squareBitboard;
-                                    wN = wN & ~BinaryStringToBitboard(tempSquare);
-                                    break;
-
-                                case (Piece.White | Piece.Pawn):
-                                    wP = wP | squareBitboard;
-                                    wP = wP & ~BinaryStringToBitboard(tempSquare);
-                                    break;
-
-                                //Black Pieces
-                                case Piece.Black | Piece.King:
-                                    bK = bK | squareBitboard;
-                                    bK = bK & ~BinaryStringToBitboard(tempSquare);
-
-                                    //King moved, can't castle
-                                    Moves.blackCastles = 0;
-
-                                    break;
-
-                                case (Piece.Black | Piece.Queen):
-                                    bQ = bQ | squareBitboard;
-                                    bQ = bQ & ~BinaryStringToBitboard(tempSquare);
-                                    break;
-
-                                case Piece.Black | Piece.Rook:
-                                    bR = bR | squareBitboard;
-                                    bR = bR & ~BinaryStringToBitboard(tempSquare);
-
-                                    //Set previous square bitboard for rook
-                                    previousSquareBitboard = BinaryStringToBitboard(tempSquare);
-
-                                    // Can't castle with that rook
-
-                                    if ((Moves.qsRookCorners & previousSquareBitboard) != 0)// Rook moved on queen side
-                                    {
-                                        Moves.blackCastles = Moves.blackCastles & 0b01; // Can't castle queen side
-                                    }
-                                    else if ((Moves.ksRookCorners & previousSquareBitboard) != 0) // Rook moved on king side
-                                    {
-                                        Moves.blackCastles = Moves.blackCastles & 0b10; // Can't castle king side
-                                    }
-                                    break;
-
-                                case (Piece.Black | Piece.Bishop):
-                                    bB = bB | squareBitboard;
-                                    bB = bB & ~BinaryStringToBitboard(tempSquare);
-                                    break;
-
-                                case Piece.Black | Piece.Knight:
-                                    bN = bN | squareBitboard;
-                                    bN = bN & ~BinaryStringToBitboard(tempSquare);
-                                    break;
-
-                                case (Piece.Black | Piece.Pawn):
-                                    bP = bP | squareBitboard;
-                                    bP = bP & ~BinaryStringToBitboard(tempSquare);
-                                    break;
-                            }
-
-                            // ADD MOVEHISTORY:  Piece, From, To, Captured
-                            Moves.moveHistory.Add(new int[] { tempPiece, tempSquare, square, squares[square].piece });
-
-
-                            // REVERSE BOARD (In future... to develop)
-                            //BitboardOutput(Moves.whiteTurn);
-
-                            //Update the square
-                            squares[square].piece = tempPiece;
-                            //assign texture and moves
-                            squares[square].AssignPiece();
-
-
-                            /*
-                                 * Flags (0b111):
-                                 * 000 = Normal Move
-                                 * 001 = Captures
-                                 * 010 = Evasive (From check)
-                                 * 011 = Promotion
-                                 * 100 = Castles Queen Side
-                                 * 101 = Castles King Side
-                                 * 110 = En Passant
-                                 * 111 = Double Push
-                                 */
-
-                            //Check flag
-                            if (flag == (int)Moves.Flag.Promotion) // Pawn promotion
-                            {
-
-                                //Set state for promotion
-                                GameState.state = 3;
-                                //Update class with square position
-                                promotionScreen.Update(squares[square].position);
-                            }
-                            else if (flag == (int)Moves.Flag.Double_Push) // Double push by pawn
-                            {
-                                // Mark en passant location
-                                if (Moves.whiteTurn) // White to play
-                                {
-                                    // Set en passant location
-                                    Moves.white_enPassantMask = BinaryStringToBitboard(square + 8);
-                                }
-                                else // Black to play
-                                {
-                                    // Set en passant location
-                                    Moves.black_enPassantMask = BinaryStringToBitboard(square - 8);
-                                }
-
-                                EndOfTurn();
-                            }
-                            else if (flag == (int)Moves.Flag.Castles_KS) // Kingside castle
-                            {
-                                // Adjust rook
-                                if (Moves.whiteTurn) // White to play
-                                {
-                                    // Switch rooks
-                                    squares[63].piece = Piece.None;
-                                    squares[61].piece = Piece.White | Piece.Rook;
-
-                                    // Assign piece
-                                    squares[61].AssignPiece();
-
-                                    //Update bitboards
-                                    wR = (wR & ~Moves.BRCorner) | Moves.ksCastleRook_white;
-                                }
-                                else // Black to play
-                                {
-                                    // Switch rooks
-                                    squares[7].piece = Piece.None;
-                                    squares[5].piece = Piece.Black | Piece.Rook;
-
-                                    // Assign piece
-                                    squares[5].AssignPiece();
-
-                                    //Update bitboards
-                                    wR = (wR & ~Moves.TRCorner) | Moves.ksCastleRook_black;
-                                }
-                                // End of turn
-                                EndOfTurn();
-                            }
-                            else if (flag == (int)Moves.Flag.Castles_QS) // Queenside castle
-                            {
-                                // Adjust rook
-                                if (Moves.whiteTurn) // White to play
-                                {
-                                    // Switch rooks
-                                    squares[56].piece = Piece.None;
-                                    squares[59].piece = Piece.White | Piece.Rook;
-
-                                    // Assign piece
-                                    squares[59].AssignPiece();
-
-                                    //Update bitboards
-                                    wR = (wR & ~Moves.BLCorner) | Moves.qsCastleRook_white;
-                                }
-                                else // Black to play
-                                {
-                                    // Switch rooks
-                                    squares[0].piece = Piece.None;
-                                    squares[3].piece = Piece.Black | Piece.Rook;
-
-                                    // Assign piece
-                                    squares[3].AssignPiece();
-
-                                    //Update bitboards
-                                    wR = (wR & ~Moves.TLCorner) | Moves.qsCastleRook_black;
-                                }
-                                // End of turn
-                                EndOfTurn();
-                            }
-                            else if (flag == (int)Moves.Flag.En_Passant) // En passant move
-                            {
-                                //Check which side
-                                if (Moves.whiteTurn) // White turn 
-                                {
-                                    // Remove pawn below
-                                    squares[square + 8].piece = Piece.None;
-                                    squares[square + 8].AssignPiece();
-
-                                    //Update bitboard
-                                    bP = bP & ~(squareBitboard >> 8);
-                                }
-                                else // Black turn
-                                {
-                                    // Remove pawn above
-                                    squares[square - 8].piece = Piece.None;
-                                    squares[square - 8].AssignPiece();
-
-                                    //Update bitboard
-                                    wP = wP & ~(squareBitboard << 8);
-                                }
-
-                                //End of turn
-                                EndOfTurn();
-                            }
-                            else 
-                            {
-                                //En passant not moved
-                                //Set En passant = 0
-                                // Format both En Passant masks
-                                Moves.white_enPassantMask = 0L;
-                                Moves.black_enPassantMask = 0L;
-                                //End of turn
-                                EndOfTurn();
-                            }
+                            MakeMoveOnBoard(flag, square, tempSquare, tempPiece);
 
                             //end loop
                             goto loopEnd2;
@@ -783,7 +507,7 @@ namespace ChessGame
         }
 
 
-        private void Promotion()
+        private void Promotion(ulong toSquareBitboard)
         {
             //If mouse pressed
             if (Mouse.GetState().LeftButton == ButtonState.Pressed)
@@ -804,7 +528,7 @@ namespace ChessGame
                         promotionColour = Piece.White;
 
                         //Update the piece's bitboard
-                        wB = wB | squareBitboard;
+                        wB = wB | toSquareBitboard;
                     }
                     else // Black to move
                     {
@@ -812,7 +536,7 @@ namespace ChessGame
                         promotionColour = Piece.Black;
 
                         //Update the piece's bitboard
-                        bB = bB | squareBitboard;
+                        bB = bB | toSquareBitboard;
                     }
 
                     //Set state back
@@ -831,7 +555,7 @@ namespace ChessGame
                         promotionColour = Piece.White;
 
                         //Update the piece's bitboard
-                        wR = wR | squareBitboard;
+                        wR = wR | toSquareBitboard;
                     }
                     else // Black to move
                     {
@@ -839,7 +563,7 @@ namespace ChessGame
                         promotionColour = Piece.Black;
 
                         //Update the piece's bitboard
-                        bR = bR | squareBitboard;
+                        bR = bR | toSquareBitboard;
                     }
 
 
@@ -859,7 +583,7 @@ namespace ChessGame
                         promotionColour = Piece.White;
 
                         //Update the piece's bitboard
-                        wQ = wQ | squareBitboard;
+                        wQ = wQ | toSquareBitboard;
                     }
                     else // Black to move
                     {
@@ -867,7 +591,7 @@ namespace ChessGame
                         promotionColour = Piece.Black;
 
                         //Update the piece's bitboard
-                        bQ = bQ | squareBitboard;
+                        bQ = bQ | toSquareBitboard;
                     }
 
                     //Set state back
@@ -886,7 +610,7 @@ namespace ChessGame
                         promotionColour = Piece.White;
 
                         //Update the piece's bitboard
-                        wN = wN | squareBitboard;
+                        wN = wN | toSquareBitboard;
                     }
                     else // Black to move
                     {
@@ -894,7 +618,7 @@ namespace ChessGame
                         promotionColour = Piece.Black;
 
                         //Update the piece's bitboard
-                        bN = bN | squareBitboard;
+                        bN = bN | toSquareBitboard;
                     }
 
                     //Set state back
@@ -909,7 +633,7 @@ namespace ChessGame
                     // Assign promotion piece
                     promotionSquare.AssignPiece();
                     //Remove pawn from bitboard square
-                    if (Moves.whiteTurn) { wP = wP & ~squareBitboard; } else { bP = bP & ~squareBitboard; }
+                    if (Moves.whiteTurn) { wP = wP & ~toSquareBitboard; } else { bP = bP & ~toSquareBitboard; }
 
                     //End of turn
                     EndOfTurn();
@@ -917,8 +641,6 @@ namespace ChessGame
                 }
             }
         }
-
-
 
         private void LoadFEN(string FEN) //Makes FEN readable for computer
         {
@@ -1079,9 +801,11 @@ namespace ChessGame
             //End of turn; other colour turn
             Moves.whiteTurn = !Moves.whiteTurn;
 
+            playerMove = !playerMove;
 
             //Generate moves once a new position is established
-            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, Moves.whiteCastles, Moves.blackCastles);
+            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, Moves.whiteCastles, Moves.blackCastles,
+                Moves.white_enPassantMask, Moves.black_enPassantMask, Moves.whiteTurn);
 
 
             // (Stalemate | Checkmate) (0b1100 0000 0000 0000) | flag | to | from
@@ -1101,6 +825,341 @@ namespace ChessGame
                 }
             }
         }
+
+        void MakeMoveOnBoard(int flag, int toSquare, int fromSquare, int pieceMoving)
+        {
+            //Colour | Piece | Position
+            //piecesInfo.Add(squares[square].piece << 6 | square);
+
+            //To store the bitboard of the "to" square
+            ulong toSquareBitboard = BinaryStringToBitboard(toSquare);
+            //To store the bitboard of the "from" square
+            ulong fromSquareBitboard = BinaryStringToBitboard(fromSquare);
+
+            //Set global for promotion
+            _toSquareBitboard = toSquareBitboard;
+
+            //Filter piece to update the correct bitboard
+
+            //First update the targetted square piece (won't do anything if the piece is Piece.None)
+            switch (squares[toSquare].piece)
+            {
+                //White Pieces
+                case Piece.White | Piece.King:
+                    wK = wK & ~toSquareBitboard;
+                    break;
+
+                case (Piece.White | Piece.Queen):
+                    wQ = wQ & ~toSquareBitboard;
+                    break;
+
+                case Piece.White | Piece.Rook:
+                    wR = wR & ~toSquareBitboard;
+                    break;
+
+                case (Piece.White | Piece.Bishop):
+                    wB = wB & ~toSquareBitboard;
+                    break;
+
+                case Piece.White | Piece.Knight:
+                    wN = wN & ~toSquareBitboard;
+                    break;
+
+                case (Piece.White | Piece.Pawn):
+                    wP = wP & ~toSquareBitboard;
+                    break;
+
+                //Black Pieces
+                case Piece.Black | Piece.King:
+                    bK = bK & ~toSquareBitboard;
+                    break;
+
+                case (Piece.Black | Piece.Queen):
+                    bQ = bQ & ~toSquareBitboard;
+                    break;
+
+                case Piece.Black | Piece.Rook:
+                    bR = bR & ~toSquareBitboard;
+                    break;
+
+                case (Piece.Black | Piece.Bishop):
+                    bB = bB & ~toSquareBitboard;
+                    break;
+
+                case Piece.Black | Piece.Knight:
+                    bN = bN & ~toSquareBitboard;
+                    break;
+
+                case (Piece.Black | Piece.Pawn):
+                    bP = bP & ~toSquareBitboard;
+                    break;
+            }
+
+            //Update for the piece taking the square
+            switch (pieceMoving)
+            {
+                //White Pieces
+                case Piece.White | Piece.King:
+                    wK = wK | toSquareBitboard;
+                    wK = wK & ~fromSquareBitboard;
+
+                    //King moved, cant castle
+                    Moves.whiteCastles = 0;
+                    break;
+
+                case (Piece.White | Piece.Queen):
+                    wQ = wQ | toSquareBitboard;
+                    wQ = wQ & ~fromSquareBitboard;
+                    break;
+
+                case Piece.White | Piece.Rook:
+                    wR = wR | toSquareBitboard;
+                    wR = wR & ~fromSquareBitboard;
+
+                    // Can't castle with that rook
+
+                    if ((Moves.qsRookCorners & fromSquareBitboard) != 0)// Rook moved on queen side
+                    {
+                        Moves.whiteCastles = Moves.whiteCastles & 0b01; // Can't castle queen side
+                    }
+                    else if ((Moves.ksRookCorners & fromSquareBitboard) != 0) // Rook moved on king side
+                    {
+                        Moves.whiteCastles = Moves.whiteCastles & 0b10; // Can't castle king side
+                    }
+                    break;
+
+                case (Piece.White | Piece.Bishop):
+                    wB = wB | toSquareBitboard;
+                    wB = wB & ~fromSquareBitboard;
+                    break;
+
+                case Piece.White | Piece.Knight:
+                    wN = wN | toSquareBitboard;
+                    wN = wN & ~fromSquareBitboard;
+                    break;
+
+                case (Piece.White | Piece.Pawn):
+                    wP = wP | toSquareBitboard;
+                    wP = wP & ~fromSquareBitboard;
+                    break;
+
+                //Black Pieces
+                case Piece.Black | Piece.King:
+                    bK = bK | toSquareBitboard;
+                    bK = bK & ~fromSquareBitboard;
+
+                    //King moved, can't castle
+                    Moves.blackCastles = 0;
+
+                    break;
+
+                case (Piece.Black | Piece.Queen):
+                    bQ = bQ | toSquareBitboard;
+                    bQ = bQ & ~fromSquareBitboard;
+                    break;
+
+                case Piece.Black | Piece.Rook:
+                    bR = bR | toSquareBitboard;
+                    bR = bR & ~fromSquareBitboard;
+
+                    // Can't castle with that rook
+
+                    if ((Moves.qsRookCorners & fromSquareBitboard) != 0)// Rook moved on queen side
+                    {
+                        Moves.blackCastles = Moves.blackCastles & 0b01; // Can't castle queen side
+                    }
+                    else if ((Moves.ksRookCorners & fromSquareBitboard) != 0) // Rook moved on king side
+                    {
+                        Moves.blackCastles = Moves.blackCastles & 0b10; // Can't castle king side
+                    }
+                    break;
+
+                case (Piece.Black | Piece.Bishop):
+                    bB = bB | toSquareBitboard;
+                    bB = bB & ~fromSquareBitboard;
+                    break;
+
+                case Piece.Black | Piece.Knight:
+                    bN = bN | toSquareBitboard;
+                    bN = bN & ~fromSquareBitboard;
+                    break;
+
+                case (Piece.Black | Piece.Pawn):
+                    bP = bP | toSquareBitboard;
+                    bP = bP & ~fromSquareBitboard;
+                    break;
+            }
+
+            // ADD MOVEHISTORY:  Piece, From, To, Captured
+            //Moves.moveHistory.Add(new int[] { tempPiece, fromSquare, square, squares[square].piece });
+
+
+            // REVERSE BOARD (In future... to develop)
+            //BitboardOutput(Moves.whiteTurn);
+
+            //Update the square
+            squares[toSquare].piece = pieceMoving;
+            //assign texture and moves
+            squares[toSquare].AssignPiece();
+
+            //Remove previous piece
+            if (!playerMove) // Computer moving
+            {
+                //Remove piece from board
+                squares[fromSquare].piece = Piece.None;
+            }
+
+
+            /*
+                 * Flags (0b111):
+                 * 000 = Normal Move
+                 * 001 = Captures
+                 * 010 = Evasive (From check)
+                 * 011 = Promotion
+                 * 100 = Castles Queen Side
+                 * 101 = Castles King Side
+                 * 110 = En Passant
+                 * 111 = Double Push
+                 */
+
+            //Check flag
+            if (flag == (int)Moves.Flag.Promotion) // Pawn promotion
+            {
+                if (playerMove) // Player move show screen
+                {
+                    //Set state for promotion
+                    GameState.state = 3;
+                    //Update class with square position
+                    promotionScreen.Update(squares[toSquare].position);
+                }
+                else // Computer move (Always select queen)
+                {
+                    // Pawn to queen
+                    if (Moves.whiteTurn)
+                    {
+                        squares[toSquare].piece = Piece.White | Piece.Queen;
+                    }
+                    else
+                    {
+                        squares[toSquare].piece = Piece.Black | Piece.Queen;
+                    }
+                    squares[toSquare].AssignPiece();
+                }
+                
+            }
+            else if (flag == (int)Moves.Flag.Double_Push) // Double push by pawn
+            {
+                // Mark en passant location
+                if (Moves.whiteTurn) // White to play
+                {
+                    // Set en passant location
+                    Moves.white_enPassantMask = BinaryStringToBitboard(toSquare + 8);
+                }
+                else // Black to play
+                {
+                    // Set en passant location
+                    Moves.black_enPassantMask = BinaryStringToBitboard(toSquare - 8);
+                }
+
+                EndOfTurn();
+            }
+            else if (flag == (int)Moves.Flag.Castles_KS) // Kingside castle
+            {
+                // Adjust rook
+                if (Moves.whiteTurn) // White to play
+                {
+                    // Switch rooks
+                    squares[63].piece = Piece.None;
+                    squares[61].piece = Piece.White | Piece.Rook;
+
+                    // Assign piece
+                    squares[61].AssignPiece();
+
+                    //Update bitboards
+                    wR = (wR & ~Moves.BRCorner) | Moves.ksCastleRook_white;
+                }
+                else // Black to play
+                {
+                    // Switch rooks
+                    squares[7].piece = Piece.None;
+                    squares[5].piece = Piece.Black | Piece.Rook;
+
+                    // Assign piece
+                    squares[5].AssignPiece();
+
+                    //Update bitboards
+                    wR = (wR & ~Moves.TRCorner) | Moves.ksCastleRook_black;
+                }
+                // End of turn
+                EndOfTurn();
+            }
+            else if (flag == (int)Moves.Flag.Castles_QS) // Queenside castle
+            {
+                // Adjust rook
+                if (Moves.whiteTurn) // White to play
+                {
+                    // Switch rooks
+                    squares[56].piece = Piece.None;
+                    squares[59].piece = Piece.White | Piece.Rook;
+
+                    // Assign piece
+                    squares[59].AssignPiece();
+
+                    //Update bitboards
+                    wR = (wR & ~Moves.BLCorner) | Moves.qsCastleRook_white;
+                }
+                else // Black to play
+                {
+                    // Switch rooks
+                    squares[0].piece = Piece.None;
+                    squares[3].piece = Piece.Black | Piece.Rook;
+
+                    // Assign piece
+                    squares[3].AssignPiece();
+
+                    //Update bitboards
+                    wR = (wR & ~Moves.TLCorner) | Moves.qsCastleRook_black;
+                }
+                // End of turn
+                EndOfTurn();
+            }
+            else if (flag == (int)Moves.Flag.En_Passant) // En passant move
+            {
+                //Check which side
+                if (Moves.whiteTurn) // White turn 
+                {
+                    // Remove pawn below
+                    squares[square + 8].piece = Piece.None;
+                    squares[square + 8].AssignPiece();
+
+                    //Update bitboard
+                    bP = bP & ~(toSquareBitboard >> 8);
+                }
+                else // Black turn
+                {
+                    // Remove pawn above
+                    squares[square - 8].piece = Piece.None;
+                    squares[square - 8].AssignPiece();
+
+                    //Update bitboard
+                    wP = wP & ~(toSquareBitboard << 8);
+                }
+
+                //End of turn
+                EndOfTurn();
+            }
+            else
+            {
+                //En passant not moved
+                //Set En passant = 0
+                // Format both En Passant masks **
+                Moves.white_enPassantMask = 0L;
+                Moves.black_enPassantMask = 0L;
+                //End of turn
+                EndOfTurn();
+            }
+        }
+
 
         //Make bitboard into the game board
         void BitboardOutput(bool asWhite)
@@ -1183,7 +1242,8 @@ namespace ChessGame
             }
 
             //Generate legal moves once a new position is established
-            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, Moves.whiteCastles, Moves.blackCastles);
+            moves = Moves.GenerateGameMoves(wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP, Moves.whiteCastles, Moves.blackCastles, 
+                Moves.white_enPassantMask, Moves.black_enPassantMask, Moves.whiteTurn);
 
         }
 

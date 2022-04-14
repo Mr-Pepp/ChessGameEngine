@@ -1289,7 +1289,8 @@ namespace ChessGame
 
 
         public static List<int> GenerateGameMoves(ulong wK, ulong wQ, ulong wR, ulong wB, ulong wN, ulong wP,
-            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP, int whiteCastles, int blackCastles)
+            ulong bK, ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP, int whiteCastles, int blackCastles,
+            ulong white_enPassantMask, ulong black_enPassantMask, bool whiteTurn)
         {
             ulong[] checkArray;
             ulong legalULong = 0L;
