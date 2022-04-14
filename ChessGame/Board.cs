@@ -179,13 +179,12 @@ namespace ChessGame
                     {
                         squares[e].targetSquare = true;
                     }
-
-
                 }
 
                 if (playerMove) // Player move
                 {
                     PieceSelection();
+                    playerMove = true;
                 }
                 else // Computer move
                 {
@@ -215,7 +214,6 @@ namespace ChessGame
                         }
                     }
                 }
-                
             }
             else if (GameState.state == 1 | GameState.state == 2) // Checkmate or stalemate (endgame screen)
             {
@@ -226,6 +224,13 @@ namespace ChessGame
                     {
                         GameState.state = 0; // Playing the game
                         Moves.whiteTurn = true;
+
+                        // Format game values 
+                        Moves.white_enPassantMask = 0;
+                        Moves.black_enPassantMask = 0;
+                        Moves.whiteCastles = 0b11;
+                        Moves.blackCastles = 0b11;
+
                         LoadFEN(defaultFEN);
                     }
                     else if (endGameScreen.exitRect.Contains(Game1.mousePoint))
@@ -839,6 +844,30 @@ namespace ChessGame
             //Set global for promotion
             _toSquareBitboard = toSquareBitboard;
 
+            //Castling (Captures of a rook)
+            if (Moves.whiteTurn) // White to move
+            {
+                if (toSquareBitboard == (bR & Moves.TRCorner)) // Kingside rook captures
+                {
+                    Moves.blackCastles = Moves.blackCastles & 0b10;
+                }
+                else if (toSquareBitboard == (bR & Moves.TLCorner)) // Queenside rook captures
+                {
+                    Moves.blackCastles = Moves.blackCastles & 0b01;
+                }
+            }
+            else // Black to move
+            {
+                if (toSquareBitboard == (wR & Moves.BRCorner)) // Kingside rook captures
+                {
+                    Moves.whiteCastles = Moves.whiteCastles & 0b10;
+                }
+                else if (toSquareBitboard == (wR & Moves.BLCorner)) // Queenside rook captures
+                {
+                    Moves.whiteCastles = Moves.whiteCastles & 0b01;
+                }
+            }
+
             //Filter piece to update the correct bitboard
 
             //First update the targetted square piece (won't do anything if the piece is Piece.None)
@@ -1009,7 +1038,6 @@ namespace ChessGame
                 squares[fromSquare].piece = Piece.None;
             }
 
-
             /*
                  * Flags (0b111):
                  * 000 = Normal Move
@@ -1088,7 +1116,7 @@ namespace ChessGame
                     squares[5].AssignPiece();
 
                     //Update bitboards
-                    wR = (wR & ~Moves.TRCorner) | Moves.ksCastleRook_black;
+                    bR = (bR & ~Moves.TRCorner) | Moves.ksCastleRook_black;
                 }
                 // End of turn
                 EndOfTurn();
@@ -1118,7 +1146,7 @@ namespace ChessGame
                     squares[3].AssignPiece();
 
                     //Update bitboards
-                    wR = (wR & ~Moves.TLCorner) | Moves.qsCastleRook_black;
+                    bR = (bR & ~Moves.TLCorner) | Moves.qsCastleRook_black;
                 }
                 // End of turn
                 EndOfTurn();

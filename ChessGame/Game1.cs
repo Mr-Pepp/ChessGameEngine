@@ -31,7 +31,7 @@ namespace ChessGame
             { "Target Colour", new Color(254, 172, 238) }, // currently not referenced. [new] in Square.cs
             { "Endgame Background", new Color(93, 119, 123, 215) },
             { "Endgame Line", new Color(65, 86, 86) },
-            { "Promotion Background", new Color(255, 255, 255, 0) }
+            { "Promotion Background", new Color(255, 255, 255, 100) }
         };
 
         private int squareSize;
