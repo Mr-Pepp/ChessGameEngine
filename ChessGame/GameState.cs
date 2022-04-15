@@ -15,5 +15,7 @@ namespace ChessGame
          */
         public static int state = 0;
 
+        public static bool playerMove;
+
     }
 }

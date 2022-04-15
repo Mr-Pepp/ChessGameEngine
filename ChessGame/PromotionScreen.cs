@@ -38,7 +38,7 @@ namespace ChessGame
             
         }
 
-        public void Update(Vector2 squarePosition)
+        public void Update(Position position, Vector2 squarePosition)
         {
             _squarePosition = squarePosition;
 
@@ -46,7 +46,7 @@ namespace ChessGame
             
 
             //If white turn
-            if (Moves.whiteTurn)
+            if (position.whiteTurn)
             {
                 // Locate above the board
                 promotionPosition = (int)squarePosition.Y - _pxSize;
