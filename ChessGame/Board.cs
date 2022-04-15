@@ -17,6 +17,9 @@ namespace ChessGame
         //Promotion Screen
         private PromotionScreen promotionScreen;
 
+        //For undoing moves
+        Stack<MoveInfo> moveHistory = new Stack<MoveInfo>();
+
         //pieceInfo //Piece information Piece
         //Stores the information of all the pieces on the board
         // 
@@ -165,6 +168,12 @@ namespace ChessGame
                 if (Keyboard.GetState().IsKeyDown(Keys.T))
                 {
                     //System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
+                    // Undo move
+
+                    if (moveHistory.Count != 0) // Greater than 0
+                    {
+                        UndoMove(moveHistory.Pop());
+                    }
 
                 }
 
@@ -188,9 +197,11 @@ namespace ChessGame
                 if (GameState.playerMove) // Player move
                 {
                     PieceSelection();
+                    
                 }
                 else // Computer move
                 {
+
                     // Random moves
                     int RandMove = Engine.RandomMove(position);
                     
@@ -201,7 +212,26 @@ namespace ChessGame
                         int to = RandMove >> 6 & 0b111111;
                         int from = RandMove & 0b111111;
 
-                        MakeMoveOnBoard(flag, to, from, squares[from].piece);
+                        //To store the bitboard of the "to" square
+                        ulong toSquareBitboard = BinaryStringToBitboard(to);
+                        //To store the bitboard of the "from" square
+                        ulong fromSquareBitboard = BinaryStringToBitboard(from);
+
+                        MoveInfo move = new MoveInfo();
+
+                        move.fromSquare = from;
+                        move.toSquare = to;
+                        move.flag = flag;// Can be castling.. etc
+
+                        move.capturedPiece = squares[to].piece;
+
+                        // For updating the bitboards in position
+                        move.toSquareBitboard = toSquareBitboard;
+                        move.fromSquareBitboard = fromSquareBitboard;
+
+                        move.piece = squares[from].piece; // The piece that is moving 
+
+                        MakeMoveOnBoard(move);
                     }
 
                     else
@@ -496,7 +526,27 @@ namespace ChessGame
                                 }
                             }*/
 
-                            MakeMoveOnBoard(flag, square, tempSquare, tempPiece);
+
+                            //To store the bitboard of the "to" square
+                            ulong toSquareBitboard = BinaryStringToBitboard(square);
+                            //To store the bitboard of the "from" square
+                            ulong fromSquareBitboard = BinaryStringToBitboard(tempSquare);
+
+                            MoveInfo move = new MoveInfo();
+
+                            move.fromSquare = tempSquare;
+                            move.toSquare = square;
+                            move.flag = flag;// Can be castling.. etc
+
+                            move.capturedPiece = squares[square].piece;
+
+                            // For updating the bitboards in position
+                            move.toSquareBitboard = toSquareBitboard;
+                            move.fromSquareBitboard = fromSquareBitboard;
+
+                            move.piece = tempPiece; // The piece that is moving 
+
+                            MakeMoveOnBoard(move);
 
                             //end loop
                             goto loopEnd2;
@@ -681,19 +731,48 @@ namespace ChessGame
             }
         }
 
-        /*
+        //Structure for making a move
+        public struct MoveInfo
+        {
+            public int fromSquare;
+            public int toSquare;
+            public int flag; // Can be castling.. etc
+
+            public int capturedPiece;
+
+            // For updating the bitboards in position
+            public ulong toSquareBitboard;
+            public ulong fromSquareBitboard;
+
+            public int piece; // The piece that is moving
+        }
+
         // Undoing a move
         // All previous saves... Moves.whiteCastles, Moves.blackCastles,
         //Moves.white_enPassantMask, Moves.black_enPassantMask, Moves.whiteTurn
-        public static void UndoMove(int flag, int toSquare, int fromSquare, int pieceMoving, int capturedPiece)
+        public static void UndoMove(MoveInfo move)
         {
+            int fromSquare = move.fromSquare;
+            int toSquare = move.toSquare;
+            int flag = move.flag;
+
+            int capturedPiece = move.capturedPiece;
+
+            ulong toSquareBitboard = move.toSquareBitboard;
+            ulong fromSquareBitboard = move.fromSquareBitboard;
+
+            // The piece that is moving
+            int piece = move.piece;
+
+            /*
             //To store the bitboard of the "to" square
             ulong toSquareBitboard = BinaryStringToBitboard(toSquare);
             //To store the bitboard of the "from" square
             ulong fromSquareBitboard = BinaryStringToBitboard(fromSquare);
+            */
 
             // Reverse
-            PieceBitboardUpdate(fromSquareBitboard, fromSquare, toSquareBitboard, pieceMoving);
+            PieceBitboardUpdate(fromSquareBitboard, fromSquare, toSquareBitboard, piece);
 
             if (capturedPiece != Piece.None)
             {
@@ -701,84 +780,94 @@ namespace ChessGame
                 {
                     //White Pieces
                     case Piece.White | Piece.King:
-                        wK = wK | fromSquareBitboard;
+                        position.wK = position.wK | fromSquareBitboard;
                         break;
 
                     case (Piece.White | Piece.Queen):
-                        wQ = wQ | fromSquareBitboard;
+                        position.wQ = position.wQ | fromSquareBitboard;
                         break;
 
                     case Piece.White | Piece.Rook:
-                        wR = wR | fromSquareBitboard;
+                        position.wR = position.wR | fromSquareBitboard;
                         break;
 
                     case (Piece.White | Piece.Bishop):
-                        wB = wB | fromSquareBitboard;
+                        position.wB = position.wB | fromSquareBitboard;
                         break;
 
                     case Piece.White | Piece.Knight:
-                        wN = wN | fromSquareBitboard;
+                        position.wN = position.wN | fromSquareBitboard;
                         break;
 
                     case (Piece.White | Piece.Pawn):
-                        wP = wP | fromSquareBitboard;
+                        position.wP = position.wP | fromSquareBitboard;
                         break;
 
                     //Black Pieces
                     case Piece.Black | Piece.King:
-                        bK = bK | fromSquareBitboard;
+                        position.bK = position.bK | fromSquareBitboard;
                         break;
 
                     case (Piece.Black | Piece.Queen):
-                        bQ = bQ | fromSquareBitboard;
+                        position.bQ = position.bQ | fromSquareBitboard;
                         break;
 
                     case Piece.Black | Piece.Rook:
-                        bR = bR | fromSquareBitboard;
+                        position.bR = position.bR | fromSquareBitboard;
                         break;
 
                     case (Piece.Black | Piece.Bishop):
-                        bB = bB | fromSquareBitboard;
+                        position.bB = position.bB | fromSquareBitboard;
                         break;
 
                     case Piece.Black | Piece.Knight:
-                        bN = bN | fromSquareBitboard;
+                        position.bN = position.bN | fromSquareBitboard;
                         break;
 
                     case (Piece.Black | Piece.Pawn):
-                        bP = bP | fromSquareBitboard;
+                        position.bP = position.bP | fromSquareBitboard;
                         break;
                 }
             }
-        }*/
+
+            squares[toSquare].piece = capturedPiece;
+            squares[toSquare].AssignPiece();
+
+            squares[fromSquare].piece = piece;
+            squares[fromSquare].AssignPiece();
+
+            // Consider flags.. (en passant)
+
+        }
 
 
 
         // Making a move on board
-        void MakeMoveOnBoard(int flag, int toSquare, int fromSquare, int pieceMoving)
+        void MakeMoveOnBoard(MoveInfo move)
         {
-            //Colour | Piece | Position
-            //piecesInfo.Add(squares[square].piece << 6 | square);
 
-            //To store the bitboard of the "to" square
-            ulong toSquareBitboard = BinaryStringToBitboard(toSquare);
-            //To store the bitboard of the "from" square
-            ulong fromSquareBitboard = BinaryStringToBitboard(fromSquare);
+            //Add move to history stack
+            moveHistory.Push(move);
+
+            int fromSquare = move.fromSquare;
+            int toSquare = move.toSquare;
+            int flag = move.flag; // Can be castling.. etc
+
+            int capturedPiece = move.capturedPiece;
+
+            // For updating the bitboards in position
+            ulong toSquareBitboard = move.toSquareBitboard;
+            ulong fromSquareBitboard = move.fromSquareBitboard;
+
+            int piece = move.piece; // The piece that is moving
 
             //Set global for promotion
             _toSquareBitboard = toSquareBitboard;
 
-            PieceBitboardUpdate(toSquareBitboard, toSquare, fromSquareBitboard, pieceMoving);
-
-            // ADD MOVEHISTORY:  Piece, From, To, Captured
-            //Moves.moveHistory.Add(new int[] { tempPiece, fromSquare, square, squares[square].piece });
-
-
-            // REVERSE BOARD (In future... to develop)
-            //BitboardOutput(Moves.whiteTurn);
+            PieceBitboardUpdate(toSquareBitboard, toSquare, fromSquareBitboard, piece);
 
             //Update the square
-            squares[toSquare].piece = pieceMoving;
+            squares[toSquare].piece = piece;
             //assign texture and moves
             squares[toSquare].AssignPiece();
 
