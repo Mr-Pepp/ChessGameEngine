@@ -33,15 +33,85 @@ namespace ChessGame
 
         }
 
-        //NegaMax search
-        int NegaMax (int depth, Position position)
+
+        public static int MiniMax(int depth, bool maximizingPlayer)
         {
             if (depth == 0)
             {
                 return Evaluation();
             }
 
-            List<int> moves = Moves.GenerateGameMoves(position);
+            //Generate moves
+            List<int> moves = Moves.GenerateGameMoves(Board.position);
+
+            if (moves.Count == 1) // potential checkmate or stalemate returned
+            {
+                if ((moves[0] >> 15) == 0b01) // Checkmate
+                {
+                    // Worse scenario
+                    return negInfinity;
+                }
+                else if ((moves[0] >> 16) == 1) // Stalemate
+                {
+                    // Draw
+                    return 0;
+                }
+            }
+
+
+            if (maximizingPlayer)
+            {
+                int maxEval = negInfinity;
+
+                foreach (int move in moves)
+                {
+                    //Create move
+                    Board.MoveInfo actMove = Board.MoveFormat(move);
+                    //Make move
+                    Board.MakeMoveOnBoard(actMove);
+                    int eval = MiniMax(depth - 1, false);
+                    //Undo move
+                    Board.UndoMove(actMove);
+                    maxEval = Math.Max(maxEval, eval);
+
+                    Board.moveAmount++;
+                }
+                return maxEval;
+            }
+
+
+            else
+            {
+                int minEval = posInfinity;
+
+                foreach (int move in moves)
+                {
+                    //Create move
+                    Board.MoveInfo actMove = Board.MoveFormat(move);
+                    //Make move
+                    Board.MakeMoveOnBoard(actMove);
+                    int eval = MiniMax(depth -1, true);
+                    //Undo move
+                    Board.UndoMove(actMove);
+                    minEval = Math.Min(minEval, eval);
+
+                    Board.moveAmount++;
+                }
+                return minEval; 
+            }
+        }
+
+
+
+        //NegaMax search
+        public static int NegaMax (int depth)
+        {
+            if (depth == 0)
+            {
+                return Evaluation();
+            }
+
+            List<int> moves = Moves.GenerateGameMoves(Board.position);
 
             if (moves.Count == 1)
             {
@@ -62,15 +132,20 @@ namespace ChessGame
 
             foreach (int move in moves)
             {
-                // Make move
+                
+                //Make into valid move format
+                Board.MoveInfo makeMove = Board.MoveFormat(move);
 
+
+                // Make move
+                Board.MakeMoveOnBoard(makeMove);
                 // Negative sign because it will alternate black and white turns
                 // Current evaluation
-                //int evaluation  = -NegaMax(depth - 1);
+                int evaluation  = -NegaMax(depth - 1);
                 // Get which evaluation is greater
-                //max = Math.Max(evaluation, max);
+                max = Math.Max(evaluation, max);
                 // Undo move
-
+                Board.UndoMove(Board.moveHistory.Pop());
             }
 
             //return 
@@ -82,6 +157,8 @@ namespace ChessGame
         {
             int whiteMaterial = 0;
             int blackMaterial = 0;
+
+            //MaterialCountBlack 
 
             int evaluation = whiteMaterial - blackMaterial;
 

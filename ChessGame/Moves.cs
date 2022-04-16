@@ -1248,6 +1248,12 @@ namespace ChessGame
                                         // Set capture flag
                                         flag = (int)Flag.Captures;
                                     }
+                                    
+                                    else if (legalULongBit == (enPassantVerifyMask >> y & 1L))
+                                    {
+                                        // Set En passant flag
+                                        flag = (int)Flag.En_Passant;
+                                    }
 
                                     //Check for double push
                                     else if (legalULongBit == (doublePushVerifyMask >> y & 1L)) // There was a double push
