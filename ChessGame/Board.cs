@@ -59,9 +59,9 @@ namespace ChessGame
         public static ulong _toSquareBitboard;
 
 
-        private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
+        private string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
-        private string FEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
+        private string defaultFEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
 
 
         //For bitboards IMPROVEMENT _________________________ *****
@@ -175,10 +175,14 @@ namespace ChessGame
                     //System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
                     // Undo move
 
-                    if (moveHistory.Count != 0) // Greater than 0
-                    {
-                        UndoMove(moveHistory.Pop());
-                    }
+                    //if (moveHistory.Count != 0) // Greater than 0
+                    //{
+                    //  UndoMove(moveHistory.Pop());
+                    //}
+
+                    System.Threading.Thread.Sleep(500);
+
+                    GameState.playerMove = false;
 
                 }
 
@@ -201,25 +205,21 @@ namespace ChessGame
 
                 if (GameState.playerMove) // Player move
                 {
-                    moveAmount = 0;
-                    System.Diagnostics.Debug.WriteLine(Engine.MiniMax(3, false));
-                    System.Diagnostics.Debug.WriteLine(moveAmount);
-                    GameState.playerMove = false;
-
 
                     //PieceSelection();
                 }
                 else // Computer move
                 {
-                    
-                    
 
-
-                    GameState.playerMove = false;
-
-
+                    //System.Diagnostics.Debug.WriteLine(position.whiteTurn);
 
                     /*
+                    moveAmount = 0;
+                    System.Diagnostics.Debug.WriteLine(Engine.MiniMax(3, true));
+                    System.Diagnostics.Debug.WriteLine(moveAmount);
+                    GameState.playerMove = true;
+                    */
+
                     // Random moves
                     int RandMove = Engine.RandomMove(position);
                     
@@ -240,7 +240,7 @@ namespace ChessGame
                         {
                             GameState.state = 2;
                         }
-                    }*/
+                    }
                 }
             }
             else if (GameState.state == 1 | GameState.state == 2) // Checkmate or stalemate (endgame screen)
@@ -703,12 +703,12 @@ namespace ChessGame
             //End of turn; other colour turn
             Board.position.whiteTurn = !Board.position.whiteTurn;
 
-            GameState.playerMove = !GameState.playerMove;
+            //GameState.playerMove = !GameState.playerMove;
 
             //Generate moves once a new position is established
-            moves = Moves.GenerateGameMoves(position);
+            //moves = Moves.GenerateGameMoves(position);
 
-
+            
             // (Stalemate | Checkmate) (0b1100 0000 0000 0000) | flag | to | from
 
             if (moves.Count == 1) // Only one move, therefore could have returned gamestate
@@ -1059,6 +1059,11 @@ namespace ChessGame
             move.whiteCastles = position.whiteCastles;
             move.blackCastles = position.blackCastles;
 
+            if ((move.piece & 0b111) == Piece.Pawn)
+            {
+                moveAmount++;
+            }
+
             //Add move to history stack
             moveHistory.Push(move);
 
@@ -1120,11 +1125,20 @@ namespace ChessGame
                     if (position.whiteTurn)
                     {
                         squares[toSquare].piece = Piece.White | Piece.Queen;
+
+                        // Update bitboards
+                        position.wP = position.wP & ~toSquareBitboard;
+                        position.wQ = position.wQ | toSquareBitboard;
                     }
                     else
                     {
                         squares[toSquare].piece = Piece.Black | Piece.Queen;
+
+                        // Update bitboards
+                        position.bP = position.bP & ~toSquareBitboard;
+                        position.bQ = position.bQ | toSquareBitboard;
                     }
+
                     squares[toSquare].AssignPiece();
                 }
                 

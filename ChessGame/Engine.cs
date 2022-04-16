@@ -69,12 +69,12 @@ namespace ChessGame
                     Board.MoveInfo actMove = Board.MoveFormat(move);
                     //Make move
                     Board.MakeMoveOnBoard(actMove);
+
                     int eval = MiniMax(depth - 1, false);
+
                     //Undo move
                     Board.UndoMove(actMove);
                     maxEval = Math.Max(maxEval, eval);
-
-                    Board.moveAmount++;
                 }
                 return maxEval;
             }
@@ -91,14 +91,14 @@ namespace ChessGame
                     //Make move
                     Board.MakeMoveOnBoard(actMove);
                     int eval = MiniMax(depth -1, true);
+
                     //Undo move
                     Board.UndoMove(actMove);
                     minEval = Math.Min(minEval, eval);
-
-                    Board.moveAmount++;
                 }
                 return minEval; 
             }
+
         }
 
 
