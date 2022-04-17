@@ -17,5 +17,8 @@ namespace ChessGame
 
         public static bool playerMove = true;
 
+        //For when the engine is calculating moves
+        public static bool engineCalculating = true;
+
     }
 }

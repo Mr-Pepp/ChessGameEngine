@@ -946,6 +946,12 @@ namespace ChessGame
             //Captures
             ulong captureVerifyMask;
 
+            //Promotion masks
+            ulong promotionVerifyMask;
+
+            //normal move flag
+            ulong normalMoveVerifyMask;
+
             /*
             * Flags (0b111):
             * 000 = Normal Move
@@ -1025,8 +1031,8 @@ namespace ChessGame
                     qsCastleVerifyMask = 0L;
                     ksCastleVerifyMask = 0L;
 
-                    //Capture verify mask
-                    captureVerifyMask = 0L;
+                    // Format promotion verify mask;
+                    promotionVerifyMask = 0L;
 
                     //Bool if there is a pin. (Used for knights)
                     bool pin = false;
@@ -1104,11 +1110,8 @@ namespace ChessGame
                             legalULong = LegalMoves_WPawn(pieceLocation, position.blackPieces & ~pinnedBlock, position.emptySquares & ~pinnedBlock,
                                 position.black_enPassantMask & ~pinnedBlock);
 
-                            // Is on the first rank (promotion)
-                            if ((legalULong & rank_8) != 0L)
-                            {
-                                flag = (int)Flag.Promotion;
-                            }
+                            // Promotion veriy mask
+                            promotionVerifyMask = legalULong & rank_8;
 
                             // En passant possibility
                             enPassantVerifyMask = legalULong & position.black_enPassantMask;
@@ -1172,12 +1175,9 @@ namespace ChessGame
                             legalULong = LegalMoves_BPawn(pieceLocation, position.whitePieces & ~pinnedBlock, position.emptySquares & ~pinnedBlock,
                                 position.white_enPassantMask & ~pinnedBlock);
 
-                            // Is on the first rank (promotion)
-                            if ((legalULong & rank_1) != 0L)
-                            {
-                                //Assign promotion flag
-                                flag = (int)Flag.Promotion;
-                            }
+
+                            // Promotion verify mask
+                            promotionVerifyMask = legalULong & rank_1;
 
                             // En passant possibility
                             enPassantVerifyMask = legalULong & position.white_enPassantMask;
@@ -1225,6 +1225,12 @@ namespace ChessGame
                         }
                     }
 
+
+                    //Set the normal move flag
+                    normalMoveVerifyMask = ~(captureVerifyMask | doublePushVerifyMask | enPassantVerifyMask |
+                        ksCastleVerifyMask | qsCastleVerifyMask | promotionVerifyMask);
+
+
                     //Filter blocked moves (For checks; blocking moves and capturing piece)
                     legalULong = legalULong & allowMask;
 
@@ -1239,45 +1245,55 @@ namespace ChessGame
                             //flag | to | from
                             if (legalULongBit == 1L) // There is a bit
                             {
-                                // If still is considered a normal move (has not been changed like promotion)
-                                if (flag == (int)Flag.Normal_Move)
+                                // Set appropriate flags for the move
+
+                                // If the mvoe is considered a normal move
+                                if (legalULongBit == (normalMoveVerifyMask >> y & 1L))
                                 {
-                                    //Check for capture (After promotion because can capture to promote)
-                                    if (legalULongBit == (captureVerifyMask >> y & 1L))
-                                    {
-                                        // Set capture flag
-                                        flag = (int)Flag.Captures;
-                                    }
-                                    
-                                    else if (legalULongBit == (enPassantVerifyMask >> y & 1L))
-                                    {
-                                        // Set En passant flag
-                                        flag = (int)Flag.En_Passant;
-                                    }
-
-                                    //Check for double push
-                                    else if (legalULongBit == (doublePushVerifyMask >> y & 1L)) // There was a double push
-                                    {
-                                        // Set double push flag
-                                        flag = (int)Flag.Double_Push;
-
-                                    }
-
-                                    // Check for king side castle
-                                    else if (legalULongBit == (ksCastleVerifyMask >> y & 1L))
-                                    {
-                                        // Set kingside castle flag
-                                        flag = (int)Flag.Castles_KS;
-                                    }
-
-                                    // Check for queen side castle
-                                    else if (legalULongBit == (qsCastleVerifyMask >> y & 1L))
-                                    {
-                                        // Set queenside castle flag
-                                        flag = (int)Flag.Castles_QS;
-                                    }
+                                    // Set normal move flag
+                                    flag = (int)Flag.Normal_Move;
                                 }
-                                
+
+                                else if (legalULongBit == (promotionVerifyMask >> y & 1L))
+                                {
+                                    // Set promotion flag
+                                    flag = (int)Flag.Promotion;
+                                }
+
+                                //Check for capture (After promotion because can capture to promote)
+                                else if (legalULongBit == (captureVerifyMask >> y & 1L))
+                                {
+                                    // Set capture flag
+                                    flag = (int)Flag.Captures;
+                                }
+
+                                else if (legalULongBit == (enPassantVerifyMask >> y & 1L))
+                                {
+                                    // Set En passant flag
+                                    flag = (int)Flag.En_Passant;
+                                }
+
+                                //Check for double push
+                                else if (legalULongBit == (doublePushVerifyMask >> y & 1L)) // There was a double push
+                                {
+                                    // Set double push flag
+                                    flag = (int)Flag.Double_Push;
+
+                                }
+
+                                // Check for king side castle
+                                else if (legalULongBit == (ksCastleVerifyMask >> y & 1L))
+                                {
+                                    // Set kingside castle flag
+                                    flag = (int)Flag.Castles_KS;
+                                }
+
+                                // Check for queen side castle
+                                else if (legalULongBit == (qsCastleVerifyMask >> y & 1L))
+                                {
+                                    // Set queenside castle flag
+                                    flag = (int)Flag.Castles_QS;
+                                }
 
                                 legalSquares.Add(flag << 12 | (63 - y) << 6 | correctFrom);
                             }

@@ -23,6 +23,32 @@ namespace ChessGame
 
         }
 
+        
+        //For testing the legal move generation amount
+        public static int GenerationTest(int depth)
+        {
+            if (depth == 0)
+            {
+                // Reached end move; return the position as reached
+                return 1;
+            }
+
+            List<int> moves = Moves.GenerateGameMoves(Board.position);
+            int positions = 0;
+
+            foreach(int move in moves)
+            {
+                //Create move
+                Board.MoveInfo actMove = Board.MoveFormat(move);
+
+                Board.MakeMoveOnBoard(actMove);
+                positions += GenerationTest(depth - 1);
+                Board.UndoMove(actMove);
+            }
+
+            return positions;
+        }
+
 
         //Random Moves - - Will return the move in int (Flag | To | From)
         public static int RandomMove(Position position)

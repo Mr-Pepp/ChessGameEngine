@@ -170,7 +170,20 @@ namespace ChessGame
                     position.whiteTurn = true;
                 }
 
-                if (Keyboard.GetState().IsKeyDown(Keys.T))
+                if (Keyboard.GetState().IsKeyDown(Keys.T) & GameState.playerMove == true)
+                {
+                    //System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
+                    // Undo move
+
+                    if (moveHistory.Count != 0) // Greater than 0
+                    {
+                      UndoMove(moveHistory.Pop());
+                    }
+
+                }
+
+                // Engine moving
+                if (Keyboard.GetState().IsKeyDown(Keys.E) & GameState.playerMove == true)
                 {
                     //System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
                     // Undo move
@@ -181,8 +194,14 @@ namespace ChessGame
                     //}
 
                     System.Threading.Thread.Sleep(500);
-
                     GameState.playerMove = false;
+
+                }
+
+                if (Keyboard.GetState().IsKeyDown(Keys.S))
+                {
+                    //Set to player moving
+                    GameState.engineCalculating = false;
 
                 }
 
@@ -205,21 +224,21 @@ namespace ChessGame
 
                 if (GameState.playerMove) // Player move
                 {
-
-                    //PieceSelection();
+                    PieceSelection();
                 }
                 else // Computer move
                 {
 
+                    System.Diagnostics.Debug.WriteLine("Starting Calculating");
                     //System.Diagnostics.Debug.WriteLine(position.whiteTurn);
+                    moveAmount = 0;
+                    //System.Diagnostics.Debug.WriteLine(Engine.MiniMax(2, position.whiteTurn));
+                    System.Diagnostics.Debug.WriteLine("Generation test: " + Engine.GenerationTest(6));
+                    GameState.playerMove = true;
+
+
 
                     /*
-                    moveAmount = 0;
-                    System.Diagnostics.Debug.WriteLine(Engine.MiniMax(3, true));
-                    System.Diagnostics.Debug.WriteLine(moveAmount);
-                    GameState.playerMove = true;
-                    */
-
                     // Random moves
                     int RandMove = Engine.RandomMove(position);
                     
@@ -227,6 +246,9 @@ namespace ChessGame
                     {
                         MoveInfo move = MoveFormat(RandMove);
 
+                        moveAmount++;
+                        System.Diagnostics.Debug.WriteLine(moveAmount);
+                        
                         MakeMoveOnBoard(move);
                     }
 
@@ -240,7 +262,7 @@ namespace ChessGame
                         {
                             GameState.state = 2;
                         }
-                    }
+                    }*/
                 }
             }
             else if (GameState.state == 1 | GameState.state == 2) // Checkmate or stalemate (endgame screen)
@@ -440,7 +462,6 @@ namespace ChessGame
                         squares[to].dot = false;
                         squares[to].targetSquare = false;
                     }
-
                 }
             }
 
@@ -695,36 +716,40 @@ namespace ChessGame
             }
         }
 
-        
-
         public static void EndOfTurn()
         {
             // End of all moves this turn, therefore
             //End of turn; other colour turn
-            Board.position.whiteTurn = !Board.position.whiteTurn;
+            position.whiteTurn = !position.whiteTurn;
+
 
             //GameState.playerMove = !GameState.playerMove;
 
-            //Generate moves once a new position is established
-            //moves = Moves.GenerateGameMoves(position);
-
-            
-            // (Stalemate | Checkmate) (0b1100 0000 0000 0000) | flag | to | from
-
-            if (moves.Count == 1) // Only one move, therefore could have returned gamestate
+            //Generate moves once a new position is established and the player is moving
+            if (!GameState.engineCalculating)
             {
-                if (moves[0] >> 15 == 1L) // Checkmate
-                {
-                    // Checkmate State
-                    GameState.state = 1;
-                }
+                moves = Moves.GenerateGameMoves(position);
 
-                else if (moves[0] >> 16 == 1L) // Stalemate
+
+                // (Stalemate | Checkmate) (0b1100 0000 0000 0000) | flag | to | from
+
+                if (moves.Count == 1) // Only one move, therefore could have returned gamestate
                 {
-                    // Stalemate State
-                    GameState.state = 2;
+                    if (moves[0] >> 15 == 1L) // Checkmate
+                    {
+                        // Checkmate State
+                        GameState.state = 1;
+                    }
+
+                    else if (moves[0] >> 16 == 1L) // Stalemate
+                    {
+                        // Stalemate State
+                        GameState.state = 2;
+                    }
                 }
             }
+            
+            
         }
 
         //Structure for making a move
@@ -800,13 +825,6 @@ namespace ChessGame
             //Update castling bitboard because of potential king move / rook move
             position.whiteCastles = move.whiteCastles;
             position.blackCastles = move.blackCastles;
-
-            /*
-            //To store the bitboard of the "to" square
-            ulong toSquareBitboard = BinaryStringToBitboard(toSquare);
-            //To store the bitboard of the "from" square
-            ulong fromSquareBitboard = BinaryStringToBitboard(fromSquare);
-            */
 
             // Reverse
 
@@ -936,6 +954,11 @@ namespace ChessGame
                 }
             }
 
+            // Set back the previous en passant masks
+            position.black_enPassantMask = move.black_enPassantMask;
+            position.white_enPassantMask = move.white_enPassantMask;
+
+
             squares[fromSquare].piece = piece;
             squares[fromSquare].AssignPiece();
 
@@ -948,9 +971,6 @@ namespace ChessGame
                 // Place back the piece
                 if (position.whiteTurn) // Black just made the move
                 {
-                    // Set back the previous en passant masks
-                    position.black_enPassantMask = move.black_enPassantMask;
-
                     // Set bitboard
                     position.wP = position.wP | move.black_enPassantMask >> 8;
 
@@ -960,9 +980,6 @@ namespace ChessGame
                 }
                 else // White just made the move
                 {
-                    // Set back the previous en passant masks
-                    position.white_enPassantMask = move.white_enPassantMask;
-
                     // Set bitboard
                     position.bP = position.bP | move.white_enPassantMask >> 8;
 
@@ -1043,8 +1060,12 @@ namespace ChessGame
             //Switch colours
             position.whiteTurn = !position.whiteTurn;
 
-            // Generate moves again
-            moves = Moves.GenerateGameMoves(position);
+            if (!GameState.engineCalculating)
+            {
+                // Generate moves again
+                moves = Moves.GenerateGameMoves(position);
+            }
+            
         }
 
 
@@ -1059,13 +1080,12 @@ namespace ChessGame
             move.whiteCastles = position.whiteCastles;
             move.blackCastles = position.blackCastles;
 
-            if ((move.piece & 0b111) == Piece.Pawn)
-            {
-                moveAmount++;
-            }
-
             //Add move to history stack
-            moveHistory.Push(move);
+            if (!GameState.engineCalculating)
+            {
+                moveHistory.Push(move);
+            }
+            
 
             int fromSquare = move.fromSquare;
             int toSquare = move.toSquare;
@@ -1078,6 +1098,22 @@ namespace ChessGame
             ulong fromSquareBitboard = move.fromSquareBitboard;
 
             int piece = move.piece; // The piece that is moving
+
+            /*
+            // Minimax debugging
+            System.Diagnostics.Debug.WriteLine(position.whiteTurn);
+            if (position.whiteTurn)
+            {
+                moveAmount = 0;
+            }
+            else
+            {
+                moveAmount++;
+                System.Diagnostics.Debug.WriteLine("From Square: " + move.fromSquare + ", To Square: " + move.toSquare);
+            }
+
+            System.Diagnostics.Debug.WriteLine("Moves Calculated: " + moveAmount);
+            // End of Minimax Debugging*/
 
             //Set global for promotion
             _toSquareBitboard = toSquareBitboard;
@@ -1095,6 +1131,10 @@ namespace ChessGame
                 //Remove piece from board
                 squares[fromSquare].piece = Piece.None;
             }
+
+            // Format both En Passant masks **
+            position.white_enPassantMask = 0L;
+            position.black_enPassantMask = 0L;
 
             /*
                  * Flags (0b111):
@@ -1141,7 +1181,6 @@ namespace ChessGame
 
                     squares[toSquare].AssignPiece();
                 }
-                
             }
             else if (flag == (int)Moves.Flag.Double_Push) // Double push by pawn
             {
@@ -1216,6 +1255,7 @@ namespace ChessGame
                     //Update bitboards
                     position.bR = (position.bR & ~Moves.TLCorner) | Moves.qsCastleRook_black;
                 }
+
                 // End of turn
                 EndOfTurn();
             }
@@ -1225,8 +1265,8 @@ namespace ChessGame
                 if (position.whiteTurn) // White turn 
                 {
                     // Remove pawn below
-                    squares[square + 8].piece = Piece.None;
-                    squares[square + 8].AssignPiece();
+                    squares[toSquare + 8].piece = Piece.None;
+                    squares[toSquare + 8].AssignPiece();
 
                     //Update bitboard
                     position.bP = position.bP & ~(toSquareBitboard >> 8);
@@ -1234,8 +1274,8 @@ namespace ChessGame
                 else // Black turn
                 {
                     // Remove pawn above
-                    squares[square - 8].piece = Piece.None;
-                    squares[square - 8].AssignPiece();
+                    squares[toSquare - 8].piece = Piece.None;
+                    squares[toSquare - 8].AssignPiece();
 
                     //Update bitboard
                     position.wP = position.wP & ~(toSquareBitboard << 8);
@@ -1248,9 +1288,7 @@ namespace ChessGame
             {
                 //En passant not moved
                 //Set En passant = 0
-                // Format both En Passant masks **
-                position.white_enPassantMask = 0L;
-                position.black_enPassantMask = 0L;
+
                 //End of turn
                 EndOfTurn();
             }
