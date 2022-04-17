@@ -1246,8 +1246,6 @@ namespace ChessGame
                     //Filter blocked moves (For checks; blocking moves and capturing piece)
                     legalULong = legalULong & allowMask;
 
-                    System.Diagnostics.Debug.WriteLine("Legalulong: " + legalULong);
-
                     //Append to list the legal squares
                     if (legalULong != 0L) // There are moves to append
                     {

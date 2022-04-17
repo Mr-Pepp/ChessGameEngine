@@ -34,6 +34,10 @@ namespace ChessGame
 
         public ulong emptySquares;
 
+        // Counting the pieces on board
+        public int wKCount = 0, wQCount = 0, wRCount = 0, wNCount = 0, wBCount = 0, wPCount = 0,
+            bKCount = 0, bQCount = 0, bRCount = 0, bNCount = 0, bBCount = 0, bPCount = 0;
+
 
         // All information required:
         // All white pieces bitboard locations
