@@ -636,52 +636,62 @@ namespace ChessGame
                     attackedSquares = AttackedSquares(position.wK, position.wQ, position.wR, position.wB, position.wN, position.wP, K, friendlyPieces, enemyPieces, whiteTurn, position);
                 }
 
-                //Castling
+                //Castling (king and rook must be in default position)
                 if (!inCheck) //Can't castle whilst in check
                 {
                     // Check side
                     if (whiteTurn) // White to play
                     {
-                        if ((whiteCastles & 0b01) == 1) // King side castles 0b01
+                        // King and rook must be in default positions
+                        if ((K & defaultKing_white) != 0 && (position.wR & (BLCorner | BRCorner)) != 0)
                         {
+                            if ((whiteCastles & 0b01) == 1) // King side castles 0b01
+                            {
 
-                            //Nothing blocking or attacking squares
-                            if (((friendlyPieces | enemyPieces | attackedSquares) & ksKingRook_white) == 0)
-                            {
-                                //Can castle KS
-                                legalMoves = legalMoves | ksCastleKing_white;
+                                //Nothing blocking or attacking squares
+                                if (((friendlyPieces | enemyPieces | attackedSquares) & ksKingRook_white) == 0)
+                                {
+                                    //Can castle KS
+                                    legalMoves = legalMoves | ksCastleKing_white;
+                                }
                             }
-                        }
-                        if (whiteCastles >> 1 == 1) // Queen side castles 0b10
-                        {
-                            //Nothing blocking or attacking squares
-                            if (((friendlyPieces | enemyPieces | attackedSquares) & qsKingRook_white) == 0)
+                            if (whiteCastles >> 1 == 1) // Queen side castles 0b10
                             {
-                                //Can castle QS
-                                legalMoves = legalMoves | qsCastleKing_white;
+                                //Nothing blocking or attacking squares
+                                if (((friendlyPieces | enemyPieces | attackedSquares) & qsKingRook_white) == 0)
+                                {
+                                    //Can castle QS
+                                    legalMoves = legalMoves | qsCastleKing_white;
+                                }
                             }
                         }
                     }
+
                     else // Black to play
                     {
-                        if ((blackCastles & 0b01) == 1) // King side castles 0b01
+                        // King and rook must be in default positions
+                        if ((K & defaultKing_black) != 0 && (position.bR & (TLCorner | TRCorner)) != 0)
                         {
-                            //Nothing blocking or attacking squares
-                            if (((friendlyPieces | enemyPieces | attackedSquares) & ksKingRook_black) == 0)
+                            if ((blackCastles & 0b01) == 1) // King side castles 0b01
                             {
-                                //Can castle KS
-                                legalMoves = legalMoves | ksCastleKing_black;
+                                //Nothing blocking or attacking squares
+                                if (((friendlyPieces | enemyPieces | attackedSquares) & ksKingRook_black) == 0)
+                                {
+                                    //Can castle KS
+                                    legalMoves = legalMoves | ksCastleKing_black;
+                                }
+                            }
+                            if (blackCastles >> 1 == 1) // Queen side castles 0b10
+                            {
+                                //Nothing blocking or attacking squares
+                                if (((friendlyPieces | enemyPieces | attackedSquares) & qsKingRook_black) == 0)
+                                {
+                                    //Can castle QS
+                                    legalMoves = legalMoves | qsCastleKing_black;
+                                }
                             }
                         }
-                        if (blackCastles >> 1 == 1) // Queen side castles 0b10
-                        {
-                            //Nothing blocking or attacking squares
-                            if (((friendlyPieces | enemyPieces | attackedSquares) & qsKingRook_black) == 0)
-                            {
-                                //Can castle QS
-                                legalMoves = legalMoves | qsCastleKing_black;
-                            }
-                        }
+                        
                     }
                 }
             }
@@ -846,9 +856,11 @@ namespace ChessGame
             List<int> debugSquares = new List<int>();
 
             //Generate squares that are attacked by black pieces sicne since it's black's turn in this debugging example
-            //ulong squares = AttackedSquares(Board.wK, Board.wQ, Board.wR, Board.wB, Board.wN, Board.wP, Board.bK, blackPieces, whitePieces, false);
-            ulong squares = PinnedPieces(Board.position.bK, Board.position.blackPieces, Board.position.whitePieces,
-                Board.position.wR, Board.position.wB, Board.position.wQ);
+            ulong squares = AttackedSquares(Board.position.bK, Board.position.bQ, Board.position.bR, Board.position.bB,
+                Board.position.bN, Board.position.bP, Board.position.wK, Board.position.whitePieces, Board.position.blackPieces, 
+                true, Board.position);
+            //ulong squares = PinnedPieces(Board.position.bK, Board.position.blackPieces, Board.position.whitePieces,
+            //    Board.position.wR, Board.position.wB, Board.position.wQ);
 
             //Append to list the legal squares
             for (int i = 0; i < 64; i++)
@@ -1234,6 +1246,8 @@ namespace ChessGame
                     //Filter blocked moves (For checks; blocking moves and capturing piece)
                     legalULong = legalULong & allowMask;
 
+                    System.Diagnostics.Debug.WriteLine("Legalulong: " + legalULong);
+
                     //Append to list the legal squares
                     if (legalULong != 0L) // There are moves to append
                     {
@@ -1318,8 +1332,6 @@ namespace ChessGame
             position.InitBitboards(); // Initiate bitboards
 
             List<int> legalSquares = new List<int>();
-
-            //InitBitboards();
 
             //Check for checks
             if (position.whiteTurn) //White to move

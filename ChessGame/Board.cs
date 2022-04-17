@@ -59,9 +59,10 @@ namespace ChessGame
         public static ulong _toSquareBitboard;
 
 
-        private string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
+        private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
-        private string defaultFEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
+        //private string FEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
+        private string FEN = "8/3k4/8/8/8/8/8/K7 w - - 0 1";
 
 
         //For bitboards IMPROVEMENT _________________________ *****
