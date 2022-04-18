@@ -95,7 +95,9 @@ namespace ChessGame
                     Board.MoveInfo actMove = Board.MoveFormat(move);
                     //Make move
                     Board.MakeMoveOnBoard(actMove);
+
                     int eval = MiniMax(depth - 1, false);
+
                     //Undo move
                     Board.UndoMove(actMove);
                     maxEval = Math.Max(maxEval, eval);
@@ -115,12 +117,14 @@ namespace ChessGame
                     //Make move
                     Board.MakeMoveOnBoard(actMove);
                     int eval = MiniMax(depth -1, true);
+
                     //Undo move
                     Board.UndoMove(actMove);
                     minEval = Math.Min(minEval, eval);
                 }
                 return minEval; 
             }
+
         }
 
 
@@ -177,29 +181,43 @@ namespace ChessGame
 
         public static int Evaluation()
         {
-            int evaluation = WhiteMaterial() - BlackMaterial();
+            int whiteMaterial = 0;
+            int blackMaterial = 0;
+
+            //MaterialCountBlack 
+
+            int evaluation = whiteMaterial - blackMaterial;
 
             return evaluation;
         }
 
-
-        //Counting white material
-        public static int WhiteMaterial()
+        //Count the material
+        static int MaterialCountWhite(ulong wQ, ulong wR, ulong wB, ulong wN, ulong wP)
         {
-            Position position = Board.position;
-            return (position.wQCount * queenValue) + (position.wRCount * rookValue) +
-                (position.wBCount * bishopValue) + (position.wNCount * knightValue) + (position.wPCount * pawnValue);
+            int materialCount = 0;
+
+            materialCount += BitboardCounter(wQ);
+            materialCount += BitboardCounter(wR);
+            materialCount += BitboardCounter(wB);
+            materialCount += BitboardCounter(wN);
+            materialCount += BitboardCounter(wP);
+
+            return materialCount;
         }
 
-        //Counting black material
-        public static int BlackMaterial()
+        //Count the material
+        static int MaterialCountBlack(ulong bQ, ulong bR, ulong bB, ulong bN, ulong bP)
         {
-            Position position = Board.position;
-            return (position.bQCount * queenValue) + (position.bRCount * rookValue) + 
-                (position.bBCount * bishopValue) + (position.bNCount * knightValue) + (position.bPCount * pawnValue);
+            int materialCount = 0;
+
+            materialCount += BitboardCounter(bQ);
+            materialCount += BitboardCounter(bR);
+            materialCount += BitboardCounter(bB);
+            materialCount += BitboardCounter(bN);
+            materialCount += BitboardCounter(bP);
+
+            return materialCount;
         }
-
-
 
         //Very inneficient
         static int BitboardCounter(ulong bitboard)
