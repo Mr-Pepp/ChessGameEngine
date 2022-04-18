@@ -1015,10 +1015,137 @@ namespace ChessGame
                 pins = horizontalPins | verticalPins | BRTLPins | BLTRPins;
             }
 
+
+            // Foreach construction zone
+
+            bool pin;
+
+
+
+            ulong PinnedBlock(int i)
+            {
+                pin = false;
+                ulong pinnedBlock = 0L;
+
+                //pieceLocation offset for pinned pieces
+                if (((pins >> i) & 1L) == 1L) //There is a pinned piece
+                {
+                    
+                    pin = true;
+
+
+                    //Diagonal Pins first as they are more common
+                    if (((BLTRPins >> i) & 1L) == 1L) //BLTR = Bottom Left, Top Right
+                    {
+                        //Pinned blocked
+                        //Place the "friendly piece" mask everywhere but the pin location
+                        pinnedBlock = pieceLocation << 1 | pieceLocation << 9 | pieceLocation << 8 |
+                            pieceLocation >> 1 | pieceLocation >> 9 | pieceLocation >> 8;
+                    }
+
+                    else if (((BRTLPins >> i) & 1L) == 1L) //BRTL = Bottom Right, Top Left
+                    {
+                        //Pinned blocked
+                        //Place the "friendly piece" mask everywhere but the pin location
+                        pinnedBlock = pieceLocation << 1 | pieceLocation << 8 | pieceLocation << 7 |
+                            pieceLocation >> 1 | pieceLocation >> 8 | pieceLocation >> 7;
+                    }
+
+                    //Horizontal Pin
+                    else if (((horizontalPins >> i) & 1L) == 1L)
+                    {
+                        //Pinned blocked
+                        //Place the "friendly piece" mask everywhere but the pin location
+                        pinnedBlock = pieceLocation << 9 | pieceLocation << 8 | pieceLocation << 7 |
+                            pieceLocation >> 9 | pieceLocation >> 8 | pieceLocation >> 7;
+
+                        //Check for en passant pin
+                        if ((pinnedBlock & (position.white_enPassantMask | position.black_enPassantMask)) != 0)
+                        {
+                            // There is an en passant pin, therefore block
+                            pinnedBlock = (position.white_enPassantMask | position.black_enPassantMask);
+                        }
+                    }
+                    else //Vertical pin
+                    {
+                        //Pinned blocked
+                        //Place the "friendly piece" mask everywhere but the pin location
+                        pinnedBlock = pieceLocation << 1 | pieceLocation << 9 | pieceLocation << 7 |
+                            pieceLocation >> 1 | pieceLocation >> 9 | pieceLocation >> 7;
+                    }
+                }
+
+                return pinnedBlock;
+            }
+            
+            void genEnding()
+            {
+                //Set the normal move flag
+                normalMoveVerifyMask = ~(captureVerifyMask | doublePushVerifyMask | enPassantVerifyMask |
+                    ksCastleVerifyMask | qsCastleVerifyMask | promotionVerifyMask);
+
+
+                //Filter blocked moves (For checks; blocking moves and capturing piece)
+                legalULong = legalULong & allowMask;
+            }
+
+
+
+            //Get the locations of the pieces;
+            if (position.whiteTurn) // White to play
+            {
+                captureVerifyMask = position.blackPieces;
+
+
+                foreach (int square in position.whiteKing) // Generating kings moves
+                {
+                    int i = 63 - square;
+
+
+
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            }
+            else // Black to play
+            {
+                captureVerifyMask = position.whitePieces;
+
+
+            }
+
+
+
+            // Foreach Construction zone
+
+
+
+            /*
             //read bitboards as index
             //the bitwise operations will reverse the board so initially the board will be on blacks side
             for (int i = 63; i >= 0; i--)
             {
+                // Reverse because to make correct for bitboards
+                i = 63 - i;
+
+
                 //Default to a normal move each loop
                 flag = (int)Flag.Normal_Move;
 
@@ -1314,7 +1441,7 @@ namespace ChessGame
                     }
                 }
                 
-            }
+            }*/
 
 
             return legalSquares;

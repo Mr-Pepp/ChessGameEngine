@@ -39,6 +39,29 @@ namespace ChessGame
             bKCount = 0, bQCount = 0, bRCount = 0, bNCount = 0, bBCount = 0, bPCount = 0;
 
 
+
+        // Mailbox approach for faster evaluation and generation
+        // Each will include a list of where they are (0 - 63)
+
+        // White pieces
+        public List<int> whiteKing;
+        public List<int> whiteQueen;
+        public List<int> whiteRook;
+        public List<int> whiteBishop;
+        public List<int> whiteKnight;
+        public List<int> whitePawn;
+        
+        // Black pieces
+        public List<int> blackKing;
+        public List<int> blackQueen;
+        public List<int> blackRook;
+        public List<int> blackBishop;
+        public List<int> blackKnight;
+        public List<int> blackPawn;
+
+
+
+
         // All information required:
         // All white pieces bitboard locations
         // All black pieces bitboard locations
@@ -64,6 +87,7 @@ namespace ChessGame
             bB = _bB;
             bN = _bN;
             bP = _bP;
+
             whiteCastles = _whiteCastles;
             blackCastles = _blackCastles;
             white_enPassantMask = _white_enPassantMask;
