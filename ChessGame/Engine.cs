@@ -36,7 +36,20 @@ namespace ChessGame
             List<int> moves = Moves.GenerateGameMoves(Board.position);
             int positions = 0;
 
-            foreach(int move in moves)
+            if (moves.Count == 1) // potential checkmate or stalemate returned
+            {
+                if ((moves[0] >> 15) == 0b01) // Checkmate
+                {
+                    return 1;
+                }
+                else if ((moves[0] >> 16) == 1) // Stalemate
+                {
+                    // Draw
+                    return 1;
+                }
+            }
+
+            foreach (int move in moves)
             {
                 //Create move
                 Board.MoveInfo actMove = Board.MoveFormat(move);

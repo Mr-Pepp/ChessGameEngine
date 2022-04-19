@@ -731,7 +731,6 @@ namespace ChessGame
             //End of turn; other colour turn
             position.whiteTurn = !position.whiteTurn;
 
-
             //GameState.playerMove = !GameState.playerMove;
 
             //Generate moves once a new position is established and the player is moving
@@ -792,7 +791,7 @@ namespace ChessGame
 
             forMove.fromSquare = move & 0b111111;
             forMove.toSquare = move >> 6 & 0b111111;
-            forMove.flag = move >> 12 & 0b111111;// Can be castling.. etc
+            forMove.flag = move >> 12 & 0b111;// Can be castling.. etc
 
             forMove.capturedPiece = squares[forMove.toSquare].piece;
 
@@ -1085,6 +1084,7 @@ namespace ChessGame
 
                         // Add to mailbox
                         position.blackRook.Add(toSquare);
+
                         break;
 
                     case (Piece.Black | Piece.Bishop):
@@ -1245,6 +1245,7 @@ namespace ChessGame
         // Making a move on board **
         public static void MakeMoveOnBoard(MoveInfo move)
         {
+
             //Positional updates
             move.white_enPassantMask = position.white_enPassantMask;
             move.black_enPassantMask = position.black_enPassantMask;
@@ -1291,7 +1292,7 @@ namespace ChessGame
             _toSquareBitboard = toSquareBitboard;
             _toSquare = toSquare;
 
-            PieceBitboardUpdate(toSquareBitboard, toSquare, fromSquareBitboard, piece, capturedPiece, fromSquare);
+            PieceBitboardUpdate(toSquareBitboard, toSquare, fromSquareBitboard, piece, capturedPiece, fromSquare, flag);
 
             //Update the square
             squares[toSquare].piece = piece;
@@ -1468,7 +1469,7 @@ namespace ChessGame
                 {
                     // Remove pawn below
                     squares[toSquare + 8].piece = Piece.None;
-                    position.whitePawn.Remove(toSquare + 8);
+                    position.blackPawn.Remove(toSquare + 8);
                     squares[toSquare + 8].AssignPiece();
 
                     //Update bitboard
@@ -1479,7 +1480,7 @@ namespace ChessGame
                 {
                     // Remove pawn above
                     squares[toSquare - 8].piece = Piece.None;
-                    position.blackPawn.Remove(toSquare - 8);
+                    position.whitePawn.Remove(toSquare - 8);
                     squares[toSquare - 8].AssignPiece();
 
                     //Update bitboard
@@ -1502,7 +1503,8 @@ namespace ChessGame
 
 
 
-        static void PieceBitboardUpdate(ulong toSquareBitboard, int toSquare, ulong fromSquareBitboard, int pieceMoving, int capturedPiece, int fromSquare)
+        static void PieceBitboardUpdate(ulong toSquareBitboard, int toSquare, ulong fromSquareBitboard, int pieceMoving,
+            int capturedPiece, int fromSquare, int flag)
         {
             //Castling (Captures of a rook)
             if (position.whiteTurn) // White to move
@@ -1692,6 +1694,7 @@ namespace ChessGame
                     break;
 
                 case Piece.Black | Piece.Rook:
+
                     position.bR = position.bR | toSquareBitboard;
                     position.bR = position.bR & ~fromSquareBitboard;
 
@@ -1934,81 +1937,80 @@ namespace ChessGame
                 else { sideIndex = i; }
 
 
-
                 //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
                 //**Implement flags and other piece information
                 if (((wK >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.White | Piece.King; // Place piece on the square
                     wKCount++; // Add piece to the counter
-                    whiteKing.Add(i); // Add to list
+                    whiteKing.Add(63 - i); // Add to list
                 }
                 else if (((wQ >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.White | Piece.Queen;
                     wQCount++;
-                    whiteQueen.Add(i); // Add to list
+                    whiteQueen.Add(63 - i); // Add to list
                 }
                 else if (((wR >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.White | Piece.Rook;
                     wRCount++;
-                    whiteRook.Add(i); // Add to list
+                    whiteRook.Add(63 - i); // Add to list
                 }
                 else if (((wB >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.White | Piece.Bishop;
                     wBCount++;
-                    whiteBishop.Add(i); // Add to list
+                    whiteBishop.Add(63 - i); // Add to list
                 }
                 else if (((wN >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.White | Piece.Knight;
                     wNCount++;
-                    whiteKnight.Add(i); // Add to list
+                    whiteKnight.Add(63 - i); // Add to list
                 }
                 else if (((wP >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.White | Piece.Pawn;
                     wPCount++;
-                    whitePawn.Add(i); // Add to list
+                    whitePawn.Add(63 - i); // Add to list
                 }
 
                 else if (((bK >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.Black | Piece.King;
                     bKCount++;
-                    blackKing.Add(i); // Add to list
+                    blackKing.Add(63 - i); // Add to list
                 }
                 else if (((bQ >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.Black | Piece.Queen;
                     bQCount++;
-                    blackQueen.Add(i); // Add to list
+                    blackQueen.Add(63 - i); // Add to list
                 }
                 else if (((bR >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.Black | Piece.Rook;
                     bRCount++;
-                    blackRook.Add(i); // Add to list
+                    blackRook.Add(63 - i); // Add to list
                 }
                 else if (((bB >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.Black | Piece.Bishop;
                     bBCount++;
-                    blackBishop.Add(i); // Add to list
+                    blackBishop.Add(63 - i); // Add to list
                 }
                 else if (((bN >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.Black | Piece.Knight;
                     bNCount++;
-                    blackKnight.Add(i); // Add to list
+                    blackKnight.Add(63 - i); // Add to list
                 }
                 else if (((bP >> i) & 1L) == 1L)
                 {
                     squares[sideIndex].piece = Piece.Black | Piece.Pawn;
                     bPCount++;
-                    blackPawn.Add(i); // Add to list
+                    blackPawn.Add(63 - i); // Add to list
                 }
 
                 else { squares[sideIndex].piece = Piece.None; }

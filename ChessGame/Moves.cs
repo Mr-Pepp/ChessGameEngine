@@ -75,24 +75,17 @@ namespace ChessGame
         public static List<int> CheckLegalMoves(int piece, int squares)
         {
             ulong pieceLocation = Board.BinaryStringToBitboard(squares);
-
             List<int> legalSquares = new List<int>();
             ulong legalULong = 0L;
-
-
             //Check if piece is white
             if (((piece & Piece.White) == Piece.White) & whiteTurn)
             {
-
-
                 // SEE FOR CHECK (MAKE IT INTO A FUNCTION IN FUTURE)
-
                 // [Knights, Bishops, Rooks, Queens, Pawns]
                 ulong[] checks = KingHits(Board.wK, whiteTurn, whitePieces, blackPieces);
                 //Useful for double checks (meaning you have to move the king)
                 int checksCounter = 0;
                 ulong combinedChecks = checks[0] | checks[1] | checks[2] | checks[3] | checks[4];
-
                 foreach (ulong e in checks)
                 {
                     if (e != 0L)
@@ -100,10 +93,8 @@ namespace ChessGame
                         checksCounter++;
                     }
                 }
-
                 if (checksCounter > 0) // Is in check
                 {
-
                     if (checksCounter > 1) // Double check (only king can move)
                     {
                         //Only king can move
@@ -123,14 +114,12 @@ namespace ChessGame
                         if ((checks[1] | checks[2] | checks[3]) != 0L)
                         {
                             //one solution is make the king go to the piece
-
                             //Draw to king
                             //loop from piece to king
                             //Check whether the piece is smaller or greater than the king bitboard
                             // depending on that loop by shifting by i each turn
                             //Based on the i result (from PIECE to KING),
                             //if divisible by 8 then that means it's a above / below the piece
-
                             //blockMask = 
                         }
                         //Only king can move
@@ -145,10 +134,7 @@ namespace ChessGame
                         }
                     }
                 }
-
                 // NO CHECK
-
-
                 else // Not in check, can play normally
                 {
                     switch (piece & 0b00111)
@@ -157,47 +143,37 @@ namespace ChessGame
                             //King legal moves bitboard
                             legalULong = LegalMoves_King(pieceLocation & Board.wK, whitePieces, blackPieces, whiteTurn, true);
                             break;
-
                         case Piece.Pawn:
                             //White pawn legal moves bitboard
                             legalULong = LegalMoves_WPawn(pieceLocation & Board.wP);
                             break;
-
                         case Piece.Knight:
                             //Knight legal moves bitboard
                             legalULong = LegalMoves_Knight(pieceLocation & Board.wN, whitePieces);
                             break;
-
                         case Piece.Bishop:
                             //Bishop legal moves bitboard
                             legalULong = LegalMoves_Bishop(pieceLocation & Board.wB, whitePieces, blackPieces);
                             break;
-
                         case Piece.Rook:
                             //Rook legal moves bitboard
                             legalULong = LegalMoves_Rook(pieceLocation & Board.wR, whitePieces, blackPieces);
                             break;
-
                         case Piece.Queen:
                             //Queen legal moves bitboard
                             legalULong = LegalMoves_Queen(pieceLocation & Board.wQ, whitePieces, blackPieces);
                             break;
                     }
                 }
-
             }
             else if (!whiteTurn) //Black piece
             {
-
-
                 // SEE FOR CHECK (MAKE IT INTO A FUNCTION IN FUTURE)
-
                 // [Knights, Bishops, Rooks, Queens, Pawns]
                 ulong[] checks = KingHits(Board.bK, whiteTurn, blackPieces, whitePieces);
                 //Useful for double checks (meaning you have to move the king)
                 int checksCounter = 0;
                 ulong combinedChecks = checks[0] | checks[1] | checks[2] | checks[3] | checks[4];
-
                 foreach (ulong e in checks)
                 {
                     if (e != 0L)
@@ -205,10 +181,8 @@ namespace ChessGame
                         checksCounter++;
                     }
                 }
-
                 if (checksCounter > 0) // Is in check
                 {
-
                     if (checksCounter > 1) // Double check (only king can move)
                     {
                         //Only king can move
@@ -236,11 +210,7 @@ namespace ChessGame
                         }
                     }
                 }
-
                 // NO CHECK
-
-
-
                 else // Not in check, can play normally
                 {
                     switch (piece & 0b00111)
@@ -249,27 +219,22 @@ namespace ChessGame
                             //King legal moves bitboard
                             legalULong = LegalMoves_King(pieceLocation & Board.bK, blackPieces, whitePieces, whiteTurn, true);
                             break;
-
                         case Piece.Pawn:
                             //Black pawn legal moves
                             legalULong = LegalMoves_BPawn(pieceLocation & Board.bP);
                             break;
-
                         case Piece.Knight:
                             //Knight legal moves bitboard
                             legalULong = LegalMoves_Knight(pieceLocation & Board.bN, blackPieces);
                             break;
-
                         case Piece.Bishop:
                             //Bishop legal moves bitboard
                             legalULong = LegalMoves_Bishop(pieceLocation & Board.bB, blackPieces, whitePieces);
                             break;
-
                         case Piece.Rook:
                             //Rook legal moves bitboard
                             legalULong = LegalMoves_Rook(pieceLocation & Board.bR, blackPieces, whitePieces);
                             break;
-
                         case Piece.Queen:
                             //Queen legal moves bitboard
                             legalULong = LegalMoves_Queen(pieceLocation & Board.bQ, blackPieces, whitePieces);
@@ -277,15 +242,11 @@ namespace ChessGame
                     }
                 }
             }
-
             //Append to list the legal squares
             for (int i = 0; i < 64; i++)
             {
-
                 if (((legalULong >> i) & 1L) == 1L) { legalSquares.Add(63 - i); }
-
             }
-
             return legalSquares;
         }*/
 
@@ -383,14 +344,12 @@ namespace ChessGame
                     R = R & ~(file_A << i);
                     //We do this by reversing the bitwise operation we set on the condition to locate the appropriate bit(s)
                 }
-
                 //Until there is a friendly piece
                 else if ((R >> i & friendlyPieces) != 0L)
                 {
                     //remove bit from calculating further
                     R = R & ~(friendlyPieces << i);
                 }
-
                 else if((R >> i & enemyPieces) != 0L)
                 {
                     legalMoves = legalMoves | R >> i;
@@ -496,18 +455,15 @@ namespace ChessGame
                 {
                     break;
                 }
-
                 //If outside the board, left
                 else if ((B << i & file_H) != 0L)
                 {
                     break;
                 }
-
                 else if ((B << (i * 9) & friendlyPieces) != 0L)
                 {
                     break;
                 }
-
                 else if ((B << (i * 9) & enemyPieces) != 0L)
                 {
                     legalMoves = legalMoves | B << (i * 9);
@@ -691,7 +647,7 @@ namespace ChessGame
                                 }
                             }
                         }
-                        
+
                     }
                 }
             }
@@ -770,7 +726,6 @@ namespace ChessGame
             //Useful for double checks (meaning you have to move the king)
             int checksCounter = 0;
             ulong combinedChecks = checks[0] | checks[1] | checks[2] | checks[3] | checks[4];
-
             foreach (ulong e in checks)
             {
                 if (e != 0L)
@@ -778,7 +733,6 @@ namespace ChessGame
                     checksCounter++;
                 }
             }
-
             if ((checksCounter > 0) & whiteTurn) // Is in check
             {
                 if (checksCounter > 1) // Double check (only king can move)
@@ -796,7 +750,6 @@ namespace ChessGame
                 }
                 else
                 {
-
                 }
             }
         }
@@ -857,7 +810,7 @@ namespace ChessGame
 
             //Generate squares that are attacked by black pieces sicne since it's black's turn in this debugging example
             ulong squares = AttackedSquares(Board.position.bK, Board.position.bQ, Board.position.bR, Board.position.bB,
-                Board.position.bN, Board.position.bP, Board.position.wK, Board.position.whitePieces, Board.position.blackPieces, 
+                Board.position.bN, Board.position.bP, Board.position.wK, Board.position.whitePieces, Board.position.blackPieces,
                 true, Board.position);
             //ulong squares = PinnedPieces(Board.position.bK, Board.position.blackPieces, Board.position.whitePieces,
             //    Board.position.wR, Board.position.wB, Board.position.wQ);
@@ -882,7 +835,7 @@ namespace ChessGame
             uint move;
 
             //https://chess.stackexchange.com/questions/18017/whats-the-right-approach-of-storing-moves-generated-using-bitboards
-             public MakeMove(uint from, uint to, uint flag)
+            public MakeMove(uint from, uint to, uint flag)
             {
                 //0000 0000 0000 0000  to store moveType | to | from
                 //From: 0000 0000 0011 1111
@@ -909,7 +862,7 @@ namespace ChessGame
             * 110 = En Passant
             * 111 = Double Push    
             */
-            Normal_Move = 0b000, Captures = 0b001, Evasion = 0b010, Promotion = 0b011, Castles_QS = 0b100, Castles_KS = 0b101, 
+            Normal_Move = 0b000, Captures = 0b001, Evasion = 0b010, Promotion = 0b011, Castles_QS = 0b100, Castles_KS = 0b101,
             En_Passant = 0b110, Double_Push = 0b111,
         }
 
@@ -1016,21 +969,53 @@ namespace ChessGame
             }
 
 
-            // Foreach construction zone
-
-            bool pin;
-
-
-
-            ulong PinnedBlock(int i)
+            //read bitboards as index
+            //the bitwise operations will reverse the board so initially the board will be on blacks side
+            void MakeMoves(int correctForm)
             {
-                pin = false;
+                int i = 63 - correctForm;
+
+                //Default to a normal move each loop
+                flag = (int)Flag.Normal_Move;
+
+                //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
+                //**Implement flags and other piece information
+
+                //Format legalULong
+                legalULong = 0L;
+
+                //Format double push location
+                doublePushVerifyMask = 0L;
+
+                //Format en passant verify mask
+                enPassantVerifyMask = 0L;
+
+                //Format castling verify masks
+                qsCastleVerifyMask = 0L;
+                ksCastleVerifyMask = 0L;
+
+                // Format promotion verify mask;
+                promotionVerifyMask = 0L;
+
+                //Bool if there is a pin. (Used for knights)
+                bool pin = false;
+
+                //initiate friendlyPieces
+                ulong friendlyPieces;
+
+                //Set pinnedBlock to 0 initially, this is used to block calculations in the wrong directions by placing a friendly piece
+                //in the way
                 ulong pinnedBlock = 0L;
+
+                //Since the index is reversed for bitboards
+                correctFrom = 63 - i;
+
+                //Convert the index to bitboard
+                pieceLocation = Board.BinaryStringToBitboard(correctFrom);
 
                 //pieceLocation offset for pinned pieces
                 if (((pins >> i) & 1L) == 1L) //There is a pinned piece
                 {
-                    
                     pin = true;
 
 
@@ -1075,11 +1060,135 @@ namespace ChessGame
                     }
                 }
 
-                return pinnedBlock;
-            }
-            
-            void genEnding()
-            {
+                if (position.whiteTurn) // White to play
+                {
+                    captureVerifyMask = position.blackPieces;
+
+                    //Assign friendlyPieces including pinnedPiece block
+                    friendlyPieces = position.whitePieces | pinnedBlock;
+
+                    if (((position.wP >> i) & 1L) == 1L) //Pawns first as they are most likely to appear since they are more common
+                    {
+                        //White pawn legal moves bitboard
+                        legalULong = LegalMoves_WPawn(pieceLocation, position.blackPieces & ~pinnedBlock, position.emptySquares & ~pinnedBlock,
+                            position.black_enPassantMask & ~pinnedBlock);
+
+                        // Promotion veriy mask
+                        promotionVerifyMask = legalULong & rank_8;
+
+                        // En passant possibility
+                        enPassantVerifyMask = legalULong & position.black_enPassantMask;
+
+                        //Opening two square push forward, getting the pawn's double push location for en passant
+                        doublePushVerifyMask = legalULong & rank_4;
+
+                    }
+                    else if (((position.wK >> i) & 1L) == 1L & genKingMoves)
+                    {
+                        //King legal moves bitboard
+                        legalULong = LegalMoves_King(pieceLocation, friendlyPieces, position.blackPieces, position.whiteTurn, true, position, false,
+                            position.whiteCastles, position.blackCastles);
+
+                        // Add qs and ks castle mask for the flag
+                        if ((defaultKing_white == position.wK) && (legalULong & qsCastleKing_white) != 0) // King has moved by two to left; QS castles
+                        {
+                            // Set mask for flag
+                            qsCastleVerifyMask = qsCastleKing_white;
+                        }
+                        if ((defaultKing_white == position.wK) && (legalULong & ksCastleKing_white) != 0) // King has moved by two to right; KS castles
+                        {
+                            // Set mask for flag
+                            ksCastleVerifyMask = ksCastleKing_white;
+                        }
+                    }
+                    else if (((position.wQ >> i) & 1L) == 1L)
+                    {
+                        //Queen legal moves bitboard
+                        legalULong = LegalMoves_Queen(pieceLocation, friendlyPieces, position.blackPieces);
+                    }
+                    else if (((position.wR >> i) & 1L) == 1L)
+                    {
+                        //Rook legal moves bitboard
+                        legalULong = LegalMoves_Rook(pieceLocation, friendlyPieces, position.blackPieces);
+                    }
+                    else if (((position.wB >> i) & 1L) == 1L)
+                    {
+                        //Bishop legal moves bitboard
+                        legalULong = LegalMoves_Bishop(pieceLocation, friendlyPieces, position.blackPieces);
+                    }
+                    else if (((position.wN >> i) & 1L) == 1L & !pin)
+                    {
+                        //Knight legal moves bitboard
+                        legalULong = LegalMoves_Knight(pieceLocation, friendlyPieces);
+                    }
+                }
+
+                else // Black to play
+                {
+                    //System.Diagnostics.Debug.WriteLine(pin);
+
+                    captureVerifyMask = position.whitePieces;
+
+                    //Assign friendlyPieces including pinnedPiece block
+                    friendlyPieces = position.blackPieces | pinnedBlock;
+
+                    if (((position.bP >> i) & 1L) == 1L) //Pawns first as they are most likely to appear since they are more common
+                    {
+                        //Black pawn legal moves
+                        legalULong = LegalMoves_BPawn(pieceLocation, position.whitePieces & ~pinnedBlock, position.emptySquares & ~pinnedBlock,
+                            position.white_enPassantMask & ~pinnedBlock);
+
+
+                        // Promotion verify mask
+                        promotionVerifyMask = legalULong & rank_1;
+
+                        // En passant possibility
+                        enPassantVerifyMask = legalULong & position.white_enPassantMask;
+
+                        //Opening two square push forward, getting the pawn's double push location for en passant
+                        doublePushVerifyMask = legalULong & rank_5;
+                    }
+                    else if (((position.bK >> i) & 1L) == 1L & genKingMoves)
+                    {
+                        //King legal moves bitboard
+                        legalULong = LegalMoves_King(pieceLocation, friendlyPieces, position.whitePieces, position.whiteTurn, true, position, false,
+                            position.whiteCastles, position.blackCastles);
+
+                        // Add qs and ks castle mask for the flag
+                        if ((defaultKing_black == position.bK) && (legalULong & qsCastleKing_black) != 0) // King has moved by two to left; QS castles
+                        {
+                            // Set mask for flag
+                            qsCastleVerifyMask = qsCastleKing_black;
+                        }
+                        if ((defaultKing_black == position.bK) && (legalULong & ksCastleKing_black) != 0) // King has moved by two to right; KS castles
+                        {
+                            // Set mask for flag
+                            ksCastleVerifyMask = ksCastleKing_black;
+                        }
+                    }
+                    else if (((position.bQ >> i) & 1L) == 1L)
+                    {
+                        //Queen legal moves bitboard
+                        legalULong = LegalMoves_Queen(pieceLocation, friendlyPieces, position.whitePieces);
+                    }
+                    else if (((position.bR >> i) & 1L) == 1L)
+                    {
+                        //Rook legal moves bitboard
+                        legalULong = LegalMoves_Rook(pieceLocation, friendlyPieces, position.whitePieces);
+                    }
+                    else if (((position.bB >> i) & 1L) == 1L)
+                    {
+                        //Bishop legal moves bitboard
+                        legalULong = LegalMoves_Bishop(pieceLocation, friendlyPieces, position.whitePieces);
+                    }
+                    else if (((position.bN >> i) & 1L) == 1L & !pin)
+                    {
+                        //Knight legal moves bitboard
+                        legalULong = LegalMoves_Knight(pieceLocation, friendlyPieces);
+                    }
+                }
+
+
                 //Set the normal move flag
                 normalMoveVerifyMask = ~(captureVerifyMask | doublePushVerifyMask | enPassantVerifyMask |
                     ksCastleVerifyMask | qsCastleVerifyMask | promotionVerifyMask);
@@ -1087,361 +1196,133 @@ namespace ChessGame
 
                 //Filter blocked moves (For checks; blocking moves and capturing piece)
                 legalULong = legalULong & allowMask;
+
+                //Append to list the legal squares
+                if (legalULong != 0L) // There are moves to append
+                {
+                    for (int y = 0; y < 64; y++)
+                    {
+                        // Assign bit
+                        legalULongBit = legalULong >> y & 1L;
+
+                        //flag | to | from
+                        if (legalULongBit == 1L) // There is a bit
+                        {
+                            // Set appropriate flags for the move
+
+                            // If the mvoe is considered a normal move
+                            if (legalULongBit == (normalMoveVerifyMask >> y & 1L))
+                            {
+                                // Set normal move flag
+                                flag = (int)Flag.Normal_Move;
+                            }
+
+                            else if (legalULongBit == (promotionVerifyMask >> y & 1L))
+                            {
+                                // Set promotion flag
+                                flag = (int)Flag.Promotion;
+                            }
+
+                            //Check for capture (After promotion because can capture to promote)
+                            else if (legalULongBit == (captureVerifyMask >> y & 1L))
+                            {
+                                // Set capture flag
+                                flag = (int)Flag.Captures;
+                            }
+
+                            else if (legalULongBit == (enPassantVerifyMask >> y & 1L))
+                            {
+                                // Set En passant flag
+                                flag = (int)Flag.En_Passant;
+                            }
+
+                            //Check for double push
+                            else if (legalULongBit == (doublePushVerifyMask >> y & 1L)) // There was a double push
+                            {
+                                // Set double push flag
+                                flag = (int)Flag.Double_Push;
+
+                            }
+
+                            // Check for king side castle
+                            else if (legalULongBit == (ksCastleVerifyMask >> y & 1L))
+                            {
+                                // Set kingside castle flag
+                                flag = (int)Flag.Castles_KS;
+                            }
+
+                            // Check for queen side castle
+                            else if (legalULongBit == (qsCastleVerifyMask >> y & 1L))
+                            {
+                                // Set queenside castle flag
+                                flag = (int)Flag.Castles_QS;
+                            }
+
+                            legalSquares.Add(flag << 12 | (63 - y) << 6 | correctFrom);
+                        }
+
+                    }
+                }
             }
 
 
-
-            //Get the locations of the pieces;
+            // Make moves absed ont he index positions in the position piece lists
             if (position.whiteTurn) // White to play
             {
-                captureVerifyMask = position.blackPieces;
-
-
-                foreach (int square in position.whiteKing) // Generating kings moves
+                foreach(int index in position.whiteKing)
                 {
-                    int i = 63 - square;
-
-
-
+                    MakeMoves(index);
                 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                foreach (int index in position.whitePawn)
+                {
+                    MakeMoves(index);
+                }
+                foreach (int index in position.whiteQueen)
+                {
+                    MakeMoves(index);
+                }
+                foreach (int index in position.whiteRook)
+                {
+                    MakeMoves(index);
+                }
+                foreach (int index in position.whiteBishop)
+                {
+                    MakeMoves(index);
+                }
+                foreach (int index in position.whiteKnight)
+                {
+                    MakeMoves(index);
+                }
             }
+
             else // Black to play
             {
-                captureVerifyMask = position.whitePieces;
-
-
+                foreach (int index in position.blackKing)
+                {
+                    MakeMoves(index);
+                }
+                foreach (int index in position.blackPawn)
+                {
+                    MakeMoves(index);
+                }
+                foreach (int index in position.blackQueen)
+                {
+                    MakeMoves(index);
+                }
+                foreach (int index in position.blackRook)
+                {
+                    MakeMoves(index);
+                }
+                foreach (int index in position.blackBishop)
+                {
+                    MakeMoves(index);
+                }
+                foreach (int index in position.blackKnight)
+                {
+                    MakeMoves(index);
+                }
             }
 
-
-
-            // Foreach Construction zone
-
-
-
-            /*
-            //read bitboards as index
-            //the bitwise operations will reverse the board so initially the board will be on blacks side
-            for (int i = 63; i >= 0; i--)
-            {
-                // Reverse because to make correct for bitboards
-                i = 63 - i;
-
-
-                //Default to a normal move each loop
-                flag = (int)Flag.Normal_Move;
-
-                //Assign squares; //Assing to piece information // Piece Information: Colour | Piece | Location
-                //**Implement flags and other piece information
-
-                //First continue if no pieces because that is most likely as there are more empty squares than any other
-                if ((position.blackPieces | position.whitePieces) == 0L) { continue; } //pass
-
-                else //There is a piece to generate moves for
-                {
-                    //Format legalULong
-                    legalULong = 0L;
-
-                    //Format double push location
-                    doublePushVerifyMask = 0L;
-
-                    //Format en passant verify mask
-                    enPassantVerifyMask = 0L;
-
-                    //Format castling verify masks
-                    qsCastleVerifyMask = 0L;
-                    ksCastleVerifyMask = 0L;
-
-                    // Format promotion verify mask;
-                    promotionVerifyMask = 0L;
-
-                    //Bool if there is a pin. (Used for knights)
-                    bool pin = false;
-
-                    //initiate friendlyPieces
-                    ulong friendlyPieces;
-
-                    //Set pinnedBlock to 0 initially, this is used to block calculations in the wrong directions by placing a friendly piece
-                    //in the way
-                    ulong pinnedBlock = 0L;
-
-                    //Since the index is reversed for bitboards
-                    correctFrom = 63 - i;
-
-                    //Convert the index to bitboard
-                    pieceLocation = Board.BinaryStringToBitboard(correctFrom);
-
-                    //pieceLocation offset for pinned pieces
-                    if (((pins >> i) & 1L) == 1L) //There is a pinned piece
-                    {
-                        pin = true;
-
-
-                        //Diagonal Pins first as they are more common
-                        if (((BLTRPins >> i) & 1L) == 1L) //BLTR = Bottom Left, Top Right
-                        {
-                            //Pinned blocked
-                            //Place the "friendly piece" mask everywhere but the pin location
-                            pinnedBlock = pieceLocation << 1 | pieceLocation << 9 | pieceLocation << 8 |
-                                pieceLocation >> 1 | pieceLocation >> 9 | pieceLocation >> 8;
-                        }
-
-                        else if (((BRTLPins >> i) & 1L) == 1L) //BRTL = Bottom Right, Top Left
-                        {
-                            //Pinned blocked
-                            //Place the "friendly piece" mask everywhere but the pin location
-                            pinnedBlock = pieceLocation << 1 | pieceLocation << 8 | pieceLocation << 7 |
-                                pieceLocation >> 1 | pieceLocation >> 8 | pieceLocation >> 7;
-                        }
-
-                        //Horizontal Pin
-                        else if (((horizontalPins >> i) & 1L) == 1L)
-                        {
-                            //Pinned blocked
-                            //Place the "friendly piece" mask everywhere but the pin location
-                            pinnedBlock = pieceLocation << 9 | pieceLocation << 8 | pieceLocation << 7 |
-                                pieceLocation >> 9 | pieceLocation >> 8 | pieceLocation >> 7;
-
-                            //Check for en passant pin
-                            if ((pinnedBlock & (position.white_enPassantMask | position.black_enPassantMask)) != 0)
-                            {
-                                // There is an en passant pin, therefore block
-                                pinnedBlock = (position.white_enPassantMask | position.black_enPassantMask);
-                            }
-                        }
-                        else //Vertical pin
-                        {
-                            //Pinned blocked
-                            //Place the "friendly piece" mask everywhere but the pin location
-                            pinnedBlock = pieceLocation << 1 | pieceLocation << 9 | pieceLocation << 7 |
-                                pieceLocation >> 1 | pieceLocation >> 9 | pieceLocation >> 7;
-                        }
-                    }
-
-                    if (position.whiteTurn) // White to play
-                    {
-                        captureVerifyMask = position.blackPieces;
-
-                        //Assign friendlyPieces including pinnedPiece block
-                        friendlyPieces = position.whitePieces | pinnedBlock;
-
-                        if (((position.wP >> i) & 1L) == 1L) //Pawns first as they are most likely to appear since they are more common
-                        {
-                            //White pawn legal moves bitboard
-                            legalULong = LegalMoves_WPawn(pieceLocation, position.blackPieces & ~pinnedBlock, position.emptySquares & ~pinnedBlock,
-                                position.black_enPassantMask & ~pinnedBlock);
-
-                            // Promotion veriy mask
-                            promotionVerifyMask = legalULong & rank_8;
-
-                            // En passant possibility
-                            enPassantVerifyMask = legalULong & position.black_enPassantMask;
-
-                            //Opening two square push forward, getting the pawn's double push location for en passant
-                            doublePushVerifyMask = legalULong & rank_4;
-
-                        }
-                        else if (((position.wK >> i) & 1L) == 1L & genKingMoves)
-                        {
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation, friendlyPieces, position.blackPieces, position.whiteTurn, true, position, false,
-                                position.whiteCastles, position.blackCastles);
-
-                            // Add qs and ks castle mask for the flag
-                            if ((defaultKing_white == position.wK) && (legalULong & qsCastleKing_white) != 0) // King has moved by two to left; QS castles
-                            {
-                                // Set mask for flag
-                                qsCastleVerifyMask = qsCastleKing_white;
-                            }
-                            if ((defaultKing_white == position.wK) && (legalULong & ksCastleKing_white) != 0) // King has moved by two to right; KS castles
-                            {
-                                // Set mask for flag
-                                ksCastleVerifyMask = ksCastleKing_white;
-                            }
-                        }
-                        else if (((position.wQ >> i) & 1L) == 1L)
-                        {
-                            //Queen legal moves bitboard
-                            legalULong = LegalMoves_Queen(pieceLocation, friendlyPieces, position.blackPieces);
-                        }
-                        else if (((position.wR >> i) & 1L) == 1L)
-                        {
-                            //Rook legal moves bitboard
-                            legalULong = LegalMoves_Rook(pieceLocation, friendlyPieces, position.blackPieces);
-                        }
-                        else if (((position.wB >> i) & 1L) == 1L)
-                        {
-                            //Bishop legal moves bitboard
-                            legalULong = LegalMoves_Bishop(pieceLocation, friendlyPieces, position.blackPieces);
-                        }
-                        else if (((position.wN >> i) & 1L) == 1L & !pin)
-                        {
-                            //Knight legal moves bitboard
-                            legalULong = LegalMoves_Knight(pieceLocation, friendlyPieces);
-                        }
-                    }
-
-                    else // Black to play
-                    {
-                        //System.Diagnostics.Debug.WriteLine(pin);
-
-                        captureVerifyMask = position.whitePieces;
-
-                        //Assign friendlyPieces including pinnedPiece block
-                        friendlyPieces = position.blackPieces | pinnedBlock;
-
-                        if (((position.bP >> i) & 1L) == 1L) //Pawns first as they are most likely to appear since they are more common
-                        {
-                            //Black pawn legal moves
-                            legalULong = LegalMoves_BPawn(pieceLocation, position.whitePieces & ~pinnedBlock, position.emptySquares & ~pinnedBlock,
-                                position.white_enPassantMask & ~pinnedBlock);
-
-
-                            // Promotion verify mask
-                            promotionVerifyMask = legalULong & rank_1;
-
-                            // En passant possibility
-                            enPassantVerifyMask = legalULong & position.white_enPassantMask;
-
-                            //Opening two square push forward, getting the pawn's double push location for en passant
-                            doublePushVerifyMask = legalULong & rank_5;
-                        }
-                        else if (((position.bK >> i) & 1L) == 1L & genKingMoves)
-                        {
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation, friendlyPieces, position.whitePieces, position.whiteTurn, true, position, false,
-                                position.whiteCastles, position.blackCastles);
-
-                            // Add qs and ks castle mask for the flag
-                            if ((defaultKing_black == position.bK) && (legalULong & qsCastleKing_black) != 0) // King has moved by two to left; QS castles
-                            {
-                                // Set mask for flag
-                                qsCastleVerifyMask = qsCastleKing_black;
-                            }
-                            if ((defaultKing_black == position.bK) && (legalULong & ksCastleKing_black) != 0) // King has moved by two to right; KS castles
-                            {
-                                // Set mask for flag
-                                ksCastleVerifyMask = ksCastleKing_black;
-                            }
-                        }
-                        else if (((position.bQ >> i) & 1L) == 1L)
-                        {
-                            //Queen legal moves bitboard
-                            legalULong = LegalMoves_Queen(pieceLocation, friendlyPieces, position.whitePieces);
-                        }
-                        else if (((position.bR >> i) & 1L) == 1L)
-                        {
-                            //Rook legal moves bitboard
-                            legalULong = LegalMoves_Rook(pieceLocation, friendlyPieces, position.whitePieces);
-                        }
-                        else if (((position.bB >> i) & 1L) == 1L)
-                        {
-                            //Bishop legal moves bitboard
-                            legalULong = LegalMoves_Bishop(pieceLocation, friendlyPieces, position.whitePieces);
-                        }
-                        else if (((position.bN >> i) & 1L) == 1L & !pin)
-                        {
-                            //Knight legal moves bitboard
-                            legalULong = LegalMoves_Knight(pieceLocation, friendlyPieces);
-                        }
-                    }
-
-
-                    //Set the normal move flag
-                    normalMoveVerifyMask = ~(captureVerifyMask | doublePushVerifyMask | enPassantVerifyMask |
-                        ksCastleVerifyMask | qsCastleVerifyMask | promotionVerifyMask);
-
-
-                    //Filter blocked moves (For checks; blocking moves and capturing piece)
-                    legalULong = legalULong & allowMask;
-
-                    //Append to list the legal squares
-                    if (legalULong != 0L) // There are moves to append
-                    {
-                        for (int y = 0; y < 64; y++)
-                        {
-                            // Assign bit
-                            legalULongBit = legalULong >> y & 1L;
-
-                            //flag | to | from
-                            if (legalULongBit == 1L) // There is a bit
-                            {
-                                // Set appropriate flags for the move
-
-                                // If the mvoe is considered a normal move
-                                if (legalULongBit == (normalMoveVerifyMask >> y & 1L))
-                                {
-                                    // Set normal move flag
-                                    flag = (int)Flag.Normal_Move;
-                                }
-
-                                else if (legalULongBit == (promotionVerifyMask >> y & 1L))
-                                {
-                                    // Set promotion flag
-                                    flag = (int)Flag.Promotion;
-                                }
-
-                                //Check for capture (After promotion because can capture to promote)
-                                else if (legalULongBit == (captureVerifyMask >> y & 1L))
-                                {
-                                    // Set capture flag
-                                    flag = (int)Flag.Captures;
-                                }
-
-                                else if (legalULongBit == (enPassantVerifyMask >> y & 1L))
-                                {
-                                    // Set En passant flag
-                                    flag = (int)Flag.En_Passant;
-                                }
-
-                                //Check for double push
-                                else if (legalULongBit == (doublePushVerifyMask >> y & 1L)) // There was a double push
-                                {
-                                    // Set double push flag
-                                    flag = (int)Flag.Double_Push;
-
-                                }
-
-                                // Check for king side castle
-                                else if (legalULongBit == (ksCastleVerifyMask >> y & 1L))
-                                {
-                                    // Set kingside castle flag
-                                    flag = (int)Flag.Castles_KS;
-                                }
-
-                                // Check for queen side castle
-                                else if (legalULongBit == (qsCastleVerifyMask >> y & 1L))
-                                {
-                                    // Set queenside castle flag
-                                    flag = (int)Flag.Castles_QS;
-                                }
-
-                                legalSquares.Add(flag << 12 | (63 - y) << 6 | correctFrom);
-                            }
-
-                        }
-                    }
-                }
-                
-            }*/
 
 
             return legalSquares;
@@ -1475,7 +1356,7 @@ namespace ChessGame
             }
 
             int checks = 0;
-            
+
             foreach (ulong e in checkArray)
             {
                 if (e != 0L) //There is a check
@@ -1562,7 +1443,7 @@ namespace ChessGame
                     {
                         legalSquares.Add(1 << 15); //Adds a checkmate flag
                     }
-                    
+
                     return legalSquares;
                 }
 
@@ -1721,7 +1602,7 @@ namespace ChessGame
                     }
 
                 }
-                
+
 
                 if (slider == 0 | slider == 2) // Bishop or Queen
                 {
@@ -1773,7 +1654,7 @@ namespace ChessGame
                         //fromPiece out of the board & If there is a piece in the way to save time, since if it hits then
                         //it's impossible to locate checker
                         fixedFromPiece = (fixedFromPiece << 7) & emptySquares & ~file_A;
-                        
+
 
                         //Null bitboard
                         if (fixedFromPiece == 0L)
@@ -1785,7 +1666,7 @@ namespace ChessGame
                         {
                             return inBetweenMask;
                         }
-                        
+
                         //Add to inBetweenMask
                         inBetweenMask = inBetweenMask | fixedFromPiece;
                     }
@@ -1917,12 +1798,12 @@ namespace ChessGame
 
             return 0L;
         }
-        
+
 
         //Pinned pieces bitboard
 
         //Horizontal pinned pieces
-        public static ulong Pins_Horizontal (ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eR, ulong eQ)
+        public static ulong Pins_Horizontal(ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eR, ulong eQ)
         {
             //Horizontal Movement
             ulong rookBlockMask_Horizontal = eR << 8 | eR >> 8;
@@ -1956,7 +1837,7 @@ namespace ChessGame
         //Bottom Left - Top Right pin ray
         public static ulong Pins_BLTR(ulong fK, ulong friendlyPieces, ulong enemyPieces, ulong eB, ulong eQ)
         {
-            
+
             //Diagonal (Top right, bottom left ray)
             ulong bishopBlockMask_BRTL = eB << 9 | eB >> 9;
             //Diagonal for Queen
@@ -2077,34 +1958,26 @@ namespace ChessGame
         int[] GetValidMoves()
         {
             int[] moves;
-
             if (whiteTurn) // White to move
             {
                 //First check whether youre in check
                 // [Knights, Bishops, Rooks, Queens, Pawns]
                 ulong[] checks = KingHits(Board.wK, whiteTurn, whitePieces, blackPieces);
-
                 if (checks.Length > 0)
                 {
                     //Generate legal king moves
-
                     if (checks.Length == 1) // Only one check, king can move, piece can block, can be captured
                     {
                         //Capture Checker: use same method as for king to see if there are any pieces that can capture it
-
-
                     }
                 }
                 else // Not in check, generate all moves
                 {
-
                 }
             }
             else // Black to Move
             {
-
             }
-
             return moves;
         }*/
 
