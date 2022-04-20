@@ -63,7 +63,7 @@ namespace ChessGame
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
         //private string FEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
-        private string FEN = "8/1P2k3/8/8/8/8/8/K7 w - - 0 1";
+        private string FEN = "8/8/8/8/1B6/4k3/6pp/4K3 w - - 0 1";
         
 
         //For when the piece is selected
@@ -218,20 +218,45 @@ namespace ChessGame
                 {
                     PieceSelection();
                 }
+
                 else // Computer move
                 {
+                    System.Diagnostics.Debug.WriteLine(position.whiteTurn);
+
+                    GameState.engineCalculating = true;
 
                     System.Diagnostics.Debug.WriteLine("Starting Calculating");
-                    //System.Diagnostics.Debug.WriteLine(position.whiteTurn);
-                    moveAmount = 0;
-                    //System.Diagnostics.Debug.WriteLine(Engine.MiniMax(2, position.whiteTurn));
-
                     DateTime time = DateTime.Now;
-                    System.Diagnostics.Debug.WriteLine("Generation test: " + Engine.GenerationTest(5));
-                    System.Diagnostics.Debug.WriteLine(DateTime.Now - time);
                     
-                    GameState.playerMove = true;
+                    //System.Diagnostics.Debug.WriteLine(Engine.MiniMax(3, position.whiteTurn));
+                    
+                    Engine.maxMove engineMove = Engine.NegaMax(3, -9999, 9999);
 
+                    System.Diagnostics.Debug.WriteLine(engineMove.max);
+
+                    //System.Diagnostics.Debug.WriteLine("Generation test: " + Engine.GenerationTest(5));
+                    System.Diagnostics.Debug.WriteLine(DateTime.Now - time);
+
+                    System.Diagnostics.Debug.WriteLine("After: " + position.whiteTurn);
+
+                    GameState.engineCalculating = false;
+                    
+                    
+                    MakeMoveOnBoard(engineMove.move);
+
+                    System.Diagnostics.Debug.WriteLine("After MOVE: " + position.whiteTurn);
+
+                    if ((engineMove.move.flag & 0b11000) != 0) // Checkmate or stalemate
+                    {
+                        if (engineMove.move.flag >> 4 == 1) // Stalemate
+                        {
+                            GameState.state = 2;
+                        }
+                        else // Checkmate
+                        {
+                            GameState.state = 1;
+                        }
+                    }
 
 
                     /*
@@ -728,16 +753,14 @@ namespace ChessGame
         public static void EndOfTurn()
         {
             // End of all moves this turn, therefore
-            //End of turn; other colour turn
+            // End of turn; other colour turn
             position.whiteTurn = !position.whiteTurn;
-
-            //GameState.playerMove = !GameState.playerMove;
 
             //Generate moves once a new position is established and the player is moving
             if (!GameState.engineCalculating)
             {
                 moves = Moves.GenerateGameMoves(position);
-
+                GameState.playerMove = !GameState.playerMove;
 
                 // (Stalemate | Checkmate) (0b1100 0000 0000 0000) | flag | to | from
 
@@ -791,7 +814,7 @@ namespace ChessGame
 
             forMove.fromSquare = move & 0b111111;
             forMove.toSquare = move >> 6 & 0b111111;
-            forMove.flag = move >> 12 & 0b111;// Can be castling.. etc
+            forMove.flag = move >> 12 & 0b111;// Can be castling.. etc (0b11000) says whether it's checkmate
 
             forMove.capturedPiece = squares[forMove.toSquare].piece;
 
@@ -840,67 +863,90 @@ namespace ChessGame
                 int promotedPiece = squares[toSquare].piece & 0b111;
 
                 
-
-                // Update the bitboards and counter
-                if (position.whiteTurn) // Black just promoted
+                if (GameState.playerMove)
                 {
-                    // Add pawn to counter
-                    position.bPCount++;
-
-                    switch (promotedPiece)
+                    // Update the bitboards and counter
+                    if (position.whiteTurn) // Black just promoted
                     {
-                        case Piece.Queen:
-                            position.bQ = position.bQ & ~toSquareBitboard;
-                            position.bQCount--;
-                            position.blackQueen.Remove(toSquare);
-                            break;
-                        case Piece.Knight:
-                            position.bN = position.bN & ~toSquareBitboard;
-                            position.bNCount--;
-                            position.blackKnight.Remove(toSquare);
-                            break;
-                        case Piece.Rook:
-                            position.bR = position.bR & ~toSquareBitboard;
-                            position.bRCount--;
-                            position.blackRook.Remove(toSquare);
-                            break;
-                        case Piece.Bishop:
-                            position.bB = position.bB & ~toSquareBitboard;
-                            position.bBCount--;
-                            position.blackBishop.Remove(toSquare);
-                            break;
+                        // Add pawn to counter
+                        position.bPCount++;
+
+                        switch (promotedPiece)
+                        {
+                            case Piece.Queen:
+                                position.bQ = position.bQ & ~toSquareBitboard;
+                                position.bQCount--;
+                                position.blackQueen.Remove(toSquare);
+                                break;
+                            case Piece.Knight:
+                                position.bN = position.bN & ~toSquareBitboard;
+                                position.bNCount--;
+                                position.blackKnight.Remove(toSquare);
+                                break;
+                            case Piece.Rook:
+                                position.bR = position.bR & ~toSquareBitboard;
+                                position.bRCount--;
+                                position.blackRook.Remove(toSquare);
+                                break;
+                            case Piece.Bishop:
+                                position.bB = position.bB & ~toSquareBitboard;
+                                position.bBCount--;
+                                position.blackBishop.Remove(toSquare);
+                                break;
+                        }
+                    }
+
+                    else // White just promoted
+                    {
+                        // Add pawn to counter
+                        position.wPCount++;
+
+                        switch (promotedPiece)
+                        {
+                            case Piece.Queen:
+                                position.wQ = position.wQ & ~toSquareBitboard;
+                                position.wQCount--;
+                                position.whiteQueen.Remove(toSquare);
+                                break;
+                            case Piece.Knight:
+                                position.wN = position.wN & ~toSquareBitboard;
+                                position.wNCount--;
+                                position.whiteKnight.Remove(toSquare);
+                                break;
+                            case Piece.Rook:
+                                position.wR = position.wR & ~toSquareBitboard;
+                                position.wRCount--;
+                                position.whiteRook.Remove(toSquare);
+                                break;
+                            case Piece.Bishop:
+                                position.wB = position.wB & ~toSquareBitboard;
+                                position.wBCount--;
+                                position.whiteBishop.Remove(toSquare);
+                                break;
+                        }
                     }
                 }
 
-                else // White just promoted
+                else // Otherwise computer move; promoted to queen
                 {
-                    // Add pawn to counter
-                    position.wPCount++;
-
-                    switch (promotedPiece)
+                    if (position.whiteTurn) // black just promoted
                     {
-                        case Piece.Queen:
-                            position.wQ = position.wQ & ~toSquareBitboard;
-                            position.wQCount--;
-                            position.whiteQueen.Remove(toSquare);
-                            break;
-                        case Piece.Knight:
-                            position.wN = position.wN & ~toSquareBitboard;
-                            position.wNCount--;
-                            position.whiteKnight.Remove(toSquare);
-                            break;
-                        case Piece.Rook:
-                            position.wR = position.wR & ~toSquareBitboard;
-                            position.wRCount--;
-                            position.whiteRook.Remove(toSquare);
-                            break;
-                        case Piece.Bishop:
-                            position.wB = position.wB & ~toSquareBitboard;
-                            position.wBCount--;
-                            position.whiteBishop.Remove(toSquare);
-                            break;
+                        position.bPCount++;
+
+                        position.bQ = position.bQ & ~toSquareBitboard;
+                        position.bQCount--;
+                        position.blackQueen.Remove(toSquare);
+                    }
+                    else // white just promoted
+                    {
+                        position.wPCount++;
+
+                        position.wQ = position.wQ & ~toSquareBitboard;
+                        position.wQCount--;
+                        position.whiteQueen.Remove(toSquare);
                     }
                 }
+                
             }
 
 
@@ -1375,6 +1421,9 @@ namespace ChessGame
                     }
 
                     squares[toSquare].AssignPiece();
+
+                    // End of turn
+                    EndOfTurn();
                 }
             }
             else if (flag == (int)Moves.Flag.Double_Push) // Double push by pawn
