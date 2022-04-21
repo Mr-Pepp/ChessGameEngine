@@ -527,7 +527,7 @@ namespace ChessGame
             // Order lists with captures first for alpha beta pruning
             moves = OrderMoves(moves);
 
-            maxMove maxMove = new maxMove(-999999, new Board.MoveInfo());
+            maxMove maxMove = new maxMove(-99999, new Board.MoveInfo());
 
             foreach (int move in moves)
             {
@@ -544,9 +544,16 @@ namespace ChessGame
                 // Undo move
                 Board.UndoMove(actMove);
 
+
+
                 if (evalMove.max > maxMove.max)
                 {
                     maxMove = evalMove;
+                }
+
+                else if (evalMove.max < -9999) // Getting mated
+                {
+                    maxMove.move = evalMove.move; // Return move
                 }
 
                 alpha = Math.Max(alpha, evalMove.max);
