@@ -190,13 +190,6 @@ namespace ChessGame
 
                 }
 
-                if (Keyboard.GetState().IsKeyDown(Keys.S))
-                {
-                    //Set to player moving
-                    GameState.engineCalculating = false;
-
-                }
-
                 //'D' is pressed -- for debugging purposes
                 if (Keyboard.GetState().IsKeyDown(Keys.D))
                 {
@@ -230,11 +223,24 @@ namespace ChessGame
                     
                     //System.Diagnostics.Debug.WriteLine(Engine.MiniMax(3, position.whiteTurn));
                     
-                    Engine.maxMove engineMove = Engine.NegaMax(3, -9999, 9999);
+                    Engine.maxMove engineMove;
+
+                    if (position.whiteTurn) // White to play
+                    {
+                        // Negate side to switch the evaluation score
+                        // Set alpha as lowest, set beta as highest
+                        engineMove = Engine.NegaMax(3, -9999, 9999, -1);
+                    }
+                    else // Black to play
+                    {
+                        // Negate side to switch the evaluation score
+                        // Set alpha as lowest, set beta as highest
+                        engineMove = Engine.NegaMax(3, -9999, 9999, 1);
+                    }
+                    
 
                     System.Diagnostics.Debug.WriteLine(engineMove.max);
 
-                    //System.Diagnostics.Debug.WriteLine("Generation test: " + Engine.GenerationTest(5));
                     System.Diagnostics.Debug.WriteLine(DateTime.Now - time);
 
                     System.Diagnostics.Debug.WriteLine("After: " + position.whiteTurn);

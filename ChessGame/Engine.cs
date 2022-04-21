@@ -500,12 +500,12 @@ namespace ChessGame
 
 
         //NegaMax search
-        public static maxMove NegaMax(int depth, int alpha, int beta)
+        public static maxMove NegaMax(int depth, int alpha, int beta, int negateSide)
         {
             if (depth == 0)
             {
                 // Return evaluation of current position with a null move
-                return new maxMove(Evaluation(), new Board.MoveInfo());
+                return new maxMove(negateSide * Evaluation(), new Board.MoveInfo());
             }
 
             List<int> moves = Moves.GenerateGameMoves(Board.position);
@@ -515,7 +515,7 @@ namespace ChessGame
                 if ((moves[0] >> 15) == 0b01) // Checkmate
                 {
                     // Worse scenario
-                    return new maxMove(-999999, new Board.MoveInfo());
+                    return new maxMove(negateSide * -999999, new Board.MoveInfo());
                 }
                 else if ((moves[0] >> 16) == 1) // Stalemate
                 {
@@ -539,7 +539,7 @@ namespace ChessGame
 
                 // Negative sign because it will alternate black and white turns
                 // Current evaluation
-                maxMove evalMove = new maxMove(-NegaMax(depth - 1, alpha, beta).max, actMove);
+                maxMove evalMove = new maxMove(-NegaMax(depth - 1, alpha, beta, negateSide).max, actMove);
 
                 // Undo move
                 Board.UndoMove(actMove);
