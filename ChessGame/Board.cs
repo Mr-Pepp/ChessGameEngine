@@ -472,7 +472,6 @@ namespace ChessGame
                     squares[square].AssignPiece();
 
 
-
                     //Need to find a way for this with bitboards
                     foreach (int e in fromMoves)
                     {
