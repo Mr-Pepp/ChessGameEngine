@@ -8,11 +8,162 @@ namespace ChessGame
     {
 
         //Material count
-        const int pawnValue = 100;
-        const int bishopValue = 300;
-        const int knightValue = 280; // Knights are considered a bit worse than bishops
-        const int queenValue = 900;
-        const int rookValue = 500;
+        const int pawnValue = 10;
+        const int bishopValue = 30;
+        const int knightValue = 28; // Knights are considered a bit worse than bishops
+        const int queenValue = 90;
+        const int rookValue = 50;
+
+
+        //Positional value // Piece-square tables
+        // White king positional
+        static int[] position_whiteKing = new int[64]
+        { 
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -20, -30, -30, -40, -40, -30, -30, -20,
+            -10, -20, -20, -20, -20, -20, -20, -10,
+            20, 20, 0, 0, 0, 0, 20, 20,
+            20, 30, 10, 0, 0, 10, 30, 20
+        };
+
+        static int[] position_whiteQueen = new int[64]
+        {
+            -20, -10, -10, -5, -5, -10, -10, -20,
+            -10, 0, 0, 0, 0, 0, 0, -10,
+            -10, 0, 5, 5, 5, 5, 0, -10,
+            -5, 0, 5, 5, 5, 5, 0, -5,
+            0, 0, 5, 5, 5, 5, 5, -5,
+            -10, 5, 5, 5, 5, 5, 0, -10,
+            -10, 0, 5, 0, 0, 0, 0, -10,
+            -20, -10, -10, -5, -5, -10, -10, -20
+        };
+
+        static int[] position_whiteRook = new int[64]
+        {
+            0, 0, 0, 0, 0, 0, 0, 0,
+            5, 15, 15, 15, 15, 15, 15, 5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            0, 0, 0, 5, 5, 0, 0, 0
+        };
+
+        static int[] position_whiteBishop = new int[64]
+        {
+            -20, -10, -10, -10, -10, -10, -10, -20,
+            -10, 0, 0, 0, 0, 0, 0, -10,
+            -10, 0, 5, 10, 10, 5, 0, -10,
+            -10, 5, 5, 10, 10, 5, 5, -10,
+            -10, 0, 10, 10, 10, 10, 0, -10,
+            -10, 10, 10, 10, 10, 10, 10, -10,
+            -10, 5, 0, 0, 0, 0, 5, -10,
+            -20, -10, -10, -10, -10, -10, -10, -20
+        };
+
+        static int[] position_whiteKnight = new int[64]
+        {
+            -50, -40, -30, -30, -30, -30, -40, -50,
+            -40, -20, 0, 0, 0, 0, -20, -40,
+            -30, 0, 10, 15, 15, 10, 0, -30,
+            -30, 5, 15, 20, 20, 15, 5, -30,
+            -30, 0, 15, 20, 20, 15, 0, -30,
+            -30, 5, 10, 15, 15, 10, 5, -30,
+            -40, -20, 0, 5, 5, 0, -20, -40,
+            -50, -40, -30, -30, -30, -30, -40, -50
+        };
+
+        static int[] position_whitePawn = new int[64]
+        {
+            0, 0, 0, 0, 0, 0, 0, 0,
+            50, 50, 50, 50, 50, 50, 50, 50,
+            15, 15, 20, 30, 30, 20, 15, 15,
+            5, 5, 10, 25, 25, 10, 5, 5,
+            0, 0, 0, 20, 20, 0, 0, 0,
+            5, -5, -10, 0, 0, -10, -5, 5,
+            5, 10, 10, -20, -20, 10, 10, 5,
+            0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        // Reverse white piece square tables (in Y-axis) for black evaluation
+        static int[] position_blackKing = new int[]
+        {
+            20, 30, 10, 0, 0, 10, 30, 20,
+            20, 20, 0, 0, 0, 0, 20, 20
+            -10, -20, -20, -20, -20, -20, -20, -10,
+            -20, -30, -30, -40, -40, -30, -30, -20,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30
+        };
+
+        static int[] position_blackQueen = new int[64]
+        {
+            -20, -10, -10, -5, -5, -10, -10, -20,
+            -10, 0, 5, 0, 0, 0, 0, -10,
+            -10, 5, 5, 5, 5, 5, 0, -10,
+            0, 0, 5, 5, 5, 5, 5, -5,
+            -5, 0, 5, 5, 5, 5, 0, -5,
+            -10, 0, 5, 5, 5, 5, 0, -10,
+            -10, 0, 0, 0, 0, 0, 0, -10,
+            -20, -10, -10, -5, -5, -10, -10, -20
+        };
+
+        static int[] position_blackRook = new int[64]
+        {
+            0, 0, 0, 5, 5, 0, 0, 0,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            -5, 0, 0, 0, 0, 0, 0, -5,
+            5, 15, 15, 15, 15, 15, 15, 5,
+            0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        static int[] position_blackBishop = new int[64]
+        {
+            -20, -10, -10, -10, -10, -10, -10, -20,
+            -10, 5, 0, 0, 0, 0, 5, -10,
+            -10, 10, 10, 10, 10, 10, 10, -10,
+            -10, 0, 10, 10, 10, 10, 0, -10,
+            -10, 5, 5, 10, 10, 5, 5, -10,
+            -10, 0, 5, 10, 10, 5, 0, -10,
+            -10, 0, 0, 0, 0, 0, 0, -10,
+            -20, -10, -10, -10, -10, -10, -10, -20
+        };
+
+        static int[] position_blackKnight = new int[64]
+        {
+            -50, -40, -30, -30, -30, -30, -40, -50,
+            -40, -20, 0, 5, 5, 0, -20, -40,
+            -30, 5, 10, 15, 15, 10, 5, -30,
+            -30, 0, 15, 20, 20, 15, 0, -30,
+            -30, 5, 15, 20, 20, 15, 5, -30,
+            -30, 0, 10, 15, 15, 10, 0, -30,
+            -40, -20, 0, 0, 0, 0, -20, -40,
+            -50, -40, -30, -30, -30, -30, -40, -50
+        };
+
+        static int[] position_blackPawn = new int[64]
+        {
+            0, 0, 0, 0, 0, 0, 0, 0,
+            5, 10, 10, -20, -20, 10, 10, 5,
+            5, -5, -10, 0, 0, -10, -5, 5,
+            0, 0, 0, 20, 20, 0, 0, 0,
+            5, 5, 10, 25, 25, 10, 5, 5,
+            15, 15, 20, 30, 30, 20, 15, 15,
+            50, 50, 50, 50, 50, 50, 50, 50,
+            0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+
+
 
         const int posInfinity = int.MaxValue;
         const int negInfinity = int.MinValue;
@@ -441,10 +592,70 @@ namespace ChessGame
         public static int Evaluation()
         {
 
-            int evaluation = MaterialCountWhite() - MaterialCountBlack();
+            int evaluation = MaterialCountWhite() + PositioningWhite() - MaterialCountBlack() - PositioningBlack();
 
             return evaluation;
         }
+
+
+        static int PositioningWhite()
+        {
+            Position position = Board.position;
+            int eval = 0; 
+
+            foreach (int squareIndex in position.whiteQueen)
+            {
+                eval += position_whiteQueen[squareIndex];
+            }
+            foreach (int squareIndex in position.whiteRook)
+            {
+                eval += position_whiteRook[squareIndex];
+            }
+            foreach (int squareIndex in position.whiteBishop)
+            {
+                eval += position_whiteBishop[squareIndex];
+            }
+            foreach (int squareIndex in position.whiteKnight)
+            {
+                eval += position_whiteKnight[squareIndex];
+            }
+            foreach (int squareIndex in position.whitePawn)
+            {
+                eval += position_whitePawn[squareIndex];
+            }
+
+            return eval;
+        }
+
+        static int PositioningBlack()
+        {
+            Position position = Board.position;
+            int eval = 0;
+
+            foreach (int squareIndex in position.blackQueen)
+            {
+                eval += position_blackQueen[squareIndex];
+            }
+            foreach (int squareIndex in position.whiteRook)
+            {
+                eval += position_blackRook[squareIndex];
+            }
+            foreach (int squareIndex in position.blackBishop)
+            {
+                eval += position_blackBishop[squareIndex];
+            }
+            foreach (int squareIndex in position.blackKnight)
+            {
+                eval += position_blackKnight[squareIndex];
+            }
+            foreach (int squareIndex in position.blackPawn)
+            {
+                eval += position_blackPawn[squareIndex];
+            }
+
+            return eval;
+        }
+
 
         //Count the material
         static int MaterialCountWhite()

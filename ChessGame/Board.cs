@@ -63,7 +63,7 @@ namespace ChessGame
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
         //private string FEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
-        private string FEN = "8/8/8/8/1B6/4k3/6pp/4K3 w - - 0 1";
+        private string FEN = "8/8/8/8/1B6/4k3/6p1/4K3 w - - 0 1";
         
 
         //For when the piece is selected
