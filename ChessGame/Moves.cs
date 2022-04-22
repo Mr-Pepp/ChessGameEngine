@@ -8,7 +8,6 @@ namespace ChessGame
     {
         public static List<int[]> moveHistory = new List<int[]>();
 
-
         static ulong file_A = 9259542123273814144L;
         static ulong file_B = 4629771061636907072L;
 

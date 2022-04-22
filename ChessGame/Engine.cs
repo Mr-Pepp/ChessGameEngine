@@ -18,15 +18,15 @@ namespace ChessGame
         //Positional value // Piece-square tables
         // White king positional
         static int[] position_whiteKing = new int[64]
-        { 
-            -30, -40, -40, -40, -40, -40, -40, -30,
-            -30, -40, -40, -40, -40, -40, -40, -30,
-            -30, -40, -40, -40, -40, -40, -40, -30,
-            -30, -40, -40, -40, -40, -40, -40, -30,
-            -30, -30, -30, -30, -30, -30, -30, -30,
-            -10, -20, -20, -20, -20, -20, -20, -10,
+        {
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25,
             15, 15, 0, 0, 0, 0, 15, 15,
-            20, 30, 10, -10, 0, 10, 30, 20
+           15, 25, 10, -10, 0, 10, 25, 15
         };
 
         static int[] position_whiteQueen = new int[64]
@@ -92,14 +92,14 @@ namespace ChessGame
         // Reverse white piece square tables (in Y-axis) for black evaluation
         static int[] position_blackKing = new int[]
         {
-            20, 30, 10, -10, 0, 10, 30, 20,
+            15, 25, 10, -10, 0, 10, 25, 15,
             15, 15, 0, 0, 0, 0, 15, 15,
-            -10, -20, -20, -20, -20, -20, -20, -10,
-            -30, -30, -30, -30, -30, -30, -30, -30,
-            -30, -40, -40, -40, -40, -40, -40, -30,
-            -30, -40, -40, -40, -40, -40, -40, -30,
-            -30, -40, -40, -40, -40, -40, -40, -30,
-            -30, -40, -40, -40, -40, -40, -40, -30
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25,
+            -25, -20, -20, -20, -20, -20, -20, -25           
         };
 
         static int[] position_blackQueen = new int[64]
@@ -166,14 +166,14 @@ namespace ChessGame
         // square-table for king
         static int[] endGame_kingPosition = new int[64]
         {
-            3, 3, 3, 3, 3, 3, 3, 3,
-            3, 2, 2, 2, 2, 2, 2, 3,
-            3, 2, 1, 1, 1, 1, 2, 3,
-            3, 2, 1, 0, 0, 1, 2, 3,
-            3, 2, 1, 0, 0, 1, 2, 3,
-            3, 2, 1, 1, 1, 1, 2, 3,
-            3, 2, 2, 2, 2, 2, 2, 3,
-            3, 3, 3, 3, 3, 3, 3, 3
+            60, 60, 60, 60, 60, 60, 60, 60,
+            60, 40, 40, 40, 40, 40, 40, 60,
+            60, 40, 20, 20, 20, 20, 40, 60,
+            60, 40, 20, 0, 0, 20, 40, 60,
+            60, 40, 20, 0, 0, 20, 40, 60,
+            60, 40, 20, 20, 20, 20, 40, 60,
+            60, 40, 40, 40, 40, 40, 40, 60,
+            60, 60, 60, 60, 60, 60, 60, 60
         };
 
 
@@ -610,8 +610,8 @@ namespace ChessGame
 
         public static int Evaluation()
         {
-
-            int evaluation = MaterialCountWhite() + PositioningWhite() - MaterialCountBlack() - PositioningBlack();
+            
+            int evaluation = MaterialCountWhite() + PositioningWhite() - MaterialCountBlack() - PositioningBlack() + EndGameKingCentre();
 
             return evaluation;
         }
@@ -646,6 +646,29 @@ namespace ChessGame
             }
 
             return eval;
+        }
+
+        static int EndGameKingCentre()
+        {
+            Position position = Board.position;
+
+            // The more centre the king is the better 
+            // The weight of the evaluation on centralisation of the king will increase with fewer enemy pieces on board
+
+            if (position.whiteTurn) // White to play
+            {
+                // Check enemy pieces (white)
+                int whiteWeight = position.bQCount * 3 + position.bRCount * 2 + position.bBCount * 2 + position.bNCount * 2 + position.bPCount;
+
+                return -endGame_kingPosition[position.whiteKing[0]] / (whiteWeight + 1); // Add one
+            }
+            else // Black to play
+            {
+                // Check enemy pieces (black)
+                int blackWeight = position.wQCount * 3 + position.wRCount * 2 + position.wBCount * 2 + position.wNCount * 2 + position.wPCount;
+
+                return endGame_kingPosition[position.blackKing[0]] / (blackWeight + 1);
+            }
         }
 
         static int PositioningBlack()
