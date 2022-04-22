@@ -63,7 +63,7 @@ namespace ChessGame
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
         //private string FEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
-        private string FEN = "6k1/8/3QR3/8/8/8/4K3/8 w - - 0 1";
+        private string FEN = "8/8/3K4/8/8/8/8/4kr2 w - - 0 1";
         
 
         //For when the piece is selected
@@ -229,13 +229,13 @@ namespace ChessGame
                     {
                         // Negate side to switch the evaluation score
                         // Set alpha as lowest, set beta as highest
-                        engineMove = Engine.NegaMax(3, -9999, 9999, -1);
+                        engineMove = Engine.NegaMax(5, -9999, 9999, -1);
                     }
                     else // Black to play
                     {
                         // Negate side to switch the evaluation score
                         // Set alpha as lowest, set beta as highest
-                        engineMove = Engine.NegaMax(3, -9999, 9999, 1);
+                        engineMove = Engine.NegaMax(5, -9999, 9999, 1);
                     }
                     
 

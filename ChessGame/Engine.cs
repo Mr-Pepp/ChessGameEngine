@@ -55,26 +55,26 @@ namespace ChessGame
 
         static int[] position_whiteBishop = new int[64]
         {
-            -20, -10, -10, -10, -10, -10, -10, -20,
+            -15, -5, -5, -5, -5, -5, -5, -15,
             -10, 0, 0, 0, 0, 0, 0, -10,
             -10, 0, 5, 10, 10, 5, 0, -10,
             -10, 5, 5, 10, 10, 5, 5, -10,
             -10, 0, 10, 10, 10, 10, 0, -10,
             -10, 10, 10, 10, 10, 10, 10, -10,
             -10, 5, 0, 0, 0, 0, 5, -10,
-            -20, -10, -10, -10, -10, -10, -10, -20
+            -15, -5, -5, -5, -5, -5, -5, -15
         };
 
         static int[] position_whiteKnight = new int[64]
         {
-            -30, -20, -15, -15, -15, -15, -20, -30,
-            -30, -10, 0, 0, 0, 0, -10, -30,
+            -20, -7, -7, -7, -7, -7, -7, -20,
+            -20, -10, 5, 0, 0, 0, -10, -20,
+            -20, 0, 8, 12, 12, 8, 0, -20,
+            -20, 5, 10, 12, 12, 10, 5, -20,
             -20, 0, 10, 12, 12, 10, 0, -20,
-            -20, 5, 12, 15, 15, 12, 5, -20,
-            -20, 0, 12, 15, 15, 12, 0, -20,
-            -20, 5, 10, 15, 15, 10, 5, -20,
-            -30, -20, 0, 5, 5, 0, -20, -30,
-            -30, -20, -15, -15, -15, -15, -20, -30
+            -20, 5, 6, 15, 15, 6, 5, -20,
+            -20, -20, 0, 5, 5, 0, -20, -20,
+            -20, -7, -7, -7, -7, -7, -7, -20,
         };
 
         static int[] position_whitePawn = new int[64]
@@ -82,11 +82,11 @@ namespace ChessGame
             0, 0, 0, 0, 0, 0, 0, 0,
             45, 45, 45, 45, 45, 45, 45, 45,
             15, 15, 20, 22, 22, 20, 15, 15,
-            5, 5, 12, 18, 18, 12, 5, 5,
-            0, 0, 0, 15, 15, 0, 0, 0,
-            5, -5, 5, 0, 0, 5, -5, 5,
-            5, 10, 5, -15, -15, 5, 10, 5,
-            0, 0, 0, 0, 0, 0, 0, 0           
+            5, 5, 12, 15, 15, 12, 5, 5,
+            0, 0, 0, 12, 14, 0, 0, 0,
+            5, -5, 5, 3, 3, 5, -5, 5,
+            5, 10, 5, -5, -5, 5, 10, 5,
+            0, 0, 0, 0, 0, 0, 0, 0
         };
 
         // Reverse white piece square tables (in Y-axis) for black evaluation
@@ -128,35 +128,35 @@ namespace ChessGame
 
         static int[] position_blackBishop = new int[64]
         {
-            -20, -10, -10, -10, -10, -10, -10, -20,
+            -15, -5, -5, -5, -5, -5, -5, -15,
             -10, 5, 0, 0, 0, 0, 5, -10,
             -10, 10, 10, 10, 10, 10, 10, -10,
             -10, 0, 10, 10, 10, 10, 0, -10,
             -10, 5, 5, 10, 10, 5, 5, -10,
             -10, 0, 5, 10, 10, 5, 0, -10,
             -10, 0, 0, 0, 0, 0, 0, -10,
-            -20, -10, -10, -10, -10, -10, -10, -20
+            -15, -5, -5, -5, -5, -5, -5, -15,
         };
 
         static int[] position_blackKnight = new int[64]
         {
-            -30, -20, -15, -15, -15, -15, -20, -30,
-            -30, -20, 0, 5, 5, 0, -20, -30,
-            -20, 5, 10, 15, 15, 10, 5, -20,
-            -20, 0, 12, 15, 15, 12, 0, -20,
-            -20, 5, 12, 15, 15, 12, 5, -20,
+            -20, -7, -7, -7, -7, -7, -7, -20,
+            -20, -20, 0, 5, 5, 0, -20, -20,
+            -20, 5, 6, 15, 15, 6, 5, -20,
             -20, 0, 10, 12, 12, 10, 0, -20,
-            -30, -10, 0, 0, 0, 0, -10, -30,
-            -30, -20, -15, -15, -15, -15, -20, -30
+            -20, 5, 10, 12, 12, 10, 5, -20,
+            -20, 0, 8, 12, 12, 8, 0, -20,
+            -20, -10, 5, 0, 0, 0, -10, -20,
+            -20, -7, -7, -7, -7, -7, -7, -20,
         };
 
         static int[] position_blackPawn = new int[64]
         {
             0, 0, 0, 0, 0, 0, 0, 0,
-            5, 10, 5, -15, -15, 5, 10, 5,
-            5, -5, 5, 0, 0, 5, -5, 5,
-            0, 0, 0, 15, 15, 0, 0, 0,
-            5, 5, 12, 18, 18, 12, 5, 5,
+            5, 10, 5, -5, -5, 5, 10, 5,
+            5, -5, 5, 3, 3, 5, -5, 5,
+            0, 0, 0, 12, 14, 0, 0, 0,
+            5, 5, 12, 15, 15, 12, 5, 5,
             15, 15, 20, 22, 22, 20, 15, 15,
             45, 45, 45, 45, 45, 45, 45, 45,
             0, 0, 0, 0, 0, 0, 0, 0
@@ -610,19 +610,27 @@ namespace ChessGame
 
         public static int Evaluation()
         {
-            
-            int evaluation = MaterialCountWhite() + PositioningWhite() - MaterialCountBlack() - PositioningBlack() + EndGameKingCentre();
+            Position position = Board.position;
+
+            // Check enemy pieces (white)
+            int whiteWeight = position.bQCount * 3 + position.bRCount * 2 + position.bBCount * 2 + position.bNCount * 2 + position.bPCount + 1;  // Add one to avoid diving by 0
+
+            // Check enemy pieces (black)
+            int blackWeight = position.wQCount * 3 + position.wRCount * 2 + position.wBCount * 2 + position.wNCount * 2 + position.wPCount + 1;
+
+            int evaluation = MaterialCountWhite() + PositioningWhite(whiteWeight) - MaterialCountBlack() - PositioningBlack(blackWeight) + EndGameKingCentre(whiteWeight, blackWeight);
 
             return evaluation;
         }
 
 
-        static int PositioningWhite()
+        static int PositioningWhite(int whiteWeight)
         {
             Position position = Board.position;
             int eval = 0;
 
-            eval += position_whiteKing[position.blackKing[0]];
+            // Make less significant with less pieces on board (endgame)
+            eval += position_whiteKing[position.whiteKing[0]] / whiteWeight;
 
             foreach (int squareIndex in position.whiteQueen)
             {
@@ -648,7 +656,7 @@ namespace ChessGame
             return eval;
         }
 
-        static int EndGameKingCentre()
+        static int EndGameKingCentre(int whiteWeight, int blackWeight)
         {
             Position position = Board.position;
 
@@ -658,25 +666,24 @@ namespace ChessGame
             if (position.whiteTurn) // White to play
             {
                 // Check enemy pieces (white)
-                int whiteWeight = position.bQCount * 3 + position.bRCount * 2 + position.bBCount * 2 + position.bNCount * 2 + position.bPCount;
 
-                return -endGame_kingPosition[position.whiteKing[0]] / (whiteWeight + 1); // Add one
+                return -endGame_kingPosition[position.whiteKing[0]] / (whiteWeight); 
             }
             else // Black to play
             {
                 // Check enemy pieces (black)
-                int blackWeight = position.wQCount * 3 + position.wRCount * 2 + position.wBCount * 2 + position.wNCount * 2 + position.wPCount;
 
-                return endGame_kingPosition[position.blackKing[0]] / (blackWeight + 1);
+                return endGame_kingPosition[position.blackKing[0]] / (blackWeight);
             }
         }
 
-        static int PositioningBlack()
+        static int PositioningBlack(int blackWeight)
         {
             Position position = Board.position;
             int eval = 0;
 
-            eval += position_blackKing[position.blackKing[0]];
+            // Make less significant with less pieces (endgame)
+            eval += position_blackKing[position.blackKing[0]] / blackWeight;
             
             foreach (int squareIndex in position.blackQueen)
             {
