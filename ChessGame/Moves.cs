@@ -48,10 +48,10 @@ namespace ChessGame
         public static ulong rookCorners = ksRookCorners | qsRookCorners;
         // In between Rook + King (Does not include king and rook)
         //White
-        static ulong qsKingRook_white = 112L;
+        static ulong qsKingRook_white = 48L;
         static ulong ksKingRook_white = 6L;
         //Black
-        static ulong qsKingRook_black = 8070450532247928832L;
+        static ulong qsKingRook_black = 3458764513820540928L;
         static ulong ksKingRook_black = 432345564227567616L;
         //End up bitboard
         //White
