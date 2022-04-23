@@ -17,6 +17,9 @@ namespace ChessGame
         //Promotion Screen
         public static PromotionScreen promotionScreen;
 
+        //Side options
+        private SideOptions sideOptions;
+
         //For undoing moves
         public static Stack<MoveInfo> moveHistory = new Stack<MoveInfo>();
 
@@ -93,7 +96,6 @@ namespace ChessGame
                 for (int ix = 1; ix <= 8; ix++)
                 {
 
-
                     if (((ix + iy - 2) % 2) == 0) // If even square then change colour
                     {
                         colour = _colorDic["Light Square"];
@@ -125,8 +127,11 @@ namespace ChessGame
                 position = _initPos,
             };
 
-            endGameScreen.OnLoad();
+            sideOptions = new SideOptions(_squareSize, _initPos);
 
+            // Class on load
+            endGameScreen.OnLoad();
+            sideOptions.OnLoad();
 
             //run load FEN position
             LoadFEN(FEN);
@@ -146,25 +151,11 @@ namespace ChessGame
                 //'R' is pressed
                 if (Keyboard.GetState().IsKeyDown(Keys.R))
                 {
-                    //Format all
-                    position.white_enPassantMask = 0;
-                    position.black_enPassantMask = 0;
-                    position.whiteCastles = 0b11;
-                    position.blackCastles = 0b11;
-
-                    //load starting pos
-                    LoadFEN(defaultFEN);
-
-                    //Set to player move
-                    GameState.playerMove = true;
-
-                    pieceSelected = false;
-                    position.whiteTurn = true;
+                    RestartGame();
                 }
 
                 if (Keyboard.GetState().IsKeyDown(Keys.T) & GameState.playerMove == true)
                 {
-                    //System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
                     // Undo move
 
                     if (moveHistory.Count != 0) // Greater than 0
@@ -174,42 +165,24 @@ namespace ChessGame
 
                 }
 
-                // Engine moving
+                // Force Engine moving
                 if (Keyboard.GetState().IsKeyDown(Keys.E) & GameState.playerMove == true)
                 {
-                    //System.Diagnostics.Debug.WriteLine(Moves.GenerateAllMoves().Count);
-                    // Undo move
-
-                    //if (moveHistory.Count != 0) // Greater than 0
-                    //{
-                    //  UndoMove(moveHistory.Pop());
-                    //}
-
                     System.Threading.Thread.Sleep(500);
                     GameState.playerMove = false;
-
-                }
-
-                //'D' is pressed -- for debugging purposes
-                if (Keyboard.GetState().IsKeyDown(Keys.D))
-                {
-
-                    //Clear board from dots and target squares
-                    for (int i = 0; i < 64; i++)
-                    {
-                        squares[i].targetSquare = false;
-                        squares[i].dot = false;
-                    }
-
-                    foreach (int e in Moves.DebugSquares())
-                    {
-                        squares[e].targetSquare = true;
-                    }
                 }
 
                 if (GameState.playerMove) // Player move
                 {
+
                     PieceSelection();
+
+                    mousePressed = Mouse.GetState().LeftButton == ButtonState.Pressed;
+                    
+                    if (!pieceSelected && mousePressed)
+                    {
+                        SelectSideOptions();
+                    }
                 }
 
                 else // Computer move
@@ -229,13 +202,13 @@ namespace ChessGame
                     {
                         // Negate side to switch the evaluation score
                         // Set alpha as lowest, set beta as highest
-                        engineMove = Engine.NegaMax(5, -9999, 9999, -1);
+                        engineMove = Engine.NegaMax(3, -9999, 9999, -1);
                     }
                     else // Black to play
                     {
                         // Negate side to switch the evaluation score
                         // Set alpha as lowest, set beta as highest
-                        engineMove = Engine.NegaMax(5, -9999, 9999, 1);
+                        engineMove = Engine.NegaMax(3, -9999, 9999, 1);
                     }
                     
 
@@ -299,16 +272,9 @@ namespace ChessGame
                 {
                     if (endGameScreen.restartRect.Contains(Game1.mousePoint)) // Restart game
                     {
-                        GameState.state = 0; // Playing the game
-                        position.whiteTurn = true;
-
-                        // Format game values 
-                        position.white_enPassantMask = 0;
-                        position.black_enPassantMask = 0;
-                        position.whiteCastles = 0b11;
-                        position.blackCastles = 0b11;
-
-                        LoadFEN(defaultFEN);
+                        RestartGame();
+                        // Set gamestate back to playing
+                        GameState.state = 0;
                     }
                     else if (endGameScreen.exitRect.Contains(Game1.mousePoint))
                     {
@@ -329,9 +295,10 @@ namespace ChessGame
         {
             outsideBoard.Draw(_spriteBatch);
 
+            sideOptions.Draw(_spriteBatch);
+
             for (int i = 0; i <= 63; i++)
             {
-                //System.Diagnostics.Debug.WriteLine(squares[i].position.X + ", " + squares[i].position.Y);
                 squares[i].Draw(_spriteBatch);
             }
 
@@ -360,6 +327,45 @@ namespace ChessGame
             return ((y - 1) * 8 + x - 1);
         }
 
+
+        // To select the options on the side
+        private void SelectSideOptions ()
+        {
+            // Check if mouse is selecting one of the rectangles
+
+            // Selected white side
+            if (sideOptions.whiteSideRect.Contains(Game1.mousePoint) && !position.whiteTurn)
+            {
+                // Make engine move (will automatically switch sides)
+                GameState.playerMove = false;
+            }
+            // Selected black side
+            else if (sideOptions.blackSideRect.Contains(Game1.mousePoint) && position.whiteTurn)
+            {
+                // Make engine move (will automatically switch sides)
+                GameState.playerMove = false;
+            }
+            // Selected undo move
+            else if (sideOptions.backRect.Contains(Game1.mousePoint))
+            {
+                // Undo move
+                if (moveHistory.Count > 0) // Stack is not empty
+                {
+                    UndoMove(moveHistory.Pop());
+                }
+
+                // Sleep to not move quick
+                System.Threading.Thread.Sleep(250);
+            }
+            // Selected restart game
+            else if (sideOptions.restartRect.Contains(Game1.mousePoint))
+            {
+                // Restart game to default
+                RestartGame();
+            }
+
+        }
+
         //Allows the piece to be selected
         private void PieceSelection()
         {
@@ -369,6 +375,7 @@ namespace ChessGame
             //if mouse interacts with the piece rectangle
             if (!pieceSelected && mousePressed)
             {
+
                 for (int iy = 1; iy <= 8; iy++)
                 {
                     for (int ix = 1; ix <= 8; ix++)
@@ -392,7 +399,7 @@ namespace ChessGame
                             //Then export all the (to) moves into another list based on the (from) matching the current square
 
                             //Fetch all the moves from the current square
-                            fromMoves = new List<int>(); 
+                            fromMoves = new List<int>();
 
 
                             //Go through the generated moves and select the appropriate move
@@ -423,10 +430,12 @@ namespace ChessGame
                         }
                     }
                 }
+
+
+                goto loopEnd;
+
+
             }
-
-            goto loopEnd;
-
 
         //Used since we are breaking from a nested loop
         loopEnd:
@@ -1291,7 +1300,25 @@ namespace ChessGame
             
         }
 
+        // Used for restarting the game
+        // Used for restarting the game
+        private void RestartGame()
+        {
+            //Format all
+            position.white_enPassantMask = 0;
+            position.black_enPassantMask = 0;
+            position.whiteCastles = 0b11;
+            position.blackCastles = 0b11;
 
+            //load starting pos
+            LoadFEN(defaultFEN);
+
+            //Set to player move
+            GameState.playerMove = true;
+
+            pieceSelected = false;
+            position.whiteTurn = true;
+        }
 
         // Making a move on board **
         public static void MakeMoveOnBoard(MoveInfo move)
@@ -1321,23 +1348,8 @@ namespace ChessGame
             ulong toSquareBitboard = move.toSquareBitboard;
             ulong fromSquareBitboard = move.fromSquareBitboard;
 
-            int piece = move.piece; // The piece that is moving
-
-            /*
-            // Minimax debugging
-            System.Diagnostics.Debug.WriteLine(position.whiteTurn);
-            if (position.whiteTurn)
-            {
-                moveAmount = 0;
-            }
-            else
-            {
-                moveAmount++;
-                System.Diagnostics.Debug.WriteLine("From Square: " + move.fromSquare + ", To Square: " + move.toSquare);
-            }
-
-            System.Diagnostics.Debug.WriteLine("Moves Calculated: " + moveAmount);
-            // End of Minimax Debugging*/
+            // Set the piece that is moving
+            int piece = move.piece; 
 
             //Set global for promotion
             _toSquareBitboard = toSquareBitboard;
@@ -2111,6 +2123,8 @@ namespace ChessGame
             //Generate legal moves once a new position is established
             moves = Moves.GenerateGameMoves(position);
 
+            // Format the move history
+            moveHistory = new Stack<MoveInfo>();
         }
 
         public static ulong BinaryStringToBitboard(int index)

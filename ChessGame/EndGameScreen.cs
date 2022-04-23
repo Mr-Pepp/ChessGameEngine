@@ -52,8 +52,6 @@ namespace ChessGame
             _lineColour = lineColour;
             _pxSize = pxSize;
 
-            //Set initial values
-            //OnLoad();
         }
 
         public void OnLoad() // Runs on load

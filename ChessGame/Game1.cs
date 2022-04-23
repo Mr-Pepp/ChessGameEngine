@@ -58,7 +58,7 @@ namespace ChessGame
         {
             // TODO: Add your initialization logic here
 
-            _graphics.PreferredBackBufferWidth = 900;
+            _graphics.PreferredBackBufferWidth = 990;
             _graphics.PreferredBackBufferHeight = 900;
             _graphics.ApplyChanges();
 
@@ -92,9 +92,17 @@ namespace ChessGame
             //Misc textures
             Square.dotTexture = Content.Load<Texture2D>(otherDir + "Dot");
 
-            //EndGameScreen Textures
+            //Set EndGameScreen and SideOptions Textures
             EndGameScreen.exitText = Content.Load<Texture2D>("EndGame Screen/exit");
             EndGameScreen.restartText = Content.Load<Texture2D>("EndGame Screen/restart");
+            
+            SideOptions.backBtnTexture = Content.Load<Texture2D>("Other/undoBtn");
+            SideOptions.restartBtnTexture = Content.Load<Texture2D>("Other/restartBtn");
+            // Colour buttons
+            SideOptions.whiteBtnTexture = Content.Load<Texture2D>("Other/whiteBtn");
+            SideOptions.blackBtnTexture = Content.Load<Texture2D>("Other/blackBtn");
+
+
 
             //update Piece dictionary. No idea how to update with the whole dictionary in Piece
             Piece.pieceTextureDic =
