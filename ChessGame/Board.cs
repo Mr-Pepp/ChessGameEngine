@@ -66,7 +66,7 @@ namespace ChessGame
         private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
         //private string FEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
-        private string FEN = "8/8/3K4/8/8/8/8/4kr2 w - - 0 1";
+        private string customFEN = "8/8/3K4/8/8/8/8/4kr2 w - - 0 1";
         
 
         //For when the piece is selected
@@ -134,7 +134,7 @@ namespace ChessGame
             sideOptions.OnLoad();
 
             //run load FEN position
-            LoadFEN(FEN);
+            LoadFEN(defaultFEN);
 
         }
 
@@ -148,13 +148,13 @@ namespace ChessGame
 
             if (GameState.state == 0) // If not check or stalemate
             {
-                //'R' is pressed
+                // Restart game for 'R'
                 if (Keyboard.GetState().IsKeyDown(Keys.R))
                 {
                     RestartGame();
                 }
 
-                if (Keyboard.GetState().IsKeyDown(Keys.T) & GameState.playerMove == true)
+                else if (Keyboard.GetState().IsKeyDown(Keys.T))
                 {
                     // Undo move
 
@@ -165,11 +165,19 @@ namespace ChessGame
 
                 }
 
-                // Force Engine moving
-                if (Keyboard.GetState().IsKeyDown(Keys.E) & GameState.playerMove == true)
+                // Force Engine moving for 'E'
+                else if (Keyboard.GetState().IsKeyDown(Keys.E) && GameState.playerMove == true)
                 {
                     System.Threading.Thread.Sleep(500);
                     GameState.playerMove = false;
+                }
+
+                // Load custom position (Hardcoded)
+                else if (Keyboard.GetState().IsKeyDown(Keys.L))
+                {
+                    // Restart game values
+                    RestartGame();
+                    LoadFEN(customFEN);
                 }
 
                 if (GameState.playerMove) // Player move
@@ -187,8 +195,6 @@ namespace ChessGame
 
                 else // Computer move
                 {
-                    System.Diagnostics.Debug.WriteLine(position.whiteTurn);
-
                     GameState.engineCalculating = true;
 
                     System.Diagnostics.Debug.WriteLine("Starting Calculating");
