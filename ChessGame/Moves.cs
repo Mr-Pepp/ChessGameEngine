@@ -47,10 +47,14 @@ namespace ChessGame
         public static ulong rookCorners = ksRookCorners | qsRookCorners;
         // In between Rook + King (Does not include king and rook)
         //White
-        static ulong qsKingRook_white = 48L;
+        static ulong qsKingRook_white = 112L;
+        // Attacking for QS castles as can castle if the knight square is under attacked
+        static ulong qsKingRookAttacking_white = 48L;
         static ulong ksKingRook_white = 6L;
         //Black
-        static ulong qsKingRook_black = 3458764513820540928L;
+        static ulong qsKingRook_black = 8070450532247928832L;
+        // Attacking for QS castles as can castle if the knight square is under attacked
+        static ulong qsKingRookAttacking_black = 3458764513820540928L;
         static ulong ksKingRook_black = 432345564227567616L;
         //End up bitboard
         //White
@@ -613,7 +617,7 @@ namespace ChessGame
                             if (whiteCastles >> 1 == 1) // Queen side castles 0b10
                             {
                                 //Nothing blocking or attacking squares
-                                if (((friendlyPieces | enemyPieces | attackedSquares) & qsKingRook_white) == 0)
+                                if (((friendlyPieces | enemyPieces | (attackedSquares & qsKingRookAttacking_white)) & qsKingRook_white) == 0)
                                 {
                                     //Can castle QS
                                     legalMoves = legalMoves | qsCastleKing_white;
@@ -639,14 +643,13 @@ namespace ChessGame
                             if (blackCastles >> 1 == 1) // Queen side castles 0b10
                             {
                                 //Nothing blocking or attacking squares
-                                if (((friendlyPieces | enemyPieces | attackedSquares) & qsKingRook_black) == 0)
+                                if (((friendlyPieces | enemyPieces | (attackedSquares & qsKingRookAttacking_black)) & qsKingRook_black) == 0)
                                 {
                                     //Can castle QS
                                     legalMoves = legalMoves | qsCastleKing_black;
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -1950,48 +1953,5 @@ namespace ChessGame
             return rookPins | bishopPins | queenPins;
 
         }
-
-
-
-        /*
-        int[] GetValidMoves()
-        {
-            int[] moves;
-            if (whiteTurn) // White to move
-            {
-                //First check whether youre in check
-                // [Knights, Bishops, Rooks, Queens, Pawns]
-                ulong[] checks = KingHits(Board.wK, whiteTurn, whitePieces, blackPieces);
-                if (checks.Length > 0)
-                {
-                    //Generate legal king moves
-                    if (checks.Length == 1) // Only one check, king can move, piece can block, can be captured
-                    {
-                        //Capture Checker: use same method as for king to see if there are any pieces that can capture it
-                    }
-                }
-                else // Not in check, generate all moves
-                {
-                }
-            }
-            else // Black to Move
-            {
-            }
-            return moves;
-        }*/
-
-
-        //Generate the moves & store them
-        struct MoveGeneration
-        {
-            public List<int[]> moves;
-
-            void GenerateMoves()
-            {
-
-
-            }
-        }
-
     }
 }
