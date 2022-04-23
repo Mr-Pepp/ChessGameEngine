@@ -61,7 +61,7 @@ namespace ChessGame
             -10, 5, 5, 10, 10, 5, 5, -10,
             -10, 0, 10, 10, 10, 10, 0, -10,
             -10, 10, 10, 10, 10, 10, 10, -10,
-            -10, 5, 0, 0, 0, 0, 5, -10,
+            -10, 10, 0, 0, 0, 0, 10, -10,
             -15, -5, -5, -5, -5, -5, -5, -15
         };
 
@@ -84,8 +84,8 @@ namespace ChessGame
             15, 15, 20, 22, 22, 20, 15, 15,
             5, 5, 12, 15, 15, 12, 5, 5,
             0, 0, 0, 12, 14, 0, 0, 0,
-            5, -5, 5, 3, 3, 5, -5, 5,
-            5, 10, 5, -5, -5, 5, 10, 5,
+            5, 2, 5, 3, 3, 5, 2, 5,
+            5, 5, 5, -5, -5, 5, 5, 5,
             0, 0, 0, 0, 0, 0, 0, 0
         };
 
@@ -129,7 +129,7 @@ namespace ChessGame
         static int[] position_blackBishop = new int[64]
         {
             -15, -5, -5, -5, -5, -5, -5, -15,
-            -10, 5, 0, 0, 0, 0, 5, -10,
+            -10, 10, 0, 0, 0, 0, 10, -10,
             -10, 10, 10, 10, 10, 10, 10, -10,
             -10, 0, 10, 10, 10, 10, 0, -10,
             -10, 5, 5, 10, 10, 5, 5, -10,
@@ -153,8 +153,8 @@ namespace ChessGame
         static int[] position_blackPawn = new int[64]
         {
             0, 0, 0, 0, 0, 0, 0, 0,
-            5, 10, 5, -5, -5, 5, 10, 5,
-            5, -5, 5, 3, 3, 5, -5, 5,
+            5, 5, 5, -5, -5, 5, 5, 5,
+            5, 2, 5, 3, 3, 5, 2, 5,
             0, 0, 0, 12, 14, 0, 0, 0,
             5, 5, 12, 15, 15, 12, 5, 5,
             15, 15, 20, 22, 22, 20, 15, 15,
@@ -166,14 +166,14 @@ namespace ChessGame
         // square-table for king
         static int[] endGame_kingPosition = new int[64]
         {
-            60, 60, 60, 60, 60, 60, 60, 60,
-            60, 40, 40, 40, 40, 40, 40, 60,
-            60, 40, 20, 20, 20, 20, 40, 60,
-            60, 40, 20, 0, 0, 20, 40, 60,
-            60, 40, 20, 0, 0, 20, 40, 60,
-            60, 40, 20, 20, 20, 20, 40, 60,
-            60, 40, 40, 40, 40, 40, 40, 60,
-            60, 60, 60, 60, 60, 60, 60, 60
+            90, 75, 62, 55, 55, 62, 75, 90,
+            75, 45, 35, 30, 30, 35, 45, 75,
+            62, 35, 15, 12, 12, 15, 35, 62,
+            55, 30, 12, 0, 0, 12, 30, 55,
+            55, 30, 12, 0, 0, 12, 30, 55,
+            62, 35, 15, 12, 12, 15, 35, 62,
+            75, 45, 35, 30, 30, 35, 45, 75,
+            90, 75, 62, 55, 55, 62, 75, 90,
         };
 
 
@@ -630,7 +630,7 @@ namespace ChessGame
             int eval = 0;
 
             // Make less significant with less pieces on board (endgame)
-            eval += position_whiteKing[position.whiteKing[0]] / whiteWeight;
+            eval += (position_whiteKing[position.whiteKing[0]] / 10) * whiteWeight;
 
             foreach (int squareIndex in position.whiteQueen)
             {
@@ -663,18 +663,8 @@ namespace ChessGame
             // The more centre the king is the better 
             // The weight of the evaluation on centralisation of the king will increase with fewer enemy pieces on board
 
-            if (position.whiteTurn) // White to play
-            {
-                // Check enemy pieces (white)
+            return endGame_kingPosition[position.blackKing[0]] / (blackWeight) - endGame_kingPosition[position.whiteKing[0]] / (whiteWeight);
 
-                return -endGame_kingPosition[position.whiteKing[0]] / (whiteWeight); 
-            }
-            else // Black to play
-            {
-                // Check enemy pieces (black)
-
-                return endGame_kingPosition[position.blackKing[0]] / (blackWeight);
-            }
         }
 
         static int PositioningBlack(int blackWeight)
@@ -683,7 +673,7 @@ namespace ChessGame
             int eval = 0;
 
             // Make less significant with less pieces (endgame)
-            eval += position_blackKing[position.blackKing[0]] / blackWeight;
+            eval += (position_blackKing[position.blackKing[0]] / 10) * blackWeight;
             
             foreach (int squareIndex in position.blackQueen)
             {
