@@ -154,31 +154,13 @@ namespace ChessGame
 
         protected override void Draw(GameTime gameTime)
         {
-            //scale = 1f / (1080f / _graphics.GraphicsDevice.Viewport.Height);
 
-            //GraphicsDevice.SetRenderTarget(renderTarget);
             GraphicsDevice.Clear(colorDic["Background"]);
-
-
-            // TODO: Add your drawing code here
-
 
             //Draw the board
             _spriteBatch.Begin();
             board.Draw(_spriteBatch);
             _spriteBatch.End();
-
-            /* DEAL WITH LATER , CURRENTLY DOSE NOT SCALE RECTANGLES, LEARN MORE
-            GraphicsDevice.SetRenderTarget(null);
-            GraphicsDevice.Clear(colorDic["Background"]);
-
-            
-            //render resolution
-            _spriteBatch.Begin();
-            _spriteBatch.Draw(renderTarget, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
-            _spriteBatch.End();
-            */
-
 
             base.Draw(gameTime);
         }
