@@ -528,7 +528,7 @@ namespace ChessGame
                 if ((moves[0] >> 15) == 0b01) // Checkmate
                 {
                     // Mark massive evluation
-                    return new maxMove(99999, new Board.MoveInfo());
+                    return new maxMove(negateSide * -99999, new Board.MoveInfo());
                 }
                 else if ((moves[0] >> 16) == 1) // Stalemate
                 {

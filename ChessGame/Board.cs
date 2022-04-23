@@ -229,13 +229,13 @@ namespace ChessGame
                     {
                         // Negate side to switch the evaluation score
                         // Set alpha as lowest, set beta as highest
-                        engineMove = Engine.NegaMax(3, -9999, 9999, -1);
+                        engineMove = Engine.NegaMax(5, -9999, 9999, -1);
                     }
                     else // Black to play
                     {
                         // Negate side to switch the evaluation score
                         // Set alpha as lowest, set beta as highest
-                        engineMove = Engine.NegaMax(3, -9999, 9999, 1);
+                        engineMove = Engine.NegaMax(5, -9999, 9999, 1);
                     }
                     
 
