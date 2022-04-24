@@ -31,9 +31,9 @@ namespace ChessGame
         //Use a 64 bit array (instead)
         //public static int[] piecesInfo = new int[64]; //Creates a 64 length array
 
-        Dictionary<string, Color> _colorDic;
+        readonly Dictionary<string, Color> _colorDic;
 
-        private int _squareSize;
+        readonly private int _squareSize;
         private Vector2 _initPos;
         private Color colour;
 
@@ -63,7 +63,7 @@ namespace ChessGame
         public static int _toSquare;
 
 
-        private string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
+        private const string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
         //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
         //private string FEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
         private string customFEN = "8/8/3K4/8/8/8/8/4kr2 w - - 0 1";
@@ -84,7 +84,7 @@ namespace ChessGame
         }
 
         //Loaded right away, ran once
-        public void LoadContent(SpriteBatch _spriteBatch, GraphicsDevice _graphicsDevice)
+        public void LoadContent(SpriteBatch _spriteBatch)
         {
             // create a white texture pixel
             blankTexture = new Texture2D(_spriteBatch.GraphicsDevice, 1, 1);
@@ -202,7 +202,7 @@ namespace ChessGame
                     
                     //System.Diagnostics.Debug.WriteLine(Engine.MiniMax(3, position.whiteTurn));
                     
-                    Engine.maxMove engineMove;
+                    Engine.MaxMove engineMove;
 
                     if (position.whiteTurn) // White to play
                     {
@@ -452,8 +452,7 @@ namespace ChessGame
             int flag = 0; // If "to" square is valid then the flag will be assigned
 
             //To check if the square that is being moves to is correct
-            bool validSquare = false;
-
+            bool validSquare;
 
             //holding the piece
             if (pieceSelected && mousePressed)
@@ -643,7 +642,7 @@ namespace ChessGame
                         position.wBCount++;
 
                         //Update the piece's bitboard
-                        position.wB = position.wB | toSquareBitboard;
+                        position.wB |= toSquareBitboard;
                         position.whiteBishop.Add(toSquare);
                     }
                     else // Black to move
@@ -653,7 +652,7 @@ namespace ChessGame
                         position.bBCount++;
 
                         //Update the piece's bitboard
-                        position.bB = position.bB | toSquareBitboard;
+                        position.bB |= toSquareBitboard;
                         position.blackBishop.Add(toSquare);
                     }
 
@@ -674,7 +673,7 @@ namespace ChessGame
                         position.wRCount++;
 
                         //Update the piece's bitboard
-                        position.wR = position.wR | toSquareBitboard;
+                        position.wR |= toSquareBitboard;
                         position.whiteRook.Add(toSquare);
                     }
                     else // Black to move
@@ -684,7 +683,7 @@ namespace ChessGame
                         position.bRCount++;
 
                         //Update the piece's bitboard
-                        position.bR = position.bR | toSquareBitboard;
+                        position.bR |= toSquareBitboard;
                         position.blackRook.Add(toSquare);
                     }
 
@@ -706,7 +705,7 @@ namespace ChessGame
                         position.wQCount++;
 
                         //Update the piece's bitboard
-                        position.wQ = position.wQ | toSquareBitboard;
+                        position.wQ |= toSquareBitboard;
                         position.whiteQueen.Add(toSquare);
                     }
                     else // Black to move
@@ -716,7 +715,7 @@ namespace ChessGame
                         position.bQCount++;
 
                         //Update the piece's bitboard
-                        position.bQ = position.bQ | toSquareBitboard;
+                        position.bQ |= toSquareBitboard;
                         position.blackQueen.Add(toSquare);
                     }
 
@@ -737,7 +736,7 @@ namespace ChessGame
                         position.wNCount++;
 
                         //Update the piece's bitboard
-                        position.wN = position.wN | toSquareBitboard;
+                        position.wN |= toSquareBitboard;
                         position.whiteKnight.Add(toSquare);
                     }
                     else // Black to move
@@ -747,7 +746,7 @@ namespace ChessGame
                         position.bNCount++;
 
                         //Update the piece's bitboard
-                        position.bN = position.bN | toSquareBitboard;
+                        position.bN |= toSquareBitboard;
                         position.blackKnight.Add(toSquare);
                     }
 
@@ -894,22 +893,22 @@ namespace ChessGame
                         switch (promotedPiece)
                         {
                             case Piece.Queen:
-                                position.bQ = position.bQ & ~toSquareBitboard;
+                                position.bQ &= ~toSquareBitboard;
                                 position.bQCount--;
                                 position.blackQueen.Remove(toSquare);
                                 break;
                             case Piece.Knight:
-                                position.bN = position.bN & ~toSquareBitboard;
+                                position.bN &= ~toSquareBitboard;
                                 position.bNCount--;
                                 position.blackKnight.Remove(toSquare);
                                 break;
                             case Piece.Rook:
-                                position.bR = position.bR & ~toSquareBitboard;
+                                position.bR &= ~toSquareBitboard;
                                 position.bRCount--;
                                 position.blackRook.Remove(toSquare);
                                 break;
                             case Piece.Bishop:
-                                position.bB = position.bB & ~toSquareBitboard;
+                                position.bB &= ~toSquareBitboard;
                                 position.bBCount--;
                                 position.blackBishop.Remove(toSquare);
                                 break;
@@ -924,22 +923,22 @@ namespace ChessGame
                         switch (promotedPiece)
                         {
                             case Piece.Queen:
-                                position.wQ = position.wQ & ~toSquareBitboard;
+                                position.wQ &= ~toSquareBitboard;
                                 position.wQCount--;
                                 position.whiteQueen.Remove(toSquare);
                                 break;
                             case Piece.Knight:
-                                position.wN = position.wN & ~toSquareBitboard;
+                                position.wN &= ~toSquareBitboard;
                                 position.wNCount--;
                                 position.whiteKnight.Remove(toSquare);
                                 break;
                             case Piece.Rook:
-                                position.wR = position.wR & ~toSquareBitboard;
+                                position.wR &= ~toSquareBitboard;
                                 position.wRCount--;
                                 position.whiteRook.Remove(toSquare);
                                 break;
                             case Piece.Bishop:
-                                position.wB = position.wB & ~toSquareBitboard;
+                                position.wB &= ~toSquareBitboard;
                                 position.wBCount--;
                                 position.whiteBishop.Remove(toSquare);
                                 break;
@@ -953,7 +952,7 @@ namespace ChessGame
                     {
                         position.bPCount++;
 
-                        position.bQ = position.bQ & ~toSquareBitboard;
+                        position.bQ &= ~toSquareBitboard;
                         position.bQCount--;
                         position.blackQueen.Remove(toSquare);
                     }
@@ -961,7 +960,7 @@ namespace ChessGame
                     {
                         position.wPCount++;
 
-                        position.wQ = position.wQ & ~toSquareBitboard;
+                        position.wQ &= ~toSquareBitboard;
                         position.wQCount--;
                         position.whiteQueen.Remove(toSquare);
                     }
@@ -980,8 +979,8 @@ namespace ChessGame
             {
                 //White Pieces
                 case Piece.White | Piece.King:
-                    position.wK = position.wK | fromSquareBitboard;
-                    position.wK = position.wK & ~toSquareBitboard;
+                    position.wK |= fromSquareBitboard;
+                    position.wK &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.whiteKing.Remove(toSquare);
@@ -989,8 +988,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.White | Piece.Queen):
-                    position.wQ = position.wQ | fromSquareBitboard;
-                    position.wQ = position.wQ & ~toSquareBitboard;
+                    position.wQ |= fromSquareBitboard;
+                    position.wQ &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.whiteQueen.Remove(toSquare);
@@ -998,8 +997,8 @@ namespace ChessGame
                     break;
 
                 case Piece.White | Piece.Rook:
-                    position.wR = position.wR | fromSquareBitboard;
-                    position.wR = position.wR & ~toSquareBitboard;
+                    position.wR |= fromSquareBitboard;
+                    position.wR &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.whiteRook.Remove(toSquare);
@@ -1007,8 +1006,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.White | Piece.Bishop):
-                    position.wB = position.wB | fromSquareBitboard;
-                    position.wB = position.wB & ~toSquareBitboard;
+                    position.wB |= fromSquareBitboard;
+                    position.wB &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.whiteBishop.Remove(toSquare);
@@ -1016,8 +1015,8 @@ namespace ChessGame
                     break;
 
                 case Piece.White | Piece.Knight:
-                    position.wN = position.wN | fromSquareBitboard;
-                    position.wN = position.wN & ~toSquareBitboard;
+                    position.wN |= fromSquareBitboard;
+                    position.wN &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.whiteKnight.Remove(toSquare);
@@ -1025,8 +1024,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.White | Piece.Pawn):
-                    position.wP = position.wP | fromSquareBitboard;
-                    position.wP = position.wP & ~toSquareBitboard;
+                    position.wP |= fromSquareBitboard;
+                    position.wP &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.whitePawn.Remove(toSquare);
@@ -1036,8 +1035,8 @@ namespace ChessGame
 
                 //Black Pieces
                 case Piece.Black | Piece.King:
-                    position.bK = position.bK | fromSquareBitboard;
-                    position.bK = position.bK & ~toSquareBitboard;
+                    position.bK |= fromSquareBitboard;
+                    position.bK &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.blackKing.Remove(toSquare);
@@ -1045,8 +1044,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.Black | Piece.Queen):
-                    position.bQ = position.bQ | fromSquareBitboard;
-                    position.bQ = position.bQ & ~toSquareBitboard;
+                    position.bQ |= fromSquareBitboard;
+                    position.bQ &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.blackQueen.Remove(toSquare);
@@ -1054,8 +1053,8 @@ namespace ChessGame
                     break;
 
                 case Piece.Black | Piece.Rook:
-                    position.bR = position.bR | fromSquareBitboard;
-                    position.bR = position.bR & ~toSquareBitboard;
+                    position.bR |= fromSquareBitboard;
+                    position.bR &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.blackRook.Remove(toSquare);
@@ -1063,8 +1062,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.Black | Piece.Bishop):
-                    position.bB = position.bB | fromSquareBitboard;
-                    position.bB = position.bB & ~toSquareBitboard;
+                    position.bB |= fromSquareBitboard;
+                    position.bB &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.blackBishop.Remove(toSquare);
@@ -1072,8 +1071,8 @@ namespace ChessGame
                     break;
 
                 case Piece.Black | Piece.Knight:
-                    position.bN = position.bN | fromSquareBitboard;
-                    position.bN = position.bN & ~toSquareBitboard;
+                    position.bN |= fromSquareBitboard;
+                    position.bN &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.blackKnight.Remove(toSquare);
@@ -1081,8 +1080,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.Black | Piece.Pawn):
-                    position.bP = position.bP | fromSquareBitboard;
-                    position.bP = position.bP & ~toSquareBitboard;
+                    position.bP |= fromSquareBitboard;
+                    position.bP &= ~toSquareBitboard;
 
                     //Replace in mailbox
                     position.blackPawn.Remove(toSquare);
@@ -1096,7 +1095,7 @@ namespace ChessGame
                 {
                     //White Pieces
                     case (Piece.White | Piece.Queen):
-                        position.wQ = position.wQ | toSquareBitboard;
+                        position.wQ |= toSquareBitboard;
                         position.wQCount++; // Add to piece count
 
                         // Add to mailbox
@@ -1104,7 +1103,7 @@ namespace ChessGame
                         break;
 
                     case Piece.White | Piece.Rook:
-                        position.wR = position.wR | toSquareBitboard;
+                        position.wR |= toSquareBitboard;
                         position.wRCount++;
 
                         // Add to mailbox
@@ -1112,7 +1111,7 @@ namespace ChessGame
                         break;
 
                     case (Piece.White | Piece.Bishop):
-                        position.wB = position.wB | toSquareBitboard;
+                        position.wB |= toSquareBitboard;
                         position.wBCount++;
 
                         // Add to mailbox
@@ -1120,7 +1119,7 @@ namespace ChessGame
                         break;
 
                     case Piece.White | Piece.Knight:
-                        position.wN = position.wN | toSquareBitboard;
+                        position.wN |= toSquareBitboard;
                         position.wNCount++;
 
                         // Add to mailbox
@@ -1128,7 +1127,7 @@ namespace ChessGame
                         break;
 
                     case (Piece.White | Piece.Pawn):
-                        position.wP = position.wP | toSquareBitboard;
+                        position.wP |= toSquareBitboard;
                         position.wPCount++;
 
                         // Add to mailbox
@@ -1137,7 +1136,7 @@ namespace ChessGame
 
                     //Black Pieces
                     case (Piece.Black | Piece.Queen):
-                        position.bQ = position.bQ | toSquareBitboard;
+                        position.bQ |= toSquareBitboard;
                         position.bQCount++;
 
                         // Add to mailbox
@@ -1145,7 +1144,7 @@ namespace ChessGame
                         break;
 
                     case Piece.Black | Piece.Rook:
-                        position.bR = position.bR | toSquareBitboard;
+                        position.bR |= toSquareBitboard;
                         position.bRCount++;
 
                         // Add to mailbox
@@ -1154,7 +1153,7 @@ namespace ChessGame
                         break;
 
                     case (Piece.Black | Piece.Bishop):
-                        position.bB = position.bB | toSquareBitboard;
+                        position.bB |= toSquareBitboard;
                         position.bBCount++;
 
                         // Add to mailbox
@@ -1162,7 +1161,7 @@ namespace ChessGame
                         break;
 
                     case Piece.Black | Piece.Knight:
-                        position.bN = position.bN | toSquareBitboard;
+                        position.bN |= toSquareBitboard;
                         position.bNCount++;
 
                         // Add to mailbox
@@ -1170,7 +1169,7 @@ namespace ChessGame
                         break;
 
                     case (Piece.Black | Piece.Pawn):
-                        position.bP = position.bP | toSquareBitboard;
+                        position.bP |= toSquareBitboard;
                         position.bPCount++;
 
                         // Add to mailbox
@@ -1197,7 +1196,7 @@ namespace ChessGame
                 if (position.whiteTurn) // Black just made the move
                 {
                     // Set bitboard
-                    position.wP = position.wP | move.white_enPassantMask << 8;
+                    position.wP |= move.white_enPassantMask << 8;
                     
 
                     position.wPCount++;
@@ -1210,7 +1209,7 @@ namespace ChessGame
                 else // White just made the move
                 {
                     // Set bitboard
-                    position.bP = position.bP | move.black_enPassantMask >> 8;
+                    position.bP |= move.black_enPassantMask >> 8;
 
                     position.bPCount++;
 
@@ -1361,7 +1360,7 @@ namespace ChessGame
             _toSquareBitboard = toSquareBitboard;
             _toSquare = toSquare;
 
-            PieceBitboardUpdate(toSquareBitboard, toSquare, fromSquareBitboard, piece, capturedPiece, fromSquare, flag);
+            PieceBitboardUpdate(toSquareBitboard, toSquare, fromSquareBitboard, piece, capturedPiece, fromSquare);
 
             //Update the square
             squares[toSquare].piece = piece;
@@ -1399,7 +1398,7 @@ namespace ChessGame
                 {
                     position.wPCount--;
                     // Remove pawn from bitboard
-                    position.wP = position.wP & ~toSquareBitboard;
+                    position.wP &= ~toSquareBitboard;
                     position.whitePawn.Remove(toSquare);
 
                 }
@@ -1407,7 +1406,7 @@ namespace ChessGame
                 {
                     position.bPCount--;
                     // Remove pawn from bitboard
-                    position.bP = position.bP & ~toSquareBitboard;
+                    position.bP &= ~toSquareBitboard;
                     position.blackPawn.Remove(toSquare);
                 }
 
@@ -1430,7 +1429,7 @@ namespace ChessGame
                         position.whiteQueen.Add(toSquare);
 
                         // Update bitboards
-                        position.wQ = position.wQ | toSquareBitboard;
+                        position.wQ |= toSquareBitboard;
                     }
                     else
                     {
@@ -1440,7 +1439,7 @@ namespace ChessGame
                         position.blackQueen.Add(toSquare);
 
                         // Update bitboards
-                        position.bQ = position.bQ | toSquareBitboard;
+                        position.bQ |= toSquareBitboard;
                     }
 
                     squares[toSquare].AssignPiece();
@@ -1545,7 +1544,7 @@ namespace ChessGame
                     squares[toSquare + 8].AssignPiece();
 
                     //Update bitboard
-                    position.bP = position.bP & ~(toSquareBitboard >> 8);
+                    position.bP &= ~(toSquareBitboard >> 8);
                     position.bPCount--; // takeaway from counter
                 }
                 else // Black turn
@@ -1556,7 +1555,7 @@ namespace ChessGame
                     squares[toSquare - 8].AssignPiece();
 
                     //Update bitboard
-                    position.wP = position.wP & ~(toSquareBitboard << 8);
+                    position.wP &= ~(toSquareBitboard << 8);
                     position.wPCount--; // takeaway from counter
                 }
 
@@ -1576,29 +1575,29 @@ namespace ChessGame
 
 
         static void PieceBitboardUpdate(ulong toSquareBitboard, int toSquare, ulong fromSquareBitboard, int pieceMoving,
-            int capturedPiece, int fromSquare, int flag)
+            int capturedPiece, int fromSquare)
         {
             //Castling (Captures of a rook)
             if (position.whiteTurn) // White to move
             {
                 if (toSquareBitboard == (position.bR & Moves.TRCorner)) // Kingside rook captures
                 {
-                    position.blackCastles = position.blackCastles & 0b10;
+                    position.blackCastles &= 0b10;
                 }
                 else if (toSquareBitboard == (position.bR & Moves.TLCorner)) // Queenside rook captures
                 {
-                    position.blackCastles = position.blackCastles & 0b01;
+                    position.blackCastles &= 0b01;
                 }
             }
             else // Black to move
             {
                 if (toSquareBitboard == (position.wR & Moves.BRCorner)) // Kingside rook captures
                 {
-                    position.whiteCastles = position.whiteCastles & 0b10;
+                    position.whiteCastles &= 0b10;
                 }
                 else if (toSquareBitboard == (position.wR & Moves.BLCorner)) // Queenside rook captures
                 {
-                    position.whiteCastles = position.whiteCastles & 0b01;
+                    position.whiteCastles &= 0b01;
                 }
             }
 
@@ -1609,62 +1608,62 @@ namespace ChessGame
             {
                 //White Pieces
                 case (Piece.White | Piece.Queen):
-                    position.wQ = position.wQ & ~toSquareBitboard;
+                    position.wQ &= ~toSquareBitboard;
                     position.wQCount--;
                     position.whiteQueen.Remove(toSquare);
                     break;
 
                 case Piece.White | Piece.Rook:
-                    position.wR = position.wR & ~toSquareBitboard;
+                    position.wR &= ~toSquareBitboard;
                     position.wRCount--;
                     position.whiteRook.Remove(toSquare);
                     break;
 
                 case (Piece.White | Piece.Bishop):
-                    position.wB = position.wB & ~toSquareBitboard;
+                    position.wB &= ~toSquareBitboard;
                     position.wBCount--;
                     position.whiteBishop.Remove(toSquare);
                     break;
 
                 case Piece.White | Piece.Knight:
-                    position.wN = position.wN & ~toSquareBitboard;
+                    position.wN &= ~toSquareBitboard;
                     position.wNCount--;
                     position.whiteKnight.Remove(toSquare);
                     break;
 
                 case (Piece.White | Piece.Pawn):
-                    position.wP = position.wP & ~toSquareBitboard;
+                    position.wP &= ~toSquareBitboard;
                     position.wPCount--;
                     position.whitePawn.Remove(toSquare);
                     break;
 
                 //Black Pieces
                 case (Piece.Black | Piece.Queen):
-                    position.bQ = position.bQ & ~toSquareBitboard;
+                    position.bQ &= ~toSquareBitboard;
                     position.bQCount--;
                     position.blackQueen.Remove(toSquare);
                     break;
 
                 case Piece.Black | Piece.Rook:
-                    position.bR = position.bR & ~toSquareBitboard;
+                    position.bR &= ~toSquareBitboard;
                     position.bRCount--;
                     position.blackRook.Remove(toSquare);
                     break;
 
                 case (Piece.Black | Piece.Bishop):
-                    position.bB = position.bB & ~toSquareBitboard;
+                    position.bB &= ~toSquareBitboard;
                     position.bBCount--;
                     position.blackBishop.Remove(toSquare);
                     break;
 
                 case Piece.Black | Piece.Knight:
-                    position.bN = position.bN & ~toSquareBitboard;
+                    position.bN &= ~toSquareBitboard;
                     position.bNCount--;
                     position.blackKnight.Remove(toSquare);
                     break;
 
                 case (Piece.Black | Piece.Pawn):
-                    position.bP = position.bP & ~toSquareBitboard;
+                    position.bP &= ~toSquareBitboard;
                     position.bPCount--;
                     position.blackPawn.Remove(toSquare);
                     break;
@@ -1675,8 +1674,8 @@ namespace ChessGame
             {
                 //White Pieces
                 case Piece.White | Piece.King:
-                    position.wK = position.wK | toSquareBitboard;
-                    position.wK = position.wK & ~fromSquareBitboard;
+                    position.wK |= toSquareBitboard;
+                    position.wK &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.whiteKing.Remove(fromSquare); 
@@ -1687,8 +1686,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.White | Piece.Queen):
-                    position.wQ = position.wQ | toSquareBitboard;
-                    position.wQ = position.wQ & ~fromSquareBitboard;
+                    position.wQ |= toSquareBitboard;
+                    position.wQ &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.whiteQueen.Remove(fromSquare);
@@ -1696,8 +1695,8 @@ namespace ChessGame
                     break;
 
                 case Piece.White | Piece.Rook:
-                    position.wR = position.wR | toSquareBitboard;
-                    position.wR = position.wR & ~fromSquareBitboard;
+                    position.wR |= toSquareBitboard;
+                    position.wR &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.whiteRook.Remove(fromSquare);
@@ -1707,17 +1706,17 @@ namespace ChessGame
 
                     if ((Moves.qsRookCorners & fromSquareBitboard) != 0)// Rook moved on queen side
                     {
-                        position.whiteCastles = position.whiteCastles & 0b01; // Can't castle queen side
+                        position.whiteCastles &= 0b01; // Can't castle queen side
                     }
                     else if ((Moves.ksRookCorners & fromSquareBitboard) != 0) // Rook moved on king side
                     {
-                        position.whiteCastles = position.whiteCastles & 0b10; // Can't castle king side
+                        position.whiteCastles &= 0b10; // Can't castle king side
                     }
                     break;
 
                 case (Piece.White | Piece.Bishop):
-                    position.wB = position.wB | toSquareBitboard;
-                    position.wB = position.wB & ~fromSquareBitboard;
+                    position.wB |= toSquareBitboard;
+                    position.wB &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.whiteBishop.Remove(fromSquare);
@@ -1725,8 +1724,8 @@ namespace ChessGame
                     break;
 
                 case Piece.White | Piece.Knight:
-                    position.wN = position.wN | toSquareBitboard;
-                    position.wN = position.wN & ~fromSquareBitboard;
+                    position.wN |= toSquareBitboard;
+                    position.wN &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.whiteKnight.Remove(fromSquare);
@@ -1734,8 +1733,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.White | Piece.Pawn):
-                    position.wP = position.wP | toSquareBitboard;
-                    position.wP = position.wP & ~fromSquareBitboard;
+                    position.wP |= toSquareBitboard;
+                    position.wP &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.whitePawn.Remove(fromSquare);
@@ -1744,8 +1743,8 @@ namespace ChessGame
 
                 //Black Pieces
                 case Piece.Black | Piece.King:
-                    position.bK = position.bK | toSquareBitboard;
-                    position.bK = position.bK & ~fromSquareBitboard;
+                    position.bK |= toSquareBitboard;
+                    position.bK &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.blackKing.Remove(fromSquare);
@@ -1757,8 +1756,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.Black | Piece.Queen):
-                    position.bQ = position.bQ | toSquareBitboard;
-                    position.bQ = position.bQ & ~fromSquareBitboard;
+                    position.bQ |= toSquareBitboard;
+                    position.bQ &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.blackQueen.Remove(fromSquare);
@@ -1767,8 +1766,8 @@ namespace ChessGame
 
                 case Piece.Black | Piece.Rook:
 
-                    position.bR = position.bR | toSquareBitboard;
-                    position.bR = position.bR & ~fromSquareBitboard;
+                    position.bR |= toSquareBitboard;
+                    position.bR &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.blackRook.Remove(fromSquare);
@@ -1778,17 +1777,17 @@ namespace ChessGame
 
                     if ((Moves.qsRookCorners & fromSquareBitboard) != 0)// Rook moved on queen side
                     {
-                        position.blackCastles = position.blackCastles & 0b01; // Can't castle queen side
+                        position.blackCastles &= 0b01; // Can't castle queen side
                     }
                     else if ((Moves.ksRookCorners & fromSquareBitboard) != 0) // Rook moved on king side
                     {
-                        position.blackCastles = position.blackCastles & 0b10; // Can't castle king side
+                        position.blackCastles &= 0b10; // Can't castle king side
                     }
                     break;
 
                 case (Piece.Black | Piece.Bishop):
-                    position.bB = position.bB | toSquareBitboard;
-                    position.bB = position.bB & ~fromSquareBitboard;
+                    position.bB |= toSquareBitboard;
+                    position.bB &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.blackBishop.Remove(fromSquare);
@@ -1796,8 +1795,8 @@ namespace ChessGame
                     break;
 
                 case Piece.Black | Piece.Knight:
-                    position.bN = position.bN | toSquareBitboard;
-                    position.bN = position.bN & ~fromSquareBitboard;
+                    position.bN |= toSquareBitboard;
+                    position.bN &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.blackKnight.Remove(fromSquare);
@@ -1805,8 +1804,8 @@ namespace ChessGame
                     break;
 
                 case (Piece.Black | Piece.Pawn):
-                    position.bP = position.bP | toSquareBitboard;
-                    position.bP = position.bP & ~fromSquareBitboard;
+                    position.bP |= toSquareBitboard;
+                    position.bP &= ~fromSquareBitboard;
 
                     // update mailbox
                     position.blackPawn.Remove(fromSquare);

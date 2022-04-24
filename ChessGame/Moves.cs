@@ -8,70 +8,70 @@ namespace ChessGame
     {
         public static List<int[]> moveHistory = new List<int[]>();
 
-        static ulong file_A = 9259542123273814144L;
-        static ulong file_B = 4629771061636907072L;
+        const ulong file_A = 9259542123273814144L;
+        const ulong file_B = 4629771061636907072L;
 
-        static ulong file_H = 72340172838076673L;
-        static ulong file_G = 144680345676153346L;
+        const ulong file_H = 72340172838076673L;
+        const ulong file_G = 144680345676153346L;
 
-        static ulong file_AB = file_A | file_B;
-        static ulong file_GH = file_G | file_H;
+        const ulong file_AB = file_A | file_B;
+        const ulong file_GH = file_G | file_H;
 
-        static ulong rank_1 = 255L;
-        static ulong rank_2 = 65280L;
+        const ulong rank_1 = 255L;
+        const ulong rank_2 = 65280L;
 
-        static ulong rank_8 = 18374686479671623680L;
-        static ulong rank_7 = 71776119061217280L;
+        const ulong rank_8 = 18374686479671623680L;
+        const ulong rank_7 = 71776119061217280L;
 
-        static ulong rank_4 = 4278190080L;
-        static ulong rank_5 = 1095216660480L;
+        const ulong rank_4 = 4278190080L;
+        const ulong rank_5 = 1095216660480L;
 
-        static ulong centre = 103481868288L;
+        const ulong centre = 103481868288L;
 
-        static ulong kingSide = 1085102592571150095L;
-        static ulong queenSide = 17361641481138401520L;
+        const ulong kingSide = 1085102592571150095L;
+        const ulong queenSide = 17361641481138401520L;
 
         //Board Corners
         // Top Left
-        public static ulong TLCorner = file_A & rank_8;
+        public const ulong TLCorner = file_A & rank_8;
         // Top Right
-        public static ulong TRCorner = file_H & rank_8;
+        public const ulong TRCorner = file_H & rank_8;
         // Bottom Right
-        public static ulong BRCorner = file_H & rank_1;
+        public const ulong BRCorner = file_H & rank_1;
         // Bottom Left
-        public static ulong BLCorner = file_A & rank_1;
+        public const ulong BLCorner = file_A & rank_1;
 
         //Magic numbers for castling
-        public static ulong ksRookCorners = 72057594037927937L;
-        public static ulong qsRookCorners = 9223372036854775936L;
-        public static ulong rookCorners = ksRookCorners | qsRookCorners;
+        public const ulong ksRookCorners = 72057594037927937L;
+        public const ulong qsRookCorners = 9223372036854775936L;
+        public const ulong rookCorners = ksRookCorners | qsRookCorners;
         // In between Rook + King (Does not include king and rook)
         //White
-        static ulong qsKingRook_white = 112L;
+        const ulong qsKingRook_white = 112L;
         // Attacking for QS castles as can castle if the knight square is under attacked
-        static ulong qsKingRookAttacking_white = 48L;
-        static ulong ksKingRook_white = 6L;
+        const ulong qsKingRookAttacking_white = 48L;
+        const ulong ksKingRook_white = 6L;
         //Black
-        static ulong qsKingRook_black = 8070450532247928832L;
+        const ulong qsKingRook_black = 8070450532247928832L;
         // Attacking for QS castles as can castle if the knight square is under attacked
-        static ulong qsKingRookAttacking_black = 3458764513820540928L;
-        static ulong ksKingRook_black = 432345564227567616L;
+        const ulong qsKingRookAttacking_black = 3458764513820540928L;
+        const ulong ksKingRook_black = 432345564227567616L;
         //End up bitboard
         //White
-        public static ulong qsCastleKing_white = 32L;
-        public static ulong ksCastleKing_white = 2L;
+        public const ulong qsCastleKing_white = 32L;
+        public const ulong ksCastleKing_white = 2L;
         //Rook
-        public static ulong qsCastleRook_white = qsCastleKing_white >> 1;
-        public static ulong ksCastleRook_white = ksCastleKing_white << 1;
+        public const ulong qsCastleRook_white = qsCastleKing_white >> 1;
+        public const ulong ksCastleRook_white = ksCastleKing_white << 1;
         //Black
-        public static ulong qsCastleKing_black = 2305843009213693952L;
-        public static ulong ksCastleKing_black = 144115188075855872L;
+        public const ulong qsCastleKing_black = 2305843009213693952L;
+        public const ulong ksCastleKing_black = 144115188075855872L;
         //Rook
-        public static ulong qsCastleRook_black = qsCastleKing_black >> 1;
-        public static ulong ksCastleRook_black = ksCastleKing_black << 1;
+        public const ulong qsCastleRook_black = qsCastleKing_black >> 1;
+        public const ulong ksCastleRook_black = ksCastleKing_black << 1;
         //Default King location
-        public static ulong defaultKing_white = 8L;
-        public static ulong defaultKing_black = 576460752303423488L;
+        public const ulong defaultKing_white = 8L;
+        public const ulong defaultKing_black = 576460752303423488L;
 
         /* --No use for this algorithm because of move generation
         //For when player selects a piece manually
@@ -258,19 +258,19 @@ namespace ChessGame
         public static ulong LegalMoves_WPawn(ulong wP, ulong enemyPieces, ulong emptySquares, ulong black_enPassantMask) //White Pawns
         {
             ulong legalMoves = 0L;
-            enemyPieces = enemyPieces | black_enPassantMask;
+            enemyPieces |= black_enPassantMask;
 
             //Captures top left
-            legalMoves = legalMoves | ((wP << 9) & enemyPieces & ~file_H);
+            legalMoves |= ((wP << 9) & enemyPieces & ~file_H);
 
             //Captures top right
-            legalMoves = legalMoves | ((wP << 7) & enemyPieces & ~file_A);
+            legalMoves |= ((wP << 7) & enemyPieces & ~file_A);
 
             //Pushing forward
-            legalMoves = legalMoves | ((wP << 8) & emptySquares);
+            legalMoves |= ((wP << 8) & emptySquares);
 
             //Opening two square push forward
-            legalMoves = legalMoves | (wP << 16 & rank_4 & emptySquares & emptySquares << 8);
+            legalMoves |= (wP << 16 & rank_4 & emptySquares & emptySquares << 8);
 
             return legalMoves;
         }
@@ -278,19 +278,19 @@ namespace ChessGame
         public static ulong LegalMoves_BPawn(ulong bP, ulong enemyPieces, ulong emptySquares, ulong white_enPassantMask) //Black Pawns
         {
             ulong legalMoves = 0L;
-            enemyPieces = enemyPieces | white_enPassantMask;
+            enemyPieces |= white_enPassantMask;
 
             //Captures bottom left
-            legalMoves = legalMoves | ((bP >> 7) & enemyPieces & ~file_H);
+            legalMoves |= ((bP >> 7) & enemyPieces & ~file_H);
 
             //Captures bottom right
-            legalMoves = legalMoves | ((bP >> 9) & enemyPieces & ~file_A);
+            legalMoves |= ((bP >> 9) & enemyPieces & ~file_A);
 
             //Pushing down
-            legalMoves = legalMoves | ((bP >> 8) & emptySquares);
+            legalMoves |= ((bP >> 8) & emptySquares);
 
             //Opening two square push down
-            legalMoves = legalMoves | (bP >> 16 & rank_5 & emptySquares & emptySquares >> 8);
+            legalMoves |= (bP >> 16 & rank_5 & emptySquares & emptySquares >> 8);
 
             return legalMoves;
         }
@@ -300,28 +300,28 @@ namespace ChessGame
             ulong legalMoves = 0L;
 
             //Up: 1, Left: 2
-            legalMoves = legalMoves | (N << 10 & ~file_GH & ~friendlyPieces);
+            legalMoves |= (N << 10 & ~file_GH & ~friendlyPieces);
 
             //Up: 2, Left: 1
-            legalMoves = legalMoves | (N << 17 & ~file_H & ~friendlyPieces);
+            legalMoves |= (N << 17 & ~file_H & ~friendlyPieces);
 
             //Up: 2, Left: 1
-            legalMoves = legalMoves | (N << 15 & ~file_A & ~friendlyPieces);
+            legalMoves |= (N << 15 & ~file_A & ~friendlyPieces);
 
             //Up: 1, Right: 2
-            legalMoves = legalMoves | (N << 6 & ~file_AB & ~friendlyPieces);
+            legalMoves |= (N << 6 & ~file_AB & ~friendlyPieces);
 
             //Down: 1, Right: 2
-            legalMoves = legalMoves | (N >> 10 & ~file_AB & ~friendlyPieces);
+            legalMoves |= (N >> 10 & ~file_AB & ~friendlyPieces);
 
             //Down: 2, Right: 1
-            legalMoves = legalMoves | (N >> 17 & ~file_A & ~friendlyPieces);
+            legalMoves |= (N >> 17 & ~file_A & ~friendlyPieces);
 
             //Down: 2, Left: 1
-            legalMoves = legalMoves | (N >> 15 & ~file_H & ~friendlyPieces);
+            legalMoves |= (N >> 15 & ~file_H & ~friendlyPieces);
 
             //Down: 1, Left: 2
-            legalMoves = legalMoves | (N >> 6 & ~file_GH & ~friendlyPieces);
+            legalMoves |= (N >> 6 & ~file_GH & ~friendlyPieces);
 
             return legalMoves;
         }
@@ -339,31 +339,10 @@ namespace ChessGame
             //Moving Horizontally Right
             for (int i = 1; i < 8; i++)
             {
-                /* Inefficient method
-                //If outside the board
-                if ((R >> i & file_A) != 0L)
-                {
-                    //remove bit from calculating further
-                    R = R & ~(file_A << i);
-                    //We do this by reversing the bitwise operation we set on the condition to locate the appropriate bit(s)
-                }
-                //Until there is a friendly piece
-                else if ((R >> i & friendlyPieces) != 0L)
-                {
-                    //remove bit from calculating further
-                    R = R & ~(friendlyPieces << i);
-                }
-                else if((R >> i & enemyPieces) != 0L)
-                {
-                    legalMoves = legalMoves | R >> i;
-                    //remove bit from calculating
-                    R = R & ~(enemyPieces << i);
-                }*/
-
                 //If outside of bounds on file A, remove the appropriate rook bit(s)
-                R = R & ~(file_A << i);
+                R &= ~(file_A << i);
                 //If friendly piece in the way, remove the appropriate rook bit(s)
-                R = R & ~(friendlyPieces << i);
+                R &= ~(friendlyPieces << i);
 
                 //No more bits in bitboard
                 if (R == 0L)
@@ -371,10 +350,10 @@ namespace ChessGame
                     break;
                 }
 
-                legalMoves = legalMoves | (R >> i);
+                legalMoves |= (R >> i);
 
                 //Does this operation after because we still want to capture the enemy piece
-                R = R & ~(enemyPieces << i);
+                R &= ~(enemyPieces << i);
             }
 
             //instantiate original bitboard
@@ -383,14 +362,14 @@ namespace ChessGame
             for (int i = 1; i < 8; i++)
             {
 
-                R = R & ~(file_H >> i);
-                R = R & ~(friendlyPieces >> i);
+                R &= ~(file_H >> i);
+                R &= ~(friendlyPieces >> i);
                 if (R == 0L)
                 {
                     break;
                 }
-                legalMoves = legalMoves | (R << i & ~friendlyPieces);
-                R = R & ~(enemyPieces >> i);
+                legalMoves |= (R << i & ~friendlyPieces);
+                R &= ~(enemyPieces >> i);
             }
 
             //instantiate original bitboard
@@ -400,11 +379,11 @@ namespace ChessGame
             {
 
                 //Can't go further down
-                R = R >> (i * 8);
-                R = R << (i * 8);
+                R >>= (i * 8);
+                R <<= (i * 8);
 
                 //Friendly piece in the way
-                R = R & ~(friendlyPieces << (i * 8));
+                R &= ~(friendlyPieces << (i * 8));
 
                 //No more bits
                 if (R == 0L)
@@ -413,10 +392,10 @@ namespace ChessGame
                 }
 
                 //Add to legal moves
-                legalMoves = legalMoves | (R >> (i * 8) & ~friendlyPieces);
+                legalMoves |= (R >> (i * 8) & ~friendlyPieces);
 
                 //If there is an enemy piece there (after legal moves because we want to be able to capture the enemy piece)
-                R = R & ~(enemyPieces << (i * 8));
+                R &= ~(enemyPieces << (i * 8));
             }
 
             //instantiate original bitboard
@@ -425,19 +404,19 @@ namespace ChessGame
             for (int i = 1; i < 8; i++)
             {
                 //Can't go further up
-                R = R << (i * 8);
-                R = R >> (i * 8);
+                R <<= (i * 8);
+                R >>= (i * 8);
                 //Friendly piece in the way
-                R = R & ~(friendlyPieces >> (i * 8));
+                R &= ~(friendlyPieces >> (i * 8));
                 //No more bits
                 if (R == 0L)
                 {
                     break;
                 }
                 //Add to legal moves
-                legalMoves = legalMoves | (R << (i * 8) & ~friendlyPieces);
+                legalMoves |= (R << (i * 8) & ~friendlyPieces);
                 //If there is an enemy piece there (after legal moves because we want to be able to capture the enemy piece)
-                R = R & ~(enemyPieces >> (i * 8));
+                R &= ~(enemyPieces >> (i * 8));
             }
 
             return legalMoves;
@@ -474,20 +453,20 @@ namespace ChessGame
                 }*/
 
                 //Outside the board (Top)
-                B = B << (i * 8);
-                B = B >> (i * 8);
+                B <<= (i * 8);
+                B >>= (i * 8);
                 //Outside the board (Left)
-                B = B & ~(file_H >> i);
+                B &= ~(file_H >> i);
                 //Friendly piece in the way
-                B = B & ~(friendlyPieces >> (i * 9));
+                B &= ~(friendlyPieces >> (i * 9));
                 //No bits in bitboard
                 if (B == 0L)
                 {
                     break;
                 }
-                legalMoves = legalMoves | (B << (i * 9) & ~friendlyPieces);
+                legalMoves |= (B << (i * 9) & ~friendlyPieces);
                 //Enemy piece in the way
-                B = B & ~(enemyPieces >> (i * 9));
+                B &= ~(enemyPieces >> (i * 9));
             }
 
             //Restore bitboard
@@ -496,23 +475,23 @@ namespace ChessGame
             for (int i = 1; i < 8; i++)
             {
                 //Outside the board (Top)
-                B = B << (i * 8);
-                B = B >> (i * 8);
+                B <<= (i * 8);
+                B >>= (i * 8);
                 //Outside the board (Right)
                 //Shifting to left makes the file_A bitboard go up a file which means that it can miss the piece
                 //So we have to shift the file_A bitboard down by 1 after the bitwise operation
-                B = B & ~((file_A << i) >> 8);
+                B &= ~((file_A << i) >> 8);
                 //Friendly piece in the way
-                B = B & ~(friendlyPieces >> (i * 7));
+                B &= ~(friendlyPieces >> (i * 7));
                 //No bits in bitboard
                 if (B == 0L)
                 {
                     break;
                 }
                 //Append legal moves
-                legalMoves = legalMoves | (B << (i * 7) & ~friendlyPieces);
+                legalMoves |= (B << (i * 7) & ~friendlyPieces);
                 //Enemy piece in the way
-                B = B & ~(enemyPieces >> (i * 7));
+                B &= ~(enemyPieces >> (i * 7));
             }
 
             //Restore bitboard
@@ -521,21 +500,21 @@ namespace ChessGame
             for (int i = 1; i < 8; i++)
             {
                 //Outside the board (Bottom)
-                B = B >> (i * 8);
-                B = B << (i * 8);
+                B >>= (i * 8);
+                B <<= (i * 8);
                 //Outside the board (Right)
-                B = B & ~(file_A << i);
+                B &= ~(file_A << i);
                 //Friendly piece in the way
-                B = B & ~(friendlyPieces << (i * 9));
+                B &= ~(friendlyPieces << (i * 9));
                 //No bits in bitboard
                 if (B == 0L)
                 {
                     break;
                 }
                 //Append legal moves
-                legalMoves = legalMoves | (B >> (i * 9) & ~friendlyPieces);
+                legalMoves |= (B >> (i * 9) & ~friendlyPieces);
                 //Enemy piece in the way
-                B = B & ~(enemyPieces << (i * 9));
+                B &= ~(enemyPieces << (i * 9));
             }
 
             //Restore bitboard
@@ -544,23 +523,23 @@ namespace ChessGame
             for (int i = 1; i < 8; i++)
             {
                 //Outside the board (Bottom)
-                B = B >> (i * 8);
-                B = B << (i * 8);
+                B >>= (i * 8);
+                B <<= (i * 8);
                 //Outside the board (Left)
                 //Shifting to left makes the file_H bitboard go down a file which means that it can miss the piece
                 //So we have to shift the file_H bitboard up by 1 after the bitwise operation
-                B = B & ~((file_H >> i) << 8);
+                B &= ~((file_H >> i) << 8);
                 //Friendly piece in the way
-                B = B & ~(friendlyPieces << (i * 7));
+                B &= ~(friendlyPieces << (i * 7));
                 //No bits in bitboard
                 if (B == 0L)
                 {
                     break;
                 }
                 //Append legal moves
-                legalMoves = legalMoves | (B >> (i * 7) & ~friendlyPieces);
+                legalMoves |= (B >> (i * 7) & ~friendlyPieces);
                 //Enemy piece in the way
-                B = B & ~(enemyPieces << (i * 7));
+                B &= ~(enemyPieces << (i * 7));
             }
 
             return legalMoves;
@@ -611,7 +590,7 @@ namespace ChessGame
                                 if (((friendlyPieces | enemyPieces | attackedSquares) & ksKingRook_white) == 0)
                                 {
                                     //Can castle KS
-                                    legalMoves = legalMoves | ksCastleKing_white;
+                                    legalMoves |= ksCastleKing_white;
                                 }
                             }
                             if (whiteCastles >> 1 == 1) // Queen side castles 0b10
@@ -620,7 +599,7 @@ namespace ChessGame
                                 if (((friendlyPieces | enemyPieces | (attackedSquares & qsKingRookAttacking_white)) & qsKingRook_white) == 0)
                                 {
                                     //Can castle QS
-                                    legalMoves = legalMoves | qsCastleKing_white;
+                                    legalMoves |= qsCastleKing_white;
                                 }
                             }
                         }
@@ -637,7 +616,7 @@ namespace ChessGame
                                 if (((friendlyPieces | enemyPieces | attackedSquares) & ksKingRook_black) == 0)
                                 {
                                     //Can castle KS
-                                    legalMoves = legalMoves | ksCastleKing_black;
+                                    legalMoves |= ksCastleKing_black;
                                 }
                             }
                             if (blackCastles >> 1 == 1) // Queen side castles 0b10
@@ -646,7 +625,7 @@ namespace ChessGame
                                 if (((friendlyPieces | enemyPieces | (attackedSquares & qsKingRookAttacking_black)) & qsKingRook_black) == 0)
                                 {
                                     //Can castle QS
-                                    legalMoves = legalMoves | qsCastleKing_black;
+                                    legalMoves |= qsCastleKing_black;
                                 }
                             }
                         }
@@ -655,10 +634,10 @@ namespace ChessGame
             }
 
             //King move all around but only by one square
-            legalMoves = legalMoves | (K << 1 & ~friendlyPieces | K << 9 & ~friendlyPieces | K >> 7 & ~friendlyPieces) & ~file_H | K << 8 & ~friendlyPieces | (K << 7 & ~friendlyPieces |
+            legalMoves |= (K << 1 & ~friendlyPieces | K << 9 & ~friendlyPieces | K >> 7 & ~friendlyPieces) & ~file_H | K << 8 & ~friendlyPieces | (K << 7 & ~friendlyPieces |
                 K >> 1 & ~friendlyPieces | K >> 9 & ~friendlyPieces) & ~file_A | K >> 8 & ~friendlyPieces;
             //Filter illegal moves
-            legalMoves = legalMoves & ~attackedSquares;
+            legalMoves &= ~attackedSquares;
 
             return legalMoves;
         }
@@ -676,11 +655,11 @@ namespace ChessGame
         public static ulong[] KingHits(ulong k, bool whiteTurn, ulong friendlyPieces, ulong enemyPieces, Position position)
         {
             //Initialise attacking piece bitboards
-            ulong aN = 0L;
-            ulong aR = 0L;
-            ulong aB = 0L;
-            ulong aQ = 0L;
-            ulong aP = 0L;
+            ulong aN;
+            ulong aR;
+            ulong aB;
+            ulong aQ;
+            ulong aP;
 
 
             //LegalMoves_Knight(k, friendlyPieces) & (enemyPieces & (Board.wN | Board.bN) -- Method for not knowing the colour
@@ -696,7 +675,7 @@ namespace ChessGame
                 //Locates pawn attacking from top left
                 aP = ((k << 9) & ~file_H) & position.bP;
                 //Locates pawn attacking from top right
-                aP = aP | ((k << 7) & ~file_A) & position.bP;
+                aP |= ((k << 7) & ~file_A) & position.bP;
             }
 
             else //Black to play (if check then white just checked black)
@@ -711,7 +690,7 @@ namespace ChessGame
                 //Locates pawn attacking from bottom left
                 aP = ((k >> 7) & ~file_H) & position.wP;
                 //Locates pawn attacking from bottom right
-                aP = aP | ((k >> 9) & ~file_A) & position.wP;
+                aP |= ((k >> 9) & ~file_A) & position.wP;
             }
 
             // [Knights, Bishops, Rooks, Queens, Pawns]
@@ -773,22 +752,22 @@ namespace ChessGame
             ulong pawnAttackingSquares = 0L;
 
             //Friendly pieces no king for valid move generation
-            friendlyPieces = friendlyPieces & ~fK;
+            friendlyPieces &= ~fK;
 
             //Pawn attack generation
             if (whiteTurn) //Still white turn, pawns go down because its for black pawns that attack
             {
                 //attacks bottom left
-                pawnAttackingSquares = pawnAttackingSquares | ((eP >> 7) & ~file_H);
+                pawnAttackingSquares |= ((eP >> 7) & ~file_H);
                 //attacks bottom right
-                pawnAttackingSquares = pawnAttackingSquares | ((eP >> 9) & ~file_A);
+                pawnAttackingSquares |= ((eP >> 9) & ~file_A);
             }
             else //Black turn pawns go up
             {
                 //attacks top left
-                pawnAttackingSquares = pawnAttackingSquares | ((eP << 9) & ~file_H);
+                pawnAttackingSquares |= ((eP << 9) & ~file_H);
                 //attacks top right
-                pawnAttackingSquares = pawnAttackingSquares | ((eP << 7) & ~file_A);
+                pawnAttackingSquares |= ((eP << 7) & ~file_A);
             }
 
 
@@ -831,26 +810,6 @@ namespace ChessGame
             return debugSquares;
         }
 
-
-        public struct MakeMove
-        {
-            uint move;
-
-            //https://chess.stackexchange.com/questions/18017/whats-the-right-approach-of-storing-moves-generated-using-bitboards
-            public MakeMove(uint from, uint to, uint flag)
-            {
-                //0000 0000 0000 0000  to store moveType | to | from
-                //From: 0000 0000 0011 1111
-                from = 0b111111 & from;
-                //To: 0000 1111 1100 0000
-                to = (0b111111 & to) << 6;
-                //moveType: 0011 0000 0000 0000
-                flag = (0b11 & flag) << 12;
-
-                this.move = flag | to | from;
-            }
-        }
-
         public enum Flag
         {
             /*
@@ -879,12 +838,12 @@ namespace ChessGame
         {
             List<int> legalSquares = new List<int>();
 
-            ulong pieceLocation = 0L;
+            ulong pieceLocation;
             int correctFrom;
 
 
             //Used for getting all the ulong bitboard move locations
-            ulong legalULong = 0L;
+            ulong legalULong;
 
             //Generate a pinned pieces mask to identify pinned pieces
             ulong pins;
@@ -931,14 +890,12 @@ namespace ChessGame
             * 111 = Double Push  
             */
 
-            int flag = (int)Flag.Normal_Move;
+            int flag;
 
             if (position.whiteTurn) //White to play
             {
                 //Generate for en passant pins
                 ulong enemyPieces = position.blackPieces & ~(position.black_enPassantMask >> 8);
-                //Generate for en passant pins
-                ulong diagonalFriendlyPieces = position.whitePieces | position.black_enPassantMask >> 8;
 
                 //Generate mask horizontal and vertical pins
                 horizontalPins = Pins_Horizontal(position.wK, position.whitePieces, enemyPieces, position.bR, position.bQ);
@@ -955,8 +912,6 @@ namespace ChessGame
             {
                 //Generate for en passant pins
                 ulong enemyPieces = position.whitePieces & ~(position.white_enPassantMask << 8);
-                //Generate for en passant pins
-                ulong diagonalFriendlyPieces = position.blackPieces | position.white_enPassantMask << 8;
 
                 //Generate mask horizontal and vertical pins
                 horizontalPins = Pins_Horizontal(position.bK, position.blackPieces, enemyPieces, position.wR, position.wQ);
@@ -1197,7 +1152,7 @@ namespace ChessGame
 
 
                 //Filter blocked moves (For checks; blocking moves and capturing piece)
-                legalULong = legalULong & allowMask;
+                legalULong &= allowMask;
 
                 //Append to list the legal squares
                 if (legalULong != 0L) // There are moves to append
@@ -1334,7 +1289,7 @@ namespace ChessGame
         public static List<int> GenerateGameMoves(Position position)
         {
             ulong[] checkArray;
-            ulong legalULong = 0L;
+            ulong legalULong;
             ulong pieceLocation;
 
             position.InitBitboards(); // Initiate bitboards
@@ -1372,7 +1327,7 @@ namespace ChessGame
                 if (checks == 1) //Single check, therefore king can move, checker can be captured, or the check can be blocked
                 {
 
-                    ulong allowedMask = 0L; // Used for filtering moves when generating moves (on blocked or king captures)
+                    ulong allowedMask; // Used for filtering moves when generating moves (on blocked or king captures)
                     ulong kingLocation;
 
                     //Combine all the check locations for capturing the checker
@@ -1422,19 +1377,13 @@ namespace ChessGame
                             sliderPiece = 2;
                         }
 
-                        //Get the index of the checker
-                        int checkerIndex = GetBitboardIndex(checkerMask);
-
-                        //Get the index of the king
-                        int kingIndex = GetBitboardIndex(kingLocation);
-
                         //Creates a mask for squares in-between the check
-                        allowedMask = allowedMask | BetweenPieceRay(sliderPiece, kingLocation, checkerMask, position.emptySquares);
+                        allowedMask |= BetweenPieceRay(sliderPiece, kingLocation, checkerMask, position.emptySquares);
 
                     }
 
 
-                    legalSquares = ulongTranslator(kingLocation, legalULong, legalSquares);
+                    legalSquares = UlongTranslator(kingLocation, legalULong, legalSquares);
 
                     foreach (int e in GenerateAllMoves(position, false, allowedMask)) //loop through blocks and capturing checker moves to then append to the move list
                     {
@@ -1471,7 +1420,7 @@ namespace ChessGame
                         //Add moves to the list
                         //Double check, therefore only king can move
 
-                        legalSquares = ulongTranslator(pieceLocation, legalULong, legalSquares);
+                        legalSquares = UlongTranslator(pieceLocation, legalULong, legalSquares);
 
                         return legalSquares;
 
@@ -1516,7 +1465,7 @@ namespace ChessGame
             return pieceIndex;
         }
 
-        public static List<int> ulongTranslator(ulong pieceLocation, ulong legalULong, List<int> legalSquares) //Used for single pieces because of break
+        public static List<int> UlongTranslator(ulong pieceLocation, ulong legalULong, List<int> legalSquares) //Used for single pieces because of break
         {
             for (int i = 0; i < 64; i++) // Locate the index of the square that the bitboard is on
             {
@@ -1551,7 +1500,7 @@ namespace ChessGame
             ulong fixedFromPiece = fromPiece;
 
             // Adding the toPiece to emptySquares, so it does not remove the bit from fromPieces, breaking the loop
-            emptySquares = emptySquares | toPiece;
+            emptySquares |= toPiece;
 
             if (fromPiece < toPiece) // Left, TL, Up, TR
             {
@@ -1576,7 +1525,7 @@ namespace ChessGame
                             return inBetweenMask;
                         }
                         //Add to inBetweenMask
-                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                        inBetweenMask |= fixedFromPiece;
                     }
 
                     //If not found then format inBetweenMask and fixedFromPiece
@@ -1600,7 +1549,7 @@ namespace ChessGame
                             return inBetweenMask;
                         }
                         //Add to inBetweenMask
-                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                        inBetweenMask |= fixedFromPiece;
                     }
 
                 }
@@ -1638,7 +1587,7 @@ namespace ChessGame
                         }
 
                         //Add to inBetweenMask
-                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                        inBetweenMask |= fixedFromPiece;
                     }
 
                     //If not found then format inBetweenMask and fixedFromPiece
@@ -1670,7 +1619,7 @@ namespace ChessGame
                         }
 
                         //Add to inBetweenMask
-                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                        inBetweenMask |= fixedFromPiece;
                     }
 
                 }
@@ -1699,7 +1648,7 @@ namespace ChessGame
                             return inBetweenMask;
                         }
                         //Add to inBetweenMask
-                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                        inBetweenMask |= fixedFromPiece;
                     }
 
                     //If not found then format inBetweenMask and fixedFromPiece
@@ -1723,7 +1672,7 @@ namespace ChessGame
                             return inBetweenMask;
                         }
                         //Add to inBetweenMask
-                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                        inBetweenMask |= fixedFromPiece;
                     }
                 }
 
@@ -1759,7 +1708,7 @@ namespace ChessGame
                         }
 
                         //Add to inBetweenMask
-                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                        inBetweenMask |= fixedFromPiece;
                     }
 
                     //If not found then format inBetweenMask and fixedFromPiece
@@ -1791,7 +1740,7 @@ namespace ChessGame
                         }
 
                         //Add to inBetweenMask
-                        inBetweenMask = inBetweenMask | fixedFromPiece;
+                        inBetweenMask |= fixedFromPiece;
                     }
 
                 }

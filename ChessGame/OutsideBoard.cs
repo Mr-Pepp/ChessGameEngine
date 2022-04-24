@@ -9,10 +9,10 @@ namespace ChessGame
 {
     class OutsideBoard
     {
-        private Texture2D _texture;
-        private Color _backColour;
-        private Color _innerColour;
-        private int _pxSize;
+        readonly private Texture2D _texture;
+        readonly private Color _backColour;
+        readonly private Color _innerColour;
+        readonly private int _pxSize;
         public Vector2 position;
 
         public OutsideBoard() { }

@@ -7,7 +7,7 @@ namespace ChessGame
 {
     public class Game1 : Game
     {
-        private GraphicsDeviceManager _graphics;
+        readonly private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         RenderTarget2D renderTarget;
 
@@ -17,11 +17,9 @@ namespace ChessGame
         //Create the font
         public static SpriteFont text; // Public to use at anytime
 
-        //public float scale = 0.44444f;
-
         private Board board;
 
-        private Dictionary<string, Color> colorDic = new Dictionary<string, Color>()
+        readonly private Dictionary<string, Color> colorDic = new Dictionary<string, Color>()
         {
             { "Light Square", new Color(239, 231, 232) },
             { "Dark Square", new Color(87, 63, 63) },
@@ -38,14 +36,15 @@ namespace ChessGame
         private Vector2 initPos;
 
         //texture location dir || Change as more textures come 
-        private string dir = "Set 1/";
+        readonly private string dir = "Set 1/";
 
         //"Other" texture directory
-        private string otherDir = "Other/";
+        readonly private string otherDir = "Other/";
 
         //mouse point
         public static Point mousePoint;
 
+        // Pass Game1 so that it can be called from other classes
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -56,7 +55,7 @@ namespace ChessGame
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            // initialization logic
 
             _graphics.PreferredBackBufferWidth = 990;
             _graphics.PreferredBackBufferHeight = 900;
@@ -125,13 +124,13 @@ namespace ChessGame
                 { Piece.Black | Piece.Queen, Piece.blackQueen },
             };
 
-            //Set other parameters
+            //Set other size parameters
             initPos = new Vector2(90, 90);
             squareSize = 90;
 
             board = new Board(squareSize, initPos, colorDic);
 
-            board.LoadContent(_spriteBatch, GraphicsDevice);
+            board.LoadContent(_spriteBatch);
 
 
             // TODO: use this.Content to load your game content here

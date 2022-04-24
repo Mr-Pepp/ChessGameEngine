@@ -17,7 +17,7 @@ namespace ChessGame
 
         //Positional value // Piece-square tables
         // White king positional
-        static int[] position_whiteKing = new int[64]
+        readonly static int[] position_whiteKing = new int[64]
         {
             -25, -20, -20, -20, -20, -20, -20, -25,
             -25, -20, -20, -20, -20, -20, -20, -25,
@@ -26,10 +26,10 @@ namespace ChessGame
             -25, -20, -20, -20, -20, -20, -20, -25,
             -25, -20, -20, -20, -20, -20, -20, -25,
             15, 15, 0, 0, 0, 0, 15, 15,
-           15, 25, 10, -10, 0, 10, 25, 15
+           15, 20, 10, -10, 0, 10, 20, 15
         };
 
-        static int[] position_whiteQueen = new int[64]
+        readonly static int[] position_whiteQueen = new int[64]
         {
             -20, -10, -10, -5, -5, -10, -10, -20,
             -10, 0, 0, 0, 0, 0, 0, -10,
@@ -41,7 +41,7 @@ namespace ChessGame
             -20, -10, -10, -5, -5, -10, -10, -20
         };
 
-        static int[] position_whiteRook = new int[64]
+        readonly static int[] position_whiteRook = new int[64]
         {
             0, 0, 0, 0, 0, 0, 0, 0,
             5, 15, 15, 15, 15, 15, 15, 5,
@@ -53,7 +53,7 @@ namespace ChessGame
             0, 0, 0, 5, 5, 0, 0, 0
         };
 
-        static int[] position_whiteBishop = new int[64]
+        readonly static int[] position_whiteBishop = new int[64]
         {
             -15, -5, -5, -5, -5, -5, -5, -15,
             -10, 0, 0, 0, 0, 0, 0, -10,
@@ -65,7 +65,7 @@ namespace ChessGame
             -15, -5, -5, -5, -5, -5, -5, -15
         };
 
-        static int[] position_whiteKnight = new int[64]
+        readonly static int[] position_whiteKnight = new int[64]
         {
             -20, -7, -7, -7, -7, -7, -7, -20,
             -20, -10, 5, 0, 0, 0, -10, -20,
@@ -77,7 +77,7 @@ namespace ChessGame
             -20, -7, -7, -7, -7, -7, -7, -20,
         };
 
-        static int[] position_whitePawn = new int[64]
+        readonly static int[] position_whitePawn = new int[64]
         {
             0, 0, 0, 0, 0, 0, 0, 0,
             45, 45, 45, 45, 45, 45, 45, 45,
@@ -90,7 +90,7 @@ namespace ChessGame
         };
 
         // Reverse white piece square tables (in Y-axis) for black evaluation
-        static int[] position_blackKing = new int[]
+        readonly static int[] position_blackKing = new int[]
         {
             15, 25, 10, -10, 0, 10, 25, 15,
             15, 15, 0, 0, 0, 0, 15, 15,
@@ -102,7 +102,7 @@ namespace ChessGame
             -25, -20, -20, -20, -20, -20, -20, -25           
         };
 
-        static int[] position_blackQueen = new int[64]
+        readonly static int[] position_blackQueen = new int[64]
         {
             -20, -10, -10, -5, -5, -10, -10, -20,
             -10, 0, 5, 0, 0, 0, 0, -10,
@@ -114,7 +114,7 @@ namespace ChessGame
             -20, -10, -10, -5, -5, -10, -10, -20
         };
 
-        static int[] position_blackRook = new int[64]
+        readonly static int[] position_blackRook = new int[64]
         {
             0, 0, 0, 5, 5, 0, 0, 0,
             -5, 0, 0, 0, 0, 0, 0, -5,
@@ -126,7 +126,7 @@ namespace ChessGame
             0, 0, 0, 0, 0, 0, 0, 0
         };
 
-        static int[] position_blackBishop = new int[64]
+        readonly static int[] position_blackBishop = new int[64]
         {
             -15, -5, -5, -5, -5, -5, -5, -15,
             -10, 10, 0, 0, 0, 0, 10, -10,
@@ -138,7 +138,7 @@ namespace ChessGame
             -15, -5, -5, -5, -5, -5, -5, -15,
         };
 
-        static int[] position_blackKnight = new int[64]
+        readonly static int[] position_blackKnight = new int[64]
         {
             -20, -7, -7, -7, -7, -7, -7, -20,
             -20, -20, 0, 5, 5, 0, -20, -20,
@@ -150,7 +150,7 @@ namespace ChessGame
             -20, -7, -7, -7, -7, -7, -7, -20,
         };
 
-        static int[] position_blackPawn = new int[64]
+        readonly static int[] position_blackPawn = new int[64]
         {
             0, 0, 0, 0, 0, 0, 0, 0,
             5, 5, 5, -5, -5, 5, 5, 5,
@@ -164,7 +164,7 @@ namespace ChessGame
 
 
         // square-table for king
-        static int[] endGame_kingPosition = new int[64]
+        readonly static int[] endGame_kingPosition = new int[64]
         {
             90, 75, 62, 55, 55, 62, 75, 90,
             75, 45, 35, 30, 30, 35, 45, 75,
@@ -177,7 +177,7 @@ namespace ChessGame
         };
 
 
-
+        // Use for evaluation
         const int posInfinity = int.MaxValue;
         const int negInfinity = int.MinValue;
 
@@ -239,12 +239,12 @@ namespace ChessGame
 
         }
 
-        public class maxMove
+        public class MaxMove
         {
             public int max;
             public Board.MoveInfo move;
 
-            public maxMove(int _max, Board.MoveInfo _move)
+            public MaxMove(int _max, Board.MoveInfo _move)
             {
                 max = _max;
                 move = _move;
@@ -513,12 +513,12 @@ namespace ChessGame
 
 
         //NegaMax search
-        public static maxMove NegaMax(int depth, int alpha, int beta, int negateSide)
+        public static MaxMove NegaMax(int depth, int alpha, int beta, int negateSide)
         {
             if (depth == 0)
             {
                 // Return evaluation of current position with a null move
-                return new maxMove(negateSide * Evaluation(), new Board.MoveInfo());
+                return new MaxMove(negateSide * Evaluation(), new Board.MoveInfo());
             }
 
             List<int> moves = Moves.GenerateGameMoves(Board.position);
@@ -528,19 +528,19 @@ namespace ChessGame
                 if ((moves[0] >> 15) == 0b01) // Checkmate
                 {
                     // Mark massive evluation
-                    return new maxMove(negateSide * -99999, new Board.MoveInfo());
+                    return new MaxMove(negateSide * -99999, new Board.MoveInfo());
                 }
                 else if ((moves[0] >> 16) == 1) // Stalemate
                 {
                     // Draw
-                    return new maxMove(0, new Board.MoveInfo());
+                    return new MaxMove(0, new Board.MoveInfo());
                 }
             }
 
             // Order lists with captures first for alpha beta pruning
             moves = OrderMoves(moves);
 
-            maxMove maxMove = new maxMove(-99999, new Board.MoveInfo());
+            MaxMove maxMove = new MaxMove(-99999, new Board.MoveInfo());
 
             foreach (int move in moves)
             {
@@ -552,7 +552,7 @@ namespace ChessGame
 
                 // Negative sign because it will alternate black and white turns
                 // Current evaluation
-                maxMove evalMove = new maxMove(-NegaMax(depth - 1, alpha, beta, negateSide).max, actMove);
+                MaxMove evalMove = new MaxMove(-NegaMax(depth - 1, alpha, beta, negateSide).max, actMove);
 
                 // Undo move
                 Board.UndoMove(actMove);
@@ -699,7 +699,6 @@ namespace ChessGame
             return eval;
         }
 
-
         //Count the material
         static int MaterialCountWhite()
         {
@@ -716,19 +715,6 @@ namespace ChessGame
 
             return position.bQCount * queenValue + position.bRCount * rookValue + position.bBCount * bishopValue +
                 position.bNCount * knightValue + position.bPCount * pawnValue;
-        }
-
-        //Very inneficient
-        static int BitboardCounter(ulong bitboard)
-        {
-            int count = 0;
-            while (bitboard != 0)
-            {
-                bitboard = bitboard & (bitboard - 1);
-                count++;
-            }
-
-            return count;
         }
     }
 }

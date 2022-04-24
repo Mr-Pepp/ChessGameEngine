@@ -9,10 +9,10 @@ namespace ChessGame
 {
     class EndGameScreen
     {
-        private Texture2D _texture;
+        readonly private Texture2D _texture;
         private Color _backgroundColour;
         private Color _lineColour;
-        private int _pxSize;
+        readonly private int _pxSize;
         public Vector2 position;
 
         private string stateMsg;

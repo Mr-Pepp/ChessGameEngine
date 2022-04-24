@@ -16,7 +16,7 @@ namespace ChessGame
         public static Texture2D restartBtnTexture;
 
         // Screen size
-        private int _pxSize;
+        readonly private int _pxSize;
         public Vector2 _position;
 
         public Rectangle whiteSideRect;
