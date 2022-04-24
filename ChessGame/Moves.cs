@@ -73,187 +73,6 @@ namespace ChessGame
         public const ulong defaultKing_white = 8L;
         public const ulong defaultKing_black = 576460752303423488L;
 
-        /* --No use for this algorithm because of move generation
-        //For when player selects a piece manually
-        public static List<int> CheckLegalMoves(int piece, int squares)
-        {
-            ulong pieceLocation = Board.BinaryStringToBitboard(squares);
-            List<int> legalSquares = new List<int>();
-            ulong legalULong = 0L;
-            //Check if piece is white
-            if (((piece & Piece.White) == Piece.White) & whiteTurn)
-            {
-                // SEE FOR CHECK (MAKE IT INTO A FUNCTION IN FUTURE)
-                // [Knights, Bishops, Rooks, Queens, Pawns]
-                ulong[] checks = KingHits(Board.wK, whiteTurn, whitePieces, blackPieces);
-                //Useful for double checks (meaning you have to move the king)
-                int checksCounter = 0;
-                ulong combinedChecks = checks[0] | checks[1] | checks[2] | checks[3] | checks[4];
-                foreach (ulong e in checks)
-                {
-                    if (e != 0L)
-                    {
-                        checksCounter++;
-                    }
-                }
-                if (checksCounter > 0) // Is in check
-                {
-                    if (checksCounter > 1) // Double check (only king can move)
-                    {
-                        //Only king can move
-                        if (Piece.King == (piece & 0b00111))
-                        {
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation & Board.wK, whitePieces, blackPieces, whiteTurn, true);
-                        }
-                        else
-                        {
-                            //Animation to show that king is in check (flashing red, sound)
-                        }
-                    }
-                    else //Single check (can get blocked or captured)
-                    {
-                        //If no sliding piece then can't block with a piece
-                        if ((checks[1] | checks[2] | checks[3]) != 0L)
-                        {
-                            //one solution is make the king go to the piece
-                            //Draw to king
-                            //loop from piece to king
-                            //Check whether the piece is smaller or greater than the king bitboard
-                            // depending on that loop by shifting by i each turn
-                            //Based on the i result (from PIECE to KING),
-                            //if divisible by 8 then that means it's a above / below the piece
-                            //blockMask = 
-                        }
-                        //Only king can move
-                        if (Piece.King == (piece & 0b00111))
-                        {
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation & Board.wK, whitePieces, blackPieces, whiteTurn, true);
-                        }
-                        else
-                        {
-                            //Animation to show that king is in check (flashing red, sound)
-                        }
-                    }
-                }
-                // NO CHECK
-                else // Not in check, can play normally
-                {
-                    switch (piece & 0b00111)
-                    {
-                        case Piece.King:
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation & Board.wK, whitePieces, blackPieces, whiteTurn, true);
-                            break;
-                        case Piece.Pawn:
-                            //White pawn legal moves bitboard
-                            legalULong = LegalMoves_WPawn(pieceLocation & Board.wP);
-                            break;
-                        case Piece.Knight:
-                            //Knight legal moves bitboard
-                            legalULong = LegalMoves_Knight(pieceLocation & Board.wN, whitePieces);
-                            break;
-                        case Piece.Bishop:
-                            //Bishop legal moves bitboard
-                            legalULong = LegalMoves_Bishop(pieceLocation & Board.wB, whitePieces, blackPieces);
-                            break;
-                        case Piece.Rook:
-                            //Rook legal moves bitboard
-                            legalULong = LegalMoves_Rook(pieceLocation & Board.wR, whitePieces, blackPieces);
-                            break;
-                        case Piece.Queen:
-                            //Queen legal moves bitboard
-                            legalULong = LegalMoves_Queen(pieceLocation & Board.wQ, whitePieces, blackPieces);
-                            break;
-                    }
-                }
-            }
-            else if (!whiteTurn) //Black piece
-            {
-                // SEE FOR CHECK (MAKE IT INTO A FUNCTION IN FUTURE)
-                // [Knights, Bishops, Rooks, Queens, Pawns]
-                ulong[] checks = KingHits(Board.bK, whiteTurn, blackPieces, whitePieces);
-                //Useful for double checks (meaning you have to move the king)
-                int checksCounter = 0;
-                ulong combinedChecks = checks[0] | checks[1] | checks[2] | checks[3] | checks[4];
-                foreach (ulong e in checks)
-                {
-                    if (e != 0L)
-                    {
-                        checksCounter++;
-                    }
-                }
-                if (checksCounter > 0) // Is in check
-                {
-                    if (checksCounter > 1) // Double check (only king can move)
-                    {
-                        //Only king can move
-                        if (Piece.King == (piece & 0b00111))
-                        {
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation & Board.bK, blackPieces, whitePieces, whiteTurn, true);
-                        }
-                        else
-                        {
-                            //Animation to show that king is in check (flashing red, sound)
-                        }
-                    }
-                    else //Single check (can get blocked or captured)
-                    {
-                        //Only king can move
-                        if (Piece.King == (piece & 0b00111))
-                        {
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation & Board.bK, blackPieces, whitePieces, whiteTurn, true);
-                        }
-                        else
-                        {
-                            //Animation to show that king is in check (flashing red, sound)
-                        }
-                    }
-                }
-                // NO CHECK
-                else // Not in check, can play normally
-                {
-                    switch (piece & 0b00111)
-                    {
-                        case Piece.King:
-                            //King legal moves bitboard
-                            legalULong = LegalMoves_King(pieceLocation & Board.bK, blackPieces, whitePieces, whiteTurn, true);
-                            break;
-                        case Piece.Pawn:
-                            //Black pawn legal moves
-                            legalULong = LegalMoves_BPawn(pieceLocation & Board.bP);
-                            break;
-                        case Piece.Knight:
-                            //Knight legal moves bitboard
-                            legalULong = LegalMoves_Knight(pieceLocation & Board.bN, blackPieces);
-                            break;
-                        case Piece.Bishop:
-                            //Bishop legal moves bitboard
-                            legalULong = LegalMoves_Bishop(pieceLocation & Board.bB, blackPieces, whitePieces);
-                            break;
-                        case Piece.Rook:
-                            //Rook legal moves bitboard
-                            legalULong = LegalMoves_Rook(pieceLocation & Board.bR, blackPieces, whitePieces);
-                            break;
-                        case Piece.Queen:
-                            //Queen legal moves bitboard
-                            legalULong = LegalMoves_Queen(pieceLocation & Board.bQ, blackPieces, whitePieces);
-                            break;
-                    }
-                }
-            }
-            //Append to list the legal squares
-            for (int i = 0; i < 64; i++)
-            {
-                if (((legalULong >> i) & 1L) == 1L) { legalSquares.Add(63 - i); }
-            }
-            return legalSquares;
-        }*/
-
-
         //Pawns for bitboard move generation
         public static ulong LegalMoves_WPawn(ulong wP, ulong enemyPieces, ulong emptySquares, ulong black_enPassantMask) //White Pawns
         {
@@ -431,26 +250,6 @@ namespace ChessGame
             //Moving Diagonally Top-Left
             for (int i = 1; i < 8; i++)
             {
-                /*
-                //If out side the board top
-                if (B << (i * 8) == 0L)
-                {
-                    break;
-                }
-                //If outside the board, left
-                else if ((B << i & file_H) != 0L)
-                {
-                    break;
-                }
-                else if ((B << (i * 9) & friendlyPieces) != 0L)
-                {
-                    break;
-                }
-                else if ((B << (i * 9) & enemyPieces) != 0L)
-                {
-                    legalMoves = legalMoves | B << (i * 9);
-                    break;
-                }*/
 
                 //Outside the board (Top)
                 B <<= (i * 8);
@@ -645,7 +444,7 @@ namespace ChessGame
 
 
 
-        //Generating each move from king and checking for same piece (Very efficient)
+        //Generating each move from king and checking for same piece to make generation more efficient
 
         //Generate from king and each hit we check what piece it is
         //This is played after an assumed move
@@ -696,46 +495,6 @@ namespace ChessGame
             // [Knights, Bishops, Rooks, Queens, Pawns]
             return new ulong[] { aN, aB, aR, aQ, aP };
         }
-
-
-
-        /*
-        void InCheck(ulong k, bool whiteTurn, ulong friendlyPieces, ulong enemyPieces, int piece, ulong pieceLocation)
-        {
-            // [Knights, Bishops, Rooks, Queens, Pawns]
-            ulong[] checks = KingHits(Board.wK, whiteTurn, whitePieces, blackPieces);
-            //Useful for double checks (meaning you have to move the king)
-            int checksCounter = 0;
-            ulong combinedChecks = checks[0] | checks[1] | checks[2] | checks[3] | checks[4];
-            foreach (ulong e in checks)
-            {
-                if (e != 0L)
-                {
-                    checksCounter++;
-                }
-            }
-            if ((checksCounter > 0) & whiteTurn) // Is in check
-            {
-                if (checksCounter > 1) // Double check (only king can move)
-                {
-                    //Only king can move
-                    if (Piece.King == (piece & 0b00111))
-                    {
-                        //King legal moves bitboard
-                        legalULong = LegalMoves_King(pieceLocation & Board.wK, whitePieces, blackPieces, whiteTurn, true);
-                    }
-                    else
-                    {
-                        //Animation to show that king is in check (flashing red, sound)
-                    }
-                }
-                else
-                {
-                }
-            }
-        }
-        */
-
 
         //Psuedo legal moves
         // Must check that after a move the board is still valid (King not in check)
@@ -828,12 +587,7 @@ namespace ChessGame
         }
 
 
-        //Pinned Piece Solution:
-        //Calculate all sliding piece moves (for each sliding piece)
-        //Calculating sliding piece moves from the king (for each sliding piece)
-        //If bitboards overlap with the friendly pieces then can't move that piece
-
-        //Will generate pinned piece moves
+        // Generating all moves
         public static List<int> GenerateAllMoves(Position position, bool genKingMoves, ulong allowMask) // 0000 0000 0000 0000  to store: flag | to | from
         {
             List<int> legalSquares = new List<int>();

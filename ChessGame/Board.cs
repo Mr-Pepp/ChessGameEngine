@@ -23,14 +23,6 @@ namespace ChessGame
         //For undoing moves
         public static Stack<MoveInfo> moveHistory = new Stack<MoveInfo>();
 
-        //pieceInfo //Piece information Piece
-        //Stores the information of all the pieces on the board
-        // 
-        // Piece Information: Colour | Piece | Location
-        //public static List<int> piecesInfo = new List<int>() { }; 
-        //Use a 64 bit array (instead)
-        //public static int[] piecesInfo = new int[64]; //Creates a 64 length array
-
         readonly Dictionary<string, Color> _colorDic;
 
         readonly private int _squareSize;
@@ -64,8 +56,6 @@ namespace ChessGame
 
 
         private const string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //default position
-        //private string FEN = "r5nr/1pp2pp1/3q4/2b1P2p/1NK2Pk1/2BP1BR1/PP1Q1P1p/8 w - - 0 1"; //debug position
-        //private string FEN = "8/6bb/8/8/R1p3k1/4P3/P2P4/K7 b - - 0 1";
         private string customFEN = "8/8/3K4/8/8/8/8/4kr2 w - - 0 1";
         
 
@@ -144,7 +134,6 @@ namespace ChessGame
         //Update, looped
         public void Update()
         {
-            
 
             if (GameState.state == 0) // If not check or stalemate
             {
@@ -177,6 +166,7 @@ namespace ChessGame
                 {
                     // Restart game values
                     RestartGame();
+                    // Load custom FEN
                     LoadFEN(customFEN);
                 }
 
@@ -197,10 +187,11 @@ namespace ChessGame
                 {
                     GameState.engineCalculating = true;
 
+                    // Print to indicate that the engine is starting to evaluate the position
                     System.Diagnostics.Debug.WriteLine("Starting Calculating");
+
+                    // Get current time to measure the amount of time it took to evaluate
                     DateTime time = DateTime.Now;
-                    
-                    //System.Diagnostics.Debug.WriteLine(Engine.MiniMax(3, position.whiteTurn));
                     
                     Engine.MaxMove engineMove;
 
@@ -216,20 +207,15 @@ namespace ChessGame
                         // Set alpha as lowest, set beta as highest
                         engineMove = Engine.NegaMax(3, -9999, 9999, 1);
                     }
-                    
-
+                    // Print the engine evalution
                     System.Diagnostics.Debug.WriteLine(engineMove.max);
 
+                    // Print the time it took for the engine to evaluate the position
                     System.Diagnostics.Debug.WriteLine(DateTime.Now - time);
-
-                    System.Diagnostics.Debug.WriteLine("After: " + position.whiteTurn);
 
                     GameState.engineCalculating = false;
                     
-                    
                     MakeMoveOnBoard(engineMove.move);
-
-                    System.Diagnostics.Debug.WriteLine("After MOVE: " + position.whiteTurn);
 
                     if ((engineMove.move.flag & 0b11000) != 0) // Checkmate or stalemate
                     {
@@ -242,33 +228,6 @@ namespace ChessGame
                             GameState.state = 1;
                         }
                     }
-
-
-                    /*
-                    // Random moves
-                    int RandMove = Engine.RandomMove(position);
-                    
-                    if (RandMove >> 15 == 0) // Not checkmate or stalemate
-                    {
-                        MoveInfo move = MoveFormat(RandMove);
-
-                        moveAmount++;
-                        System.Diagnostics.Debug.WriteLine(moveAmount);
-                        
-                        MakeMoveOnBoard(move);
-                    }
-
-                    else
-                    {
-                        if (((RandMove >> 15) & 1) == 1) // Checkmate
-                        {
-                            GameState.state = 1;
-                        }
-                        else // Stalemate
-                        {
-                            GameState.state = 2;
-                        }
-                    }*/
                 }
             }
             else if (GameState.state == 1 | GameState.state == 2) // Checkmate or stalemate (endgame screen)
@@ -377,7 +336,6 @@ namespace ChessGame
         {
             mousePressed = Mouse.GetState().LeftButton == ButtonState.Pressed;
 
-            //future perhaps loop squares with a piece? position identifier?
             //if mouse interacts with the piece rectangle
             if (!pieceSelected && mousePressed)
             {
@@ -400,10 +358,6 @@ namespace ChessGame
                             //set piece selected as true
                             pieceSelected = true;
 
-
-                            //Generate all the moves and add it to the moves list
-                            //Then export all the (to) moves into another list based on the (from) matching the current square
-
                             //Fetch all the moves from the current square
                             fromMoves = new List<int>();
 
@@ -411,23 +365,11 @@ namespace ChessGame
                             //Go through the generated moves and select the appropriate move
                             foreach (int e in moves)
                             {
-                                /*
-                                 * Flags (0b111):
-                                 * 000 = Normal Move
-                                 * 001 = Captures
-                                 * 010 = Evasive (From check)
-                                 * 011 = Promotion
-                                 * 100 = Castles Queen Side
-                                 * 101 = Castles King Side
-                                 * 110 = En Passant
-                                 * 
-                                 * 
-                                 */
 
                                 //If the from destination is correct then store it in the list that allow the piece to go to the right square
                                 if ((e & 0b111111) == square) //flag | to | from
                                 {
-                                    //System.Diagnostics.Debug.WriteLine(e & 0b111111);
+                                    // export all the (to) moves into another list based on the(from) matching the current square
                                     fromMoves.Add(e); //Will only contain the moves from the selected square
                                 }
                             }
@@ -457,14 +399,13 @@ namespace ChessGame
             //holding the piece
             if (pieceSelected && mousePressed)
             {
-                //place piece at mouse point ---- !! Future make this run only once !!
+                //place piece at mouse point 
                 mousePieceRect = new Rectangle(Game1.mousePoint.X - (_squareSize / 2), Game1.mousePoint.Y - (_squareSize / 2), _squareSize, _squareSize);
 
                 //Need to find a way to do this with bitboards
                 foreach (int e in fromMoves)
                 {
                     to = e >> 6 & 0b111111;
-                    //System.Diagnostics.Debug.WriteLine(to);
 
                     //Show available moves
                     if (squares[to].piece == 0)
@@ -507,9 +448,6 @@ namespace ChessGame
             //holding released
             else if (pieceSelected)
             {
-                //return stored piece (use for illegal moves)
-                //squares[square].piece = tempPiece;
-
                 //set mouse piece as null, although this is not needed as it is not executed
                 mousePiece = null;
 
@@ -558,31 +496,6 @@ namespace ChessGame
                         //Flag | To | From
                         if (squares[square].rect.Contains(Game1.mousePoint) && validSquare)
                         {
-
-                            //The main issue is that I would have to update the new board and remove the old piece from it.
-                            //This is a pain because
-                            /*
-                             * I have no clue how to do this efficiently
-                             * From a list you have to do a bunch of searches so it makes sense to use a 64 array?.. So that's what I'm using...
-                             * 
-                             */
-                            /*
-                            //Remove piece from pieceInfo and add the new piece location
-                            // Consider --- Pawn Promotion, Captures
-                            foreach (int e in piecesInfo)//Loops through the pieceInfo list
-                            {
-                                if ((e & 0b111111) == tempSquare) //Remove previous square
-                                {
-                                    //piecesInfo.Remove(e);
-                                }
-
-                                else if ((e & 0b111111) == square) //Remove current square piece
-                                {
-                                    //piecesInfo.Remove(e);
-                                }
-                            }*/
-
-
                             //To store the bitboard of the "to" square
                             ulong toSquareBitboard = BinaryStringToBitboard(square);
                             //To store the bitboard of the "from" square
@@ -855,8 +768,8 @@ namespace ChessGame
 
 
 
-        // Undoing a move
-        // All previous saves... Moves.whiteCastles, Moves.blackCastles,
+        // Undoing a move based on
+        // All previous saves: Moves.whiteCastles, Moves.blackCastles,
         //Moves.white_enPassantMask, Moves.black_enPassantMask, Moves.whiteTurn
         public static void UndoMove(MoveInfo move)
         {
@@ -1234,9 +1147,6 @@ namespace ChessGame
 
                     //Update bitboard
                     position.bR = (position.bR | Moves.TLCorner) & ~Moves.qsCastleRook_black;
-
-                    // Castling rights
-                    //position.blackCastles = position.blackCastles | 0b10;
                 }
                 else // White just made the move
                 {
@@ -1249,9 +1159,6 @@ namespace ChessGame
 
                     //Update bitboard
                     position.wR = (position.wR | Moves.BLCorner) & ~Moves.qsCastleRook_white;
-
-                    // Castling rights
-                    //position.whiteCastles = position.whiteCastles | 0b10;
 
                 }
             }
@@ -1270,9 +1177,6 @@ namespace ChessGame
                     //Update bitboard
                     position.bR = (position.bR | Moves.TRCorner) & ~Moves.ksCastleRook_black;
 
-                    //Castling righs
-                    //position.blackCastles = position.blackCastles | 0b01;
-
                 }
                 else // White just made the move
                 {
@@ -1285,9 +1189,6 @@ namespace ChessGame
 
                     //Update bitboard
                     position.wR = (position.wR | Moves.BRCorner) & ~Moves.ksCastleRook_white;
-
-                    //Castling righs
-                    //position.whiteCastles = position.whiteCastles | 0b01;
                 }
             }
 
@@ -1305,7 +1206,6 @@ namespace ChessGame
             
         }
 
-        // Used for restarting the game
         // Used for restarting the game
         private void RestartGame()
         {
@@ -1342,10 +1242,10 @@ namespace ChessGame
                 moveHistory.Push(move);
             }
             
-
+            // Initialize move variables
             int fromSquare = move.fromSquare;
             int toSquare = move.toSquare;
-            int flag = move.flag; // Can be castling.. etc
+            int flag = move.flag; // Flag to identify move type
 
             int capturedPiece = move.capturedPiece;
 
@@ -1564,8 +1464,7 @@ namespace ChessGame
             }
             else
             {
-                //En passant not moved
-                //Set En passant = 0
+                // No vital flags to consider
 
                 //End of turn
                 EndOfTurn();
@@ -1819,38 +1718,10 @@ namespace ChessGame
             //Default all bitboards
             ulong wK = 0L, wQ = 0L, wR = 0L, wN = 0L, wB = 0L, wP = 0L, bK = 0L, bQ = 0L, bR = 0L, bN = 0L, bB = 0L, bP = 0L;
 
-
-            // With bitboards, the FEN is first converted to a bitboard then the squares are assigned the pieces
-
-            //example FEN 
-            //  4kr2/p2p1r1p/2b1q3/8/2P5/1P6/P7/2RQR1K1 w - - 0 1
-
-            /*
-            Dictionary<char, int> pieceDic = new Dictionary<char, int>()
-            {
-                //White pieces
-                { 'K', Piece.White | Piece.King }, //Use of the OR operator for reference
-                { 'P', Piece.White | Piece.Pawn },
-                { 'N', Piece.White | Piece.Knight },
-                { 'B', Piece.White | Piece.Bishop },
-                { 'R', Piece.White | Piece.Rook },
-                { 'Q', Piece.White | Piece.Queen },
-
-                //Black pieces
-                { 'k', Piece.Black | Piece.King },
-                { 'p', Piece.Black | Piece.Pawn },
-                { 'n', Piece.Black | Piece.Knight },
-                { 'b', Piece.Black | Piece.Bishop },
-                { 'r', Piece.Black | Piece.Rook },
-                { 'q', Piece.Black | Piece.Queen },
-            };
-            */
-
+            // Split the FEN by "/" since that represents a new rank on the board
             string[] fenList = FEN.Split("/");
 
             int i = 0;
-
-
 
             //Checks how to deal with each symbol and does it
             foreach (string e in fenList)
@@ -1921,47 +1792,7 @@ namespace ChessGame
                 }
             }
 
-            /*
-            //Checks how to deal with each symbol and does it
-            foreach (string e in fenList)
-            {
-                foreach (char c in e)
-                {
-                    //if integer then add to index by integer
-                    if (int.TryParse(c.ToString().AsSpan(), out int n))
-                    {
-
-                        //overwrite current pieces on said squares
-                        for (int j = 0; j <= n-1; j++)
-                        {
-                            squares[i + j].piece = Piece.None;
-                        }
-
-                        //squares[i].piece = Piece.None;
-
-                        i += n;
-                    }
-
-                    //else if string
-                    else
-                    {
-                        squares[i].piece = pieceDic[c];
-                        //assign the texture and legal moves that the piece has
-                        squares[i].AssignPiece();
-
-                        i++;
-                    }
-
-                    //if finished then break to assign the remaining values
-                    if (i >= 64)
-                    {
-                        break;
-                    }
-
-                }
-            }*/
-
-            //Leave at true for now...
+            // Output the bitboards onto the chess board
             BitboardOutput(true, wK, wQ, wR, wB, wN, wP, bK, bQ, bR, bB, bN, bP);
 
         }

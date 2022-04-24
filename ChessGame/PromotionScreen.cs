@@ -9,10 +9,9 @@ namespace ChessGame
 {
     class PromotionScreen
     {
-        private Texture2D _texture;
+        readonly private Texture2D _texture;
         private Color _backgroundColour;
-        private int _pxSize;
-        private Vector2 _squarePosition;
+        readonly private int _pxSize;
         private int promotionPosition;
 
         public int xBackgroundPosition;
@@ -39,12 +38,7 @@ namespace ChessGame
         }
 
         public void Update(Position position, Vector2 squarePosition)
-        {
-            _squarePosition = squarePosition;
-
-            
-            
-
+        {   
             //If white turn
             if (position.whiteTurn)
             {

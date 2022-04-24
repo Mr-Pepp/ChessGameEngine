@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace ChessGame
 {
     class Square
     {
-        private Texture2D _texture;
+        readonly private Texture2D _texture;
         private Texture2D pieceTexture;
 
         //miscs
@@ -17,9 +13,8 @@ namespace ChessGame
 
         public Rectangle rect;
 
-        private Color dotColour = new Color(100, 100, 100, 150);
         private Color _colour;
-        private int _pxSize;
+        readonly private int _pxSize;
         public Vector2 position;
 
         public int piece = Piece.None; // initial
@@ -27,10 +22,6 @@ namespace ChessGame
         // miscs
         public bool dot = false;
         public bool targetSquare = false;
-
-        //list so i can append, but slower than an array.
-        private List<int> legalMoves = new List<int>();
-
         
 
         public Square() {}

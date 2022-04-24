@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace ChessGame
 {
@@ -23,7 +19,7 @@ namespace ChessGame
         public const int White = 0b01000;  // 01000 b
         public const int Black = 0b10000;  // 10000 b
 
-        //Other... see what happens
+        //Other
         public const int Dot = 0b100000; //base10 32 resembles a dot
 
         public static Texture2D whiteKing;

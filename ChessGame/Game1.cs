@@ -9,13 +9,12 @@ namespace ChessGame
     {
         readonly private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        RenderTarget2D renderTarget;
 
         //Reference later for functions like exitting the game
         public static Game1 self; 
 
         //Create the font
-        public static SpriteFont text; // Public to use at anytime
+        public static SpriteFont text;
 
         private Board board;
 
@@ -55,7 +54,7 @@ namespace ChessGame
 
         protected override void Initialize()
         {
-            // initialization logic
+            // Initialization logic
 
             _graphics.PreferredBackBufferWidth = 990;
             _graphics.PreferredBackBufferHeight = 900;
@@ -67,8 +66,6 @@ namespace ChessGame
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            renderTarget = new RenderTarget2D(GraphicsDevice, 1920, 1080);
 
             //Load font
             text = Content.Load<SpriteFont>("Fonts/Ubuntu32");
@@ -107,8 +104,9 @@ namespace ChessGame
             Piece.pieceTextureDic =
                 new Dictionary<int, Texture2D>()
             {
+                //Using Piece.cs for reference; "Piece.White | Piece.King"
                 //White pieces
-                { Piece.White | Piece.King, Piece.whiteKing }, //Could also use Piece.cs for reference; "Piece.White | Piece.King"
+                { Piece.White | Piece.King, Piece.whiteKing }, 
                 { Piece.White | Piece.Pawn, Piece.whitePawn },
                 { Piece.White | Piece.Knight, Piece.whiteKnight },
                 { Piece.White | Piece.Bishop, Piece.whiteBishop },
@@ -131,9 +129,6 @@ namespace ChessGame
             board = new Board(squareSize, initPos, colorDic);
 
             board.LoadContent(_spriteBatch);
-
-
-            // TODO: use this.Content to load your game content here
         }
 
         protected override void Update(GameTime gameTime)

@@ -183,13 +183,11 @@ namespace ChessGame
 
         // For fetching the best engine move
         public static Board.MoveInfo engineMove;
-        
 
         public Engine()
         {
 
         }
-
         
         //For testing the legal move generation amount
         public static int GenerationTest(int depth)
@@ -229,16 +227,7 @@ namespace ChessGame
             return positions;
         }
 
-
-        //Random Moves - - Will return the move in int (Flag | To | From)
-        public static int RandomMove(Position position)
-        {
-            List<int> moves = Moves.GenerateGameMoves(position);
-
-            return moves[new Random().Next(moves.Count)];
-
-        }
-
+        // Used for returning the best move and evaluation of move at once
         public class MaxMove
         {
             public int max;
@@ -251,267 +240,6 @@ namespace ChessGame
             }
         }
 
-
-        public static int MiniMax(int depth, bool maximizingPlayer)
-        {
-            if (depth == 0)
-            {
-                return Evaluation();
-            }
-
-            //Generate moves
-            List<int> moves = Moves.GenerateGameMoves(Board.position);
-
-            if (moves.Count == 1) // potential checkmate or stalemate returned
-            {
-                if ((moves[0] >> 15) == 0b01) // Checkmate
-                {
-                    // Worse scenario
-                    return negInfinity;
-                }
-                else if ((moves[0] >> 16) == 1) // Stalemate
-                {
-                    // Draw
-                    return 0;
-                }
-            }
-
-
-            if (maximizingPlayer)
-            {
-                int maxEval = negInfinity;
-
-                foreach (int move in moves)
-                {
-                    //Create move
-                    Board.MoveInfo actMove = Board.MoveFormat(move);
-                    //Make move
-                    Board.MakeMoveOnBoard(actMove);
-
-                    int eval = MiniMax(depth - 1, false);
-
-                    //Undo move
-                    Board.UndoMove(actMove);
-
-                    if (maxEval < eval) // Evaluate is greater
-                    {
-                        maxEval = Math.Max(maxEval, eval);
-                        engineMove = actMove;
-                    }
-                    
-                }
-                return maxEval;
-            }
-
-
-            else
-            {
-                int minEval = posInfinity;
-
-                foreach (int move in moves)
-                {
-                    //Create move
-                    Board.MoveInfo actMove = Board.MoveFormat(move);
-                    //Make move
-                    Board.MakeMoveOnBoard(actMove);
-                    int eval = MiniMax(depth - 1, true);
-
-                    if (eval > 5000)
-                    {
-                        System.Diagnostics.Debug.WriteLine(depth);
-                        System.Diagnostics.Debug.WriteLine(actMove.piece);
-                    }
-
-                    //Undo move
-                    Board.UndoMove(actMove);
-
-                    if (minEval > eval) // Evaluate is lesser
-                    {
-                        minEval = Math.Max(minEval, eval);
-                        engineMove = actMove;
-                    }
-                }
-                return minEval; 
-            }
-
-        }
-
-
-        /*
-        //NegaMax search
-        public static int NegaMax (int depth)
-        {
-            if (depth == 0)
-            {
-                return Evaluation();
-            }
-
-            List<int> moves = Moves.GenerateGameMoves(Board.position);
-
-            if (moves.Count == 1)
-            {
-                if ((moves[0] >> 15) == 0b01) // Checkmate
-                {
-                    // Worse scenario
-                    System.Diagnostics.Debug.WriteLine("mate possible");
-                    return -9999999;
-                }
-                else if ((moves[0] >> 16) == 1) // Stalemate
-                {
-                    // Draw
-                    return 0;
-                }
-            }
-
-            //Initiate at worse
-            int max = -9999999;
-
-            foreach (int move in moves)
-            {
-                //Make into valid move format
-                Board.MoveInfo actMove = Board.MoveFormat(move);
-
-                // Make move
-                Board.MakeMoveOnBoard(actMove);
-
-                // Negative sign because it will alternate black and white turns
-                // Current evaluation
-                int evaluation  = -NegaMax(depth - 1);
-                // Get which evaluation is greater
-                if (evaluation > max)
-                {
-                    if (evaluation > 9999)
-                    {
-                        System.Diagnostics.Debug.WriteLine(evaluation);
-                        System.Diagnostics.Debug.WriteLine(actMove.piece);
-                    }
-                    max = evaluation;
-                    if (depth == 4) // Original depth
-                    {
-                        engineMove = actMove;
-                    }
-                }
-
-                // Undo move
-                Board.UndoMove(actMove);
-            }
-
-            //return 
-            return max;
-        }*/
-
-        /*
-        //NegaMax search
-        public static maxMove NegaMax(int depth)
-        {
-            if (depth == 0)
-            {
-                // Return evaluation of current position with a null move
-                return new maxMove(Evaluation(), new Board.MoveInfo());
-            }
-
-            List<int> moves = Moves.GenerateGameMoves(Board.position);
-
-            if (moves.Count == 1)
-            {
-                if ((moves[0] >> 15) == 0b01) // Checkmate
-                {
-                    // Worse scenario
-                    return new maxMove(-999999, new Board.MoveInfo());
-                }
-                else if ((moves[0] >> 16) == 1) // Stalemate
-                {
-                    // Draw
-                    return new maxMove(0, new Board.MoveInfo());
-                }
-            }
-
-            maxMove maxMove = new maxMove(-999999, new Board.MoveInfo());
-
-            foreach (int move in moves)
-            {
-                //Make into valid move format
-                Board.MoveInfo actMove = Board.MoveFormat(move);
-
-                // Make move
-                Board.MakeMoveOnBoard(actMove);
-
-                // Negative sign because it will alternate black and white turns
-                // Current evaluation
-                maxMove evalMove = new maxMove(-NegaMax(depth - 1).max, actMove);
-
-                // Undo move
-                Board.UndoMove(actMove);
-
-                if (evalMove.max > maxMove.max)
-                {
-                    maxMove = evalMove;
-                }
-            }
-
-            //return 
-            return maxMove;
-        }*/
-
-
-        /*
-        //NegaMax search
-        public static int NegaMax(int depth)
-        {
-            if (depth == 0)
-            {
-                // Return evaluation of current position with a null move
-                return Evaluation();
-            }
-
-            List<int> moves = Moves.GenerateGameMoves(Board.position);
-
-            if (moves.Count == 1)
-            {
-                if ((moves[0] >> 15) == 0b01) // Checkmate
-                {
-                    // Worse scenario
-                    return -999999;
-                }
-                else if ((moves[0] >> 16) == 1) // Stalemate
-                {
-                    // Draw
-                    return 0;
-                }
-            }
-
-            int max = -99999;
-
-            foreach (int move in moves)
-            {
-                //Make into valid move format
-                Board.MoveInfo actMove = Board.MoveFormat(move);
-
-                // Make move
-                Board.MakeMoveOnBoard(actMove);
-
-                // Negative sign because it will alternate black and white turns
-                // Current evaluation
-                int eval = -NegaMax(depth - 1);
-
-                // Undo move
-                Board.UndoMove(actMove);
-
-                if (eval > max)
-                {
-                    max = eval;
-                    engineMove = actMove;
-                }
-            }
-
-            //return 
-            return max;
-        }
-        */
-
-
-
-
         //NegaMax search
         public static MaxMove NegaMax(int depth, int alpha, int beta, int negateSide)
         {
@@ -521,8 +249,10 @@ namespace ChessGame
                 return new MaxMove(negateSide * Evaluation(), new Board.MoveInfo());
             }
 
+            // Generate all moves and store in the moves list
             List<int> moves = Moves.GenerateGameMoves(Board.position);
 
+            // If there is only one move, there could be a checkmate or stalemate returned
             if (moves.Count == 1)
             {
                 if ((moves[0] >> 15) == 0b01) // Checkmate
@@ -542,6 +272,7 @@ namespace ChessGame
 
             MaxMove maxMove = new MaxMove(-99999, new Board.MoveInfo());
 
+            // Loop through each move in moves
             foreach (int move in moves)
             {
                 //Make into valid move format
@@ -557,26 +288,30 @@ namespace ChessGame
                 // Undo move
                 Board.UndoMove(actMove);
 
-
+                // If the evaluation is greater than the maxMove 
                 if (evalMove.max > maxMove.max)
                 {
+                    // Set the new max move
                     maxMove = evalMove;
                 }
 
                 else if (evalMove.max < -9999) // Getting mated
                 {
-                    maxMove.move = evalMove.move; // Return move
+                    maxMove.move = evalMove.move; // Return best move
                 }
 
+                // Set alpha as the value that is greater from Alpha and evalMove
                 alpha = Math.Max(alpha, evalMove.max);
                 
+                // If alpha is greater than or equal to beta
                 if (alpha >= beta)
                 {
+                    // Return; prune line
                     return maxMove;
                 }
             }
 
-            //return 
+            //return best move and score
             return maxMove;
         }
 
@@ -632,6 +367,7 @@ namespace ChessGame
             // Make less significant with less pieces on board (endgame)
             eval += (position_whiteKing[position.whiteKing[0]] / 10) * whiteWeight;
 
+            // For each piece, evaluate their positioning based on the piece-square tables
             foreach (int squareIndex in position.whiteQueen)
             {
                 eval += position_whiteQueen[squareIndex];
@@ -674,7 +410,8 @@ namespace ChessGame
 
             // Make less significant with less pieces (endgame)
             eval += (position_blackKing[position.blackKing[0]] / 10) * blackWeight;
-            
+
+            // For each piece, evaluate their positioning based on the piece-square tables
             foreach (int squareIndex in position.blackQueen)
             {
                 eval += position_blackQueen[squareIndex];
